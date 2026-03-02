@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Dice Roller | 究極のサイコロアプリ</title>
+    <meta name="description" content="モダンなデザインと3Dアニメーションによる最高級のサイコロ転がしシミュレーター。">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Dice Roller</h1>
+            <p class="subtitle">運命をその手に。サイコロの数を選んで回しましょう。</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <div class="input-group">
+                    <label for="diceCount">サイコロの数</label>
+                    <input type="number" id="diceCount" min="1" max="12" value="1">
+                </div>
+                <button id="rollBtn">サイコロを振る</button>
+            </div>
+
+            <div class="dice-area" id="diceArea">
+                <!-- 3D Dice will be injected here -->
+            </div>
+
+            <div class="result-overlay" id="resultArea">
+                合計: <span class="sum-badge" id="totalSum">0</span>
+            </div>
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

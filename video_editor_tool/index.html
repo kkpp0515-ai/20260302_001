@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Video Compositor - Adobe Quality Engine</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="dark-theme">
+    <div id="app">
+        <header>
+            <div class="logo">
+                <span class="icon">🎬</span>
+                <h1>VideoCompositor <span>Pro</span></h1>
+            </div>
+            <div class="actions">
+                <button id="export-btn" class="primary-btn">
+                    <span class="btn-icon">📥</span> 動画を出力 (Export)
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <aside class="sidebar">
+                <section class="control-group" data-layer="background">
+                    <h3><span class="dot"></span> メイン動画 (Background)</h3>
+                    <div class="file-input-wrapper">
+                        <label for="bg-upload">元動画 (MP4)</label>
+                        <input type="file" id="bg-upload" accept="video/*">
+                    </div>
+                </section>
+
+                <section class="control-group active" data-layer="character">
+                    <h3><span class="dot highlight"></span> 透過PNG / 帯 (Bands)</h3>
+                    <div class="file-input-wrapper highlight-border">
+                        <label for="char-upload">透過PNG / 素材</label>
+                        <input type="file" id="char-upload" accept="video/*,image/*">
+                    </div>
+                </section>
+
+                <section class="control-group" data-layer="overlay">
+                    <h3><span class="dot"></span> ロゴ / 前景 (Logo/Overlay)</h3>
+                    <div class="file-input-wrapper">
+                        <label for="overlay-upload">前面ロゴなど (PNG/MP4)</label>
+                        <input type="file" id="overlay-upload" accept="video/*,image/*">
+                    </div>
+                </section>
+
+                <section class="control-group" id="transform-panel">
+                    <h3 class="control-title-active">編集中のレイヤー: キャラクター</h3>
+                    <p class="hint">キャンバス上をドラッグして移動できます</p>
+                    <div class="transform-controls">
+                        <div class="control-row">
+                            <label>位置 X</label>
+                            <input type="range" id="posX" min="-2000" max="2000" value="0">
+                        </div>
+                        <div class="control-row">
+                            <label>位置 Y</label>
+                            <input type="range" id="posY" min="-2000" max="2000" value="0">
+                        </div>
+                        <div class="control-row">
+                            <label>スケール (1.0 = 元のサイズ)</label>
+                            <input type="range" id="scale" min="0.01" max="5" step="0.01" value="1">
+                        </div>
+                        <div class="control-row">
+                            <label>不透明度</label>
+                            <input type="range" id="opacity" min="0" max="1" step="0.01" value="1">
+                        </div>
+
+                        <div class="quick-actions">
+                            <button id="fit-v-btn" class="secondary-btn">↕ 縦にフィット</button>
+                            <button id="fit-h-btn" class="secondary-btn">↔ 横にフィット</button>
+                            <button id="center-btn" class="secondary-btn">🎯 中央寄せ</button>
+                        </div>
+
+                        <div class="chroma-settings">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="chroma-toggle"> クロマキー除去 (Green Screen)
+                            </label>
+                            <div class="control-row">
+                                <label>除去する色</label>
+                                <input type="color" id="chroma-color" value="#00ff00">
+                            </div>
+                            <div class="control-row">
+                                <label>許容範囲 (Tolerance)</label>
+                                <input type="range" id="chroma-tolerance" min="0.01" max="0.5" step="0.01" value="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="control-group">
+                    <h3><span class="dot"></span> 出力解像度 (Target Resolution)</h3>
+                    <div class="control-row">
+                        <select id="resolution">
+                            <option value="1920x1080">Landscape (1920x1080)</option>
+                            <option value="1080x1080">Square (1080x1080)</option>
+                            <option value="1080x1920">Vertical (1080x1920)</option>
+                            <option value="1280x720">HD (1280x720)</option>
+                        </select>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="editor-view">
+                <div class="canvas-container" id="canvas-container">
+                    <canvas id="main-canvas"></canvas>
+                    <div id="transform-guide" class="guide hidden"></div>
+                </div>
+
+                <div class="timeline-bar">
+                    <div class="timeline-controls">
+                        <button id="play-pause-btn">▶</button>
+                        <span id="time-display">00:00 / 00:00</span>
+                    </div>
+                    <div class="timeline-track">
+                        <div id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="loading-overlay" class="hidden">
+            <div class="spinner"></div>
+            <p>動画を生成中... <span id="export-progress">0%</span></p>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+
+</html>

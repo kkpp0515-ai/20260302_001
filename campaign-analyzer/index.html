@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Priority Optimizer | 広告調整優先度分析</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="background-radial"></div>
+    <div class="background-dots"></div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <h1>Campaign Priority <span>Optimizer</span></h1>
+            </div>
+            <div class="controls">
+                <div class="config-item">
+                    <label for="target-roas">目標 ROAS (%):</label>
+                    <input type="number" id="target-roas" value="50" min="0" step="5">
+                </div>
+                <!-- CSV Sample indicator from image Headers -->
+                <button id="reset-btn" class="secondary-btn">リセット</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section id="upload-section" class="glass-panel">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-content">
+                        <div class="upload-icon">📁</div>
+                        <h3>CSVファイルをアップロード</h3>
+                        <p>または、ここにドラッグ＆ドロップしてください</p>
+                        <input type="file" id="csv-file" accept=".csv" hidden>
+                        <button class="primary-btn" id="browse-btn">ファイルを選択</button>
+                    </div>
+                </div>
+                <div class="file-info" id="file-info" style="display: none;">
+                    <span id="filename-display"></span>
+                    <button id="process-btn" class="glow-btn">解析開始</button>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <div id="loader" style="display: none;">
+                <div class="spinner"></div>
+                <p>データを分析中...</p>
+            </div>
+
+            <!-- Dashboard Section (Hidden until upload) -->
+            <section id="dashboard" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <span class="stat-label">総コスト (COST)</span>
+                        <div class="stat-value" id="total-cost">¥0</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <span class="stat-label">平均 ROAS</span>
+                        <div class="stat-value" id="avg-roas">0%</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <span class="stat-label">要調整キャンペーン数</span>
+                        <div class="stat-value highlight" id="urgent-count">0</div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container glass-panel">
+                        <h3>コスト vs ROAS 散布図</h3>
+                        <canvas id="scatter-chart"></canvas>
+                    </div>
+                    <div class="chart-container glass-panel">
+                        <h3>優先度分布</h3>
+                        <canvas id="priority-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-container glass-panel">
+                    <div class="table-header">
+                        <h3>キャンペーン別分析結果</h3>
+                        <div class="table-actions">
+                            <input type="text" id="table-search" placeholder="キャンペーンを検索...">
+                            <button id="export-btn" class="small-btn">結果をエクスポート</button>
+                        </div>
+                    </div>
+                    <div class="scroll-table">
+                        <table id="results-table">
+                            <thead>
+                                <tr>
+                                    <th>優先度</th>
+                                    <th>キャンペーン</th>
+                                    <th>COST</th>
+                                    <th>ROAS</th>
+                                    <th>推定インパクト</th>
+                                    <th>推奨アクション</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body">
+                                <!-- Data rows go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification system -->
+    <div id="toast-container"></div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

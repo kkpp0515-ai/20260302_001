@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tweet Hub | 世界のAIトレンドを最大化</title>
+    <meta name="description" content="AI関連の最新ツイートを網羅的に表示するダッシュボード。最新のLLM、画像生成、AIニュースを一目で確認。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark-theme">
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <h1 class="logo">AI<span>TWEET</span>HUB</h1>
+                <div class="search-bar">
+                    <input type="text" id="tweetSearch" placeholder="AIトピックを検索...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="controls">
+                    <button id="toggleDense" title="表示密度を切り替え">
+                        <span class="icon">📱</span> 密度
+                    </button>
+                    <button id="refreshData" title="データを更新">
+                        <span class="icon">🔄</span> 更新
+                    </button>
+                </div>
+            </div>
+            <div class="filter-tags">
+                <button class="tag active" data-filter="all">すべて</button>
+                <button class="tag" data-filter="llm">LLM</button>
+                <button class="tag" data-filter="image">画像生成</button>
+                <button class="tag" data-filter="video">動画AI</button>
+                <button class="tag" data-filter="news">ニュース</button>
+            </div>
+        </header>
+
+        <main id="tweetContainer" class="masonry-grid">
+            <!-- Tweets will be injected here -->
+            <div class="loader-container">
+                <div class="loader"></div>
+                <p>AIツイートを収集しています...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 AI Tweet Hub - AI Trends Maximized</p>
+        </footer>
+    </div>
+
+    <!-- Background Decoration -->
+    <div class="bg-blur blur-1"></div>
+    <div class="bg-blur blur-2"></div>
+    <div class="grid-overlay"></div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

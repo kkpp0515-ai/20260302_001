@@ -1,0 +1,12 @@
+Campaign,Adgroup,COST,Real_Roas,Predict_Pv
+slime_ja_skyfall_reward_sp,tier2_step3,14066,0.00%,0
+slime_ja_skyfall_reward_sp,piccoma_step3_and,3046,47.41%,1950
+slime_ja_skyfall_reward_sp,piccoma_step3_ios,3009,13.03%,674
+arifure_ja_skyfall_reward_sp,piccoma_step10_ios,4784,64.46%,4605
+arifure_ja_skyfall_reward_sp,piccoma_step10_and,4518,59.85%,4608
+seirei_ja_skyfall2_reward_sp,piccoma_sur30_ios_7step,6449,28.22%,3202
+seirei_ja_skyfall2_reward_sp,piccoma_sur30_and_7step,3051,24.88%,1439
+high_performing_campaign_A,group1,12000,85.50%,10000
+low_performing_high_cost_B,group1,25000,12.30%,5000
+new_potential_C,group1,2000,120.00%,1500
+test_campaign_D,group1,500,45.00%,400

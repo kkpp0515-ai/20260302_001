@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last War Clone - Prototype</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="ui-overlay">
+            <div id="score-container">
+                <span id="score-label">Troops: </span>
+                <span id="troop-count">1</span>
+            </div>
+            <div id="start-screen">
+                <h1>LAST WAR PROTOTYPE</h1>
+                <p>Click to Start</p>
+                <p class="hint">Move mouse to control troops</p>
+            </div>
+            <div id="game-over" class="hidden">
+                <h1>MISSION FAILED</h1>
+                <button id="restart-btn">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- main.js の内容をここに統合 ---
+        (function () {
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+            const troopCountDisplay = document.getElementById('troop-count');
+            const startScreen = document.getElementById('start-screen');
+            const gameOverScreen = document.getElementById('game-over');
+            const restartBtn = document.getElementById('restart-btn');
+
+            const WIDTH = 450;
+            const HEIGHT = 800;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = WIDTH * dpr;
+            canvas.height = HEIGHT * dpr;
+            canvas.style.width = `${WIDTH}px`;
+            canvas.style.height = `${HEIGHT}px`;
+            ctx.scale(dpr, dpr);
+
+            let gameState = 'START';
+            let score = 1;
+            let gameSpeed = 5;
+            let playerX = WIDTH / 2;
+            let targetX = WIDTH / 2;
+            let bullets = [];
+            let entities = [];
+            let frame = 0;
+            let shake = 0;
+
+            const TROOP_RADIUS = 8;
+            const TROOP_COLOR = '#0088ff';
+            const PLAYER_Y = HEIGHT - 150;
+
+            class Bullet {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.speed = 15;
+                }
+                update() {
+                    this.y -= this.speed;
+                    return this.y < 0;
+                }
+                draw() {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ffff00';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            class Entity {
+                constructor(type, x, y, value) {
+                    this.type = type;
+                    this.x = x;
+                    this.y = y;
+                    this.width = type === 'GATE' ? WIDTH / 2 - 10 : 100;
+                    this.height = type === 'GATE' ? 80 : 80;
+                    this.isUsed = false;
+
+                    if (type === 'GATE') {
+                        this.op = Math.random() > 0.5 ? 'x' : '+';
+                        this.value = this.op === 'x' ? Math.floor(Math.random() * 3) + 2 : Math.floor(Math.random() * 20) + 5;
+                        this.color = this.value > 0 ? '#44ff44' : '#ff4444';
+                    } else {
+                        this.health = value;
+                        this.maxHealth = value;
+                        this.color = '#ff4444';
+                    }
+                }
+
+                update() {
+                    this.y += gameSpeed;
+                    return this.y > HEIGHT;
+                }
+
+                draw() {
+                    if (this.isUsed) return;
+
+                    if (this.type === 'GATE') {
+                        const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                        gradient.addColorStop(0, this.color + 'aa');
+                        gradient.addColorStop(1, this.color + '22');
+
+                        ctx.fillStyle = gradient;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(this.x, this.y, this.width, this.height);
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 32px Outfit';
+                        ctx.textAlign = 'center';
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = 'black';
+                        ctx.fillText(`${this.op}${this.value}`, this.x + this.width / 2, this.y + this.height / 2 + 10);
+                        ctx.shadowBlur = 0;
+                    } else {
+                        ctx.fillStyle = '#3a0000';
+                        ctx.strokeStyle = '#ff4444';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.roundRect(this.x, this.y, this.width, this.height, 10);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#222';
+                        ctx.fillRect(this.x + 10, this.y - 15, this.width - 20, 10);
+                        ctx.fillStyle = '#ff4444';
+                        ctx.fillRect(this.x + 10, this.y - 15, (this.width - 20) * (this.health / this.maxHealth), 10);
+
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 24px Outfit';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(Math.floor(this.health), this.x + this.width / 2, this.y + this.height / 2 + 8);
+                    }
+                }
+            }
+
+            function spawnWave() {
+                if (frame % 100 === 0) {
+                    const type = Math.random() > 0.4 ? 'GATE' : 'ZOMBIE';
+                    if (type === 'GATE') {
+                        entities.push(new Entity('GATE', 5, -100));
+                        entities.push(new Entity('GATE', WIDTH / 2 + 5, -100));
+                    } else {
+                        const w = 120;
+                        entities.push(new Entity('ZOMBIE', (WIDTH - w) / 2, -100, Math.floor(score * 0.8) + 10));
+                    }
+                }
+            }
+
+            function updateBullets() {
+                bullets = bullets.filter(b => !b.update());
+
+                bullets.forEach((b, bIdx) => {
+                    entities.forEach(e => {
+                        if (e.type === 'ZOMBIE' && !e.isUsed) {
+                            if (b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
+                                e.health--;
+                                bullets.splice(bIdx, 1);
+                                if (e.health <= 0) {
+                                    e.isUsed = true;
+                                    score += 1;
+                                    shake = 5;
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+
+            function updatePlayer() {
+                playerX += (targetX - playerX) * 0.15;
+
+                entities.forEach(e => {
+                    if (!e.isUsed && Math.abs(PLAYER_Y - e.y) < 40) {
+                        if (playerX > e.x && playerX < e.x + e.width) {
+                            if (e.type === 'GATE') {
+                                if (e.op === 'x') score *= e.value;
+                                else score += e.value;
+                                e.isUsed = true;
+                                shake = 10;
+                            } else if (e.type === 'ZOMBIE') {
+                                score = Math.floor(score * 0.5) - 2;
+                                e.isUsed = true;
+                                shake = 20;
+                                if (score <= 0) endGame();
+                            }
+                        }
+                    }
+                });
+
+                if (score < 1) endGame();
+                if (shake > 0) shake *= 0.9;
+            }
+
+            function drawPlayer() {
+                ctx.fillStyle = TROOP_COLOR;
+                const count = Math.min(Math.floor(score), 150);
+                const rows = Math.ceil(Math.sqrt(count));
+                const spacing = 18;
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = TROOP_COLOR;
+
+                for (let i = 0; i < count; i++) {
+                    const row = Math.floor(i / rows);
+                    const col = i % rows;
+                    const jitterX = Math.sin(frame * 0.1 + i) * 2;
+                    const jitterY = Math.cos(frame * 0.1 + i) * 2;
+
+                    const tx = playerX + (col - rows / 2) * spacing + jitterX;
+                    const ty = PLAYER_Y + (row) * spacing + jitterY;
+
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, TROOP_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (frame % 12 === 0 && row === 0) {
+                        bullets.push(new Bullet(tx, ty));
+                    }
+                }
+                ctx.shadowBlur = 0;
+                troopCountDisplay.innerText = Math.floor(score);
+            }
+
+            function drawBackground() {
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.setLineDash([40, 40]);
+                ctx.lineDashOffset = -frame * gameSpeed;
+                ctx.beginPath();
+                ctx.moveTo(WIDTH / 3, 0); ctx.lineTo(WIDTH / 3, HEIGHT);
+                ctx.moveTo(2 * WIDTH / 3, 0); ctx.lineTo(2 * WIDTH / 3, HEIGHT);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            function gameLoop() {
+                if (gameState !== 'PLAYING') return;
+
+                ctx.save();
+                if (shake > 1) {
+                    ctx.translate(Math.random() * shake - shake / 2, Math.random() * shake - shake / 2);
+                }
+
+                ctx.clearRect(-100, -100, WIDTH + 200, HEIGHT + 200);
+
+                drawBackground();
+                spawnWave();
+
+                entities = entities.filter(e => !e.update());
+                entities.forEach(e => e.draw());
+
+                updateBullets();
+                bullets.forEach(b => b.draw());
+
+                updatePlayer();
+                drawPlayer();
+
+                ctx.restore();
+
+                frame++;
+                requestAnimationFrame(gameLoop);
+            }
+
+            function startGame() {
+                score = 1;
+                bullets = [];
+                entities = [];
+                frame = 0;
+                gameState = 'PLAYING';
+                startScreen.classList.add('hidden');
+                gameOverScreen.classList.add('hidden');
+                gameLoop();
+            }
+
+            function endGame() {
+                gameState = 'GAMEOVER';
+                gameOverScreen.classList.remove('hidden');
+            }
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                targetX = Math.max(50, Math.min(WIDTH - 50, x));
+            });
+
+            canvas.addEventListener('click', () => {
+                if (gameState === 'START') startGame();
+            });
+
+            restartBtn.addEventListener('click', startGame);
+
+            // 初期化完了メッセージ
+            console.log("Game initialized and ready.");
+        })();
+    </script>
+</body>
+
+</html>

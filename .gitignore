@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.log
+.vscode/
+.gemini/
+dist/
+build/
+.env
+*.local
+.agents/
+.agent/
+_agents/
+_agent/
