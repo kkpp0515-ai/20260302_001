@@ -4,21 +4,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('sendBtn');
     const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
+    // Modal elements
+    const nameModal = document.getElementById('nameModal');
+    const startChatBtn = document.getElementById('startChatBtn');
+    const ojisanNameInput = document.getElementById('ojisanNameInput');
+    const userNameInput = document.getElementById('userNameInput');
+    const headerOjisanName = document.getElementById('headerOjisanName');
+
+    let ojisanName = "誠";
+    let userName = "美香";
+    let messageCount = 0;
+
+    // --- Modal Logic ---
+    startChatBtn.addEventListener('click', () => {
+        ojisanName = ojisanNameInput.value.trim() || "誠";
+        userName = userNameInput.value.trim() || "美香";
+
+        headerOjisanName.innerText = `${ojisanName}✨😃`;
+        nameModal.style.display = 'none';
+        document.body.classList.remove('is-modal-open');
+
+        // Initial greeting
+        showTypingIndicator();
+        setTimeout(() => {
+            hideTypingIndicator();
+            const initialMsg = `${userName}チャン、オハヨウ😃❗今日ハ何シテルノカナ❓✨`;
+            appendMessage(initialMsg, 'received');
+        }, 1000);
+    });
+
     // Ojisan configuration
     const EMOJIS = ['❗', '❓', '💦', '😃', '✨', '🍰', '🎵', '😜', '💕', '✋', '💡', '🍴', '🏨'];
-    const GREETINGS = [
-        'オハヨウ😃❗',
-        'コンバンハ✨🎵',
-        'ヤッホー😜',
-        '〇〇チャン、オツカレサマ〜✋✨',
-        '今日ハ何シテルノカナ❓💦'
-    ];
-    const FOLLOWUPS = [
-        '今度ゴハンでも行こうヨ🍴✨',
-        '返信待ってるネ😜💕',
-        'ボクも応援シテルヨ🎵',
-        '無理シナイデネ💦💡'
-    ];
+    const OJISAN_NAMES_POOL = ['太郎', '健一', '誠', 'ひろし', 'よしお'];
+    const MEALS = ['イタリアン', 'お寿司', 'ステーキ', '居酒屋', 'カフェ'];
 
     // Auto-resize textarea
     userInput.addEventListener('input', () => {
@@ -42,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.value = '';
         userInput.style.height = 'auto';
         sendBtn.classList.remove('active');
+        messageCount++;
 
         // Ojisan Reply (Delayed)
         showTypingIndicator();
@@ -112,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showTypingIndicator() {
         const div = document.createElement('div');
         div.id = 'typingIndicator';
-        div.className = 'typing-indicator recibed';
+        div.className = 'typing-indicator received';
         div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
         chatHistory.appendChild(div);
         chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -124,17 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Ojisan Logic ---
-    const OJISAN_NAMES = ['太郎', '健一', '誠', 'ひろし', 'よしお'];
-    const MEALS = ['イタリアン', 'お寿司', 'ステーキ', '居酒屋', 'カフェ'];
-
     function generateOjisanResponse(inputText) {
-        const randomName = OJISAN_NAMES[Math.floor(Math.random() * OJISAN_NAMES.length)];
         const randomMeal = MEALS[Math.floor(Math.random() * MEALS.length)];
         const addEmoji = () => EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
 
         // Rule-based expansion
         const greetings = [
-            `〇〇チャン、オハヨウ😃❗`,
+            `${userName}チャン、オハヨウ😃❗`,
             `コンニチハ✨今日もいい天気だネ🎵`,
             `元気カナ❓💦`,
             `ヤッホー😜✨`,
@@ -143,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const followups = [
             `今度${randomMeal}でも行こうヨ🍴✨`,
-            `ボクも〇〇チャンのこと応援シテルヨ🎵`,
+            `ボクも${userName}チャンのこと応援シテルヨ🎵`,
             `無理シナイデネ💦💡`,
             `連絡待ってるネ😜💕`,
             `またゆっくりお話ししたいナ✨`
@@ -185,10 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         base = words.join('');
 
+        // Special ROAS message (every 3 messages)
+        if (messageCount % 3 === 0) {
+            base += `💦\nデモ、チャンとお仕事もしテ、ROASをチャンと出サナイトネ(^_^;)${addEmoji()}`;
+        }
+
         const greeting = greetings[Math.floor(Math.random() * greetings.length)];
         const followup = followups[Math.floor(Math.random() * followups.length)];
 
-        // Randomly capitalize/katakana-ize names if present
         return `${greeting}${addEmoji()}\n${base}${addEmoji()}${addEmoji()}\n${followup}${addEmoji()}`;
     }
 });

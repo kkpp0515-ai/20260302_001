@@ -11,7 +11,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="is-modal-open">
+    <!-- Registration Modal -->
+    <div id="nameModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">プロフィール設定 ✨</h2>
+            <div class="input-group">
+                <label>オジサンの名前</label>
+                <input type="text" id="ojisanNameInput" placeholder="例：誠、ひろし、部長" value="誠">
+            </div>
+            <div class="input-group">
+                <label>あなたの名前</label>
+                <input type="text" id="userNameInput" placeholder="例：美香、さくら" value="美香">
+            </div>
+            <button id="startChatBtn" class="modal-btn">チャットを開始する 💖</button>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- LINE-style Header -->
         <header class="chat-header">
@@ -25,7 +41,7 @@
                     <div class="avatar-fallback">👴</div>
                 </div>
                 <div class="user-info">
-                    <h1 class="user-name">オジサン✨😃</h1>
+                    <h1 id="headerOjisanName" class="user-name">オジサン✨😃</h1>
                     <span class="status">オンライン</span>
                 </div>
             </div>
@@ -54,17 +70,9 @@
 
         <!-- Chat History -->
         <main class="chat-history" id="chatHistory">
-            <div class="date-divider">2026年3月2日(月)</div>
+            <div class="date-divider">2026年3月3日(火)</div>
 
-            <div class="message-group received">
-                <div class="avatar">👴</div>
-                <div class="message-content">
-                    <div class="message-bubble">
-                        コンニチハ😃❗今日はナニシテルノカナ❓✨
-                    </div>
-                    <span class="timestamp">16:00</span>
-                </div>
-            </div>
+            <!-- First message will be injected by JS after naming -->
         </main>
 
         <!-- Quick Suggestions -->
