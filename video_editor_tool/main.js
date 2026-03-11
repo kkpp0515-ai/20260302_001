@@ -15,6 +15,7 @@ class VideoCompositor {
             character: { element: null, type: null, x: 0, y: 0, scale: 1, opacity: 1, chromaKey: false, chromaColor: '#00ff00', tolerance: 0.1 }
         };
 
+        this.lastTemplateData = null; // Store for Reset function
         // Off-screen canvas for pixel manipulation (Chroma Key)
         this.offCanvas = document.createElement('canvas');
         this.offCtx = this.offCanvas.getContext('2d', { willReadFrequently: true });
@@ -65,28 +66,21 @@ class VideoCompositor {
             });
         });
 
-        // Chroma Key
+        // Chroma Key (Simplified)
         document.getElementById('chroma-toggle').addEventListener('change', (e) => {
             this.layers[this.selectedLayer].chromaKey = e.target.checked;
         });
         document.getElementById('chroma-color').addEventListener('input', (e) => {
             this.layers[this.selectedLayer].chromaColor = e.target.value;
         });
-        document.getElementById('chroma-tolerance').addEventListener('input', (e) => {
-            this.layers[this.selectedLayer].tolerance = parseFloat(e.target.value);
-        });
 
-        // Resolution
-        document.getElementById('resolution').addEventListener('change', (e) => {
-            const [w, h] = e.target.value.split('x').map(Number);
-            this.resolution = { width: w, height: h };
-            this.resizeCanvas();
-            // Automatically center all layers on resolution change
-            Object.keys(this.layers).forEach(k => {
-                this.layers[k].x = 0;
-                this.layers[k].y = 0;
-            });
-            this.syncControls();
+        // Reset to AE Template
+        document.getElementById('update-te-btn').addEventListener('click', () => {
+            if (this.lastTemplateData) {
+                this.applyTemplate(this.lastTemplateData);
+            } else {
+                alert("テンプレートが読み込まれていません。");
+            }
         });
 
         // Center Action
@@ -137,10 +131,9 @@ class VideoCompositor {
         document.getElementById('scale').value = layer.scale;
         document.getElementById('chroma-toggle').checked = layer.chromaKey;
         document.getElementById('chroma-color').value = layer.chromaColor;
-        document.getElementById('chroma-tolerance').value = layer.tolerance;
 
-        const layerTitle = { 'background': '背景 / 動画', 'character': '素材 / 帯' };
-        document.querySelector('.control-title-active').textContent = `編集中のレイヤー: ${layerTitle[this.selectedLayer]}`;
+        const layerTitle = { 'background': '背景動画', 'character': '置換キャラクター' };
+        document.querySelector('.control-title-active').textContent = `${layerTitle[this.selectedLayer]} の調整`;
     }
 
     handleUpload(event, layerKey) {
@@ -229,6 +222,7 @@ class VideoCompositor {
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
+                this.lastTemplateData = data; // Save for reset
                 this.applyTemplate(data);
                 alert(`テンプレート "${data.comp.name}" を読み込みました。`);
             } catch (err) {
