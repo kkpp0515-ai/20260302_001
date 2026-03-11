@@ -187,6 +187,17 @@ input[type="file"] {
 
 .control-group[data-layer] {
     cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.control-group[data-layer]:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.control-group[data-layer].active {
+    background: rgba(63, 131, 248, 0.1);
+    border-color: var(--primary);
 }
 
 .control-title-active {

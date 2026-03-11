@@ -1,6 +1,6 @@
 /**
- * Premium Video Compositor Logic
- * Handles real-time canvas compositing and video export
+ * Template-based Video Character Replacer
+ * Focuses on AE Template JSON import and manual character adjustment.
  */
 
 class VideoCompositor {
@@ -9,11 +9,10 @@ class VideoCompositor {
         this.ctx = this.canvas.getContext('2d');
         this.container = document.getElementById('canvas-container');
 
-        // Layers
+        // Layers (Simplified to just Background and Character)
         this.layers = {
             background: { element: null, type: null, x: 0, y: 0, scale: 1, opacity: 1, chromaKey: false, chromaColor: '#00ff00', tolerance: 0.1 },
-            character: { element: null, type: null, x: 0, y: 0, scale: 1, opacity: 1, chromaKey: false, chromaColor: '#00ff00', tolerance: 0.1 },
-            overlay: { element: null, type: null, x: 0, y: 0, scale: 1, opacity: 1, chromaKey: false, chromaColor: '#00ff00', tolerance: 0.1 }
+            character: { element: null, type: null, x: 0, y: 0, scale: 1, opacity: 1, chromaKey: false, chromaColor: '#00ff00', tolerance: 0.1 }
         };
 
         // Off-screen canvas for pixel manipulation (Chroma Key)
@@ -39,21 +38,26 @@ class VideoCompositor {
         // File Uploads
         document.getElementById('bg-upload').addEventListener('change', (e) => this.handleUpload(e, 'background'));
         document.getElementById('char-upload').addEventListener('change', (e) => this.handleUpload(e, 'character'));
-        document.getElementById('overlay-upload').addEventListener('change', (e) => this.handleUpload(e, 'overlay'));
+        document.getElementById('template-upload').addEventListener('change', (e) => this.handleTemplateUpload(e));
 
-        // Layer Selection
-        const layerControls = document.querySelectorAll('.control-group[data-layer]');
+        // Layer Selection (Background or Character)
+        const layerControls = [
+            document.querySelector('.control-group[data-layer="background"]'),
+            document.querySelector('.control-group[data-layer="character"]')
+        ];
+
         layerControls.forEach(group => {
+            if (!group) return;
             group.addEventListener('click', () => {
-                layerControls.forEach(g => g.classList.remove('active'));
+                layerControls.forEach(g => g?.classList.remove('active'));
                 group.classList.add('active');
                 this.selectedLayer = group.dataset.layer;
                 this.syncControls();
             });
         });
 
-        // Shared Controls
-        ['posX', 'posY', 'scale', 'opacity'].forEach(id => {
+        // Controls
+        ['posX', 'posY', 'scale'].forEach(id => {
             document.getElementById(id).addEventListener('input', (e) => {
                 const layer = this.layers[this.selectedLayer];
                 const key = id.replace('pos', '').toLowerCase();
@@ -61,7 +65,7 @@ class VideoCompositor {
             });
         });
 
-        // Chroma Key Controls
+        // Chroma Key
         document.getElementById('chroma-toggle').addEventListener('change', (e) => {
             this.layers[this.selectedLayer].chromaKey = e.target.checked;
         });
@@ -85,9 +89,7 @@ class VideoCompositor {
             this.syncControls();
         });
 
-        // Quick Actions
-        document.getElementById('fit-v-btn').addEventListener('click', () => this.fitLayer('height'));
-        document.getElementById('fit-h-btn').addEventListener('click', () => this.fitLayer('width'));
+        // Center Action
         document.getElementById('center-btn').addEventListener('click', () => {
             const layer = this.layers[this.selectedLayer];
             layer.x = 0;
@@ -98,6 +100,7 @@ class VideoCompositor {
         document.getElementById('play-pause-btn').addEventListener('click', () => this.togglePlayback());
         document.getElementById('export-btn').addEventListener('click', () => this.exportVideo());
 
+        // Drag & Drop Positioning
         let isDragging = false;
         let lastX, lastY;
         this.canvas.addEventListener('mousedown', (e) => {
@@ -117,8 +120,9 @@ class VideoCompositor {
             const layer = this.layers[this.selectedLayer];
             layer.x += dx * scaleX;
             layer.y += dy * scaleY;
-            document.getElementById('posX').value = layer.x;
-            document.getElementById('posY').value = layer.y;
+
+            this.syncControls();
+
             lastX = e.clientX;
             lastY = e.clientY;
         });
@@ -131,12 +135,11 @@ class VideoCompositor {
         document.getElementById('posX').value = layer.x;
         document.getElementById('posY').value = layer.y;
         document.getElementById('scale').value = layer.scale;
-        document.getElementById('opacity').value = layer.opacity;
         document.getElementById('chroma-toggle').checked = layer.chromaKey;
         document.getElementById('chroma-color').value = layer.chromaColor;
         document.getElementById('chroma-tolerance').value = layer.tolerance;
 
-        const layerTitle = { 'background': '背景 / 動画', 'character': '素材 / 帯', 'overlay': '前景 / ロゴ' };
+        const layerTitle = { 'background': '背景 / 動画', 'character': '素材 / 帯' };
         document.querySelector('.control-title-active').textContent = `編集中のレイヤー: ${layerTitle[this.selectedLayer]}`;
     }
 
@@ -148,18 +151,18 @@ class VideoCompositor {
         const isVideo = file.type.startsWith('video') || file.name.toLowerCase().endsWith('.mov');
         const type = isVideo ? 'video' : 'image';
 
-        const setupElement = (el, isError = false) => {
+        const setupElement = (el) => {
             this.layers[layerKey].element = el;
-            this.layers[layerKey].type = isError ? 'placeholder' : type;
+            this.layers[layerKey].type = type;
             this.layers[layerKey].x = 0;
             this.layers[layerKey].y = 0;
             this.layers[layerKey].scale = 1;
 
-            if (layerKey === 'background' && !isError) {
+            if (layerKey === 'background') {
                 this.duration = Math.max(this.duration, el.duration || 0);
             }
 
-            if (type === 'video' && !isError) {
+            if (type === 'video') {
                 setTimeout(() => {
                     try {
                         const posterCanvas = document.createElement('canvas');
@@ -173,21 +176,6 @@ class VideoCompositor {
             }
 
             this.selectedLayer = layerKey;
-
-            // Smart auto-fit for new uploads
-            if (layerKey === 'background' || !isError) {
-                // For main videos/backgrounds, fit to canvas height by default
-                // This is useful for placing vertical video in square/landscape
-                const elW = el.videoWidth || el.width;
-                const elH = el.videoHeight || el.height;
-
-                // If it's a vertical video and target is not vertical, fit height
-                if (elH > elW && this.canvas.height < this.canvas.width) {
-                    this.layers[layerKey].scale = this.canvas.height / elH;
-                } else if (elW > elH && this.canvas.width < this.canvas.height) {
-                    this.layers[layerKey].scale = this.canvas.width / elW;
-                }
-            }
 
             document.querySelectorAll('.control-group[data-layer]').forEach(g => {
                 g.classList.remove('active');
@@ -205,7 +193,17 @@ class VideoCompositor {
                 console.error("Video load error: Browser likely doesn't support the codec (e.g., ProRes .mov)");
                 // Create a placeholder visual
                 const placeholder = { width: 1280, height: 720, isPlaceholder: true, name: file.name };
-                setupElement(placeholder, true);
+                this.layers[layerKey].element = placeholder;
+                this.layers[layerKey].type = 'placeholder';
+                this.layers[layerKey].x = 0;
+                this.layers[layerKey].y = 0;
+                this.layers[layerKey].scale = 1;
+                this.selectedLayer = layerKey;
+                document.querySelectorAll('.control-group[data-layer]').forEach(g => {
+                    g.classList.remove('active');
+                    if (g.dataset.layer === layerKey) g.classList.add('active');
+                });
+                this.syncControls();
                 alert(`通知: この動画ファイル (${file.name}) はブラウザで直接再生できない形式です。\n\n「位置合わせ用の箱」として読み込みました。このまま位置調整は可能ですが、書き出し時に反映させるには「WebM形式」での書き出しを推奨します。`);
             };
 
@@ -223,39 +221,62 @@ class VideoCompositor {
         }
     }
 
-    resizeCanvas() {
-        this.canvas.width = this.resolution.width;
-        this.canvas.height = this.resolution.height;
+    handleTemplateUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                this.applyTemplate(data);
+                alert(`テンプレート "${data.comp.name}" を読み込みました。`);
+            } catch (err) {
+                alert("テンプレートファイルの読み込みに失敗しました。");
+            }
+        };
+        reader.readAsText(file);
     }
 
-    fitLayer(dimension) {
-        const layer = this.layers[this.selectedLayer];
-        if (!layer.element) return;
+    applyTemplate(data) {
+        if (!data || !data.comp || !data.layers) return;
 
-        const elW = layer.element.videoWidth || layer.element.width;
-        const elH = layer.element.videoHeight || layer.element.height;
+        this.resolution = { width: data.comp.width, height: data.comp.height };
+        this.resizeCanvas();
 
-        if (dimension === 'height') {
-            layer.scale = this.canvas.height / elH;
-        } else {
-            layer.scale = this.canvas.width / elW;
-        }
+        // Apply Layer Transforms
+        data.layers.forEach(templateLayer => {
+            const name = templateLayer.name.toLowerCase();
+            let targetKey = null;
 
-        layer.x = 0;
-        layer.y = 0;
+            if (name.includes('character')) targetKey = 'character';
+            else if (name.includes('bg') || name.includes('background')) targetKey = 'background';
+
+            if (targetKey) {
+                const layer = this.layers[targetKey];
+
+                // AE Coordinates to Canvas Coordinates
+                // AE center is (width/2, height/2). 
+                // Our internal layer.x/y is relative to canvas center.
+                // AE pos is absolute from top-left.
+                const aePosX = templateLayer.position[0];
+                const aePosY = templateLayer.position[1];
+
+                layer.x = aePosX - (data.comp.width / 2);
+                layer.y = aePosY - (data.comp.height / 2);
+
+                // AE Scale is percentage (100 = 1.0)
+                layer.scale = templateLayer.scale[0] / 100;
+                layer.opacity = templateLayer.opacity / 100;
+            }
+        });
+
         this.syncControls();
     }
 
-    updateGuide() {
-        const guide = document.getElementById('transform-guide');
-        const layer = this.layers[this.selectedLayer];
-        if (!layer.element) {
-            guide.classList.add('hidden');
-            return;
-        }
-
-        guide.classList.remove('hidden');
-        // Guide logic would go here to show a rect on screen
+    resizeCanvas() {
+        this.canvas.width = this.resolution.width;
+        this.canvas.height = this.resolution.height;
     }
 
     togglePlayback() {
@@ -268,8 +289,6 @@ class VideoCompositor {
         if (this.layers.background.element && this.layers.background.type === 'video') {
             this.layers.background.element[playMethod]().catch(() => { });
         }
-
-        // Character and Overlay stay static in preview as per request
     }
 
     startRenderLoop() {
@@ -286,7 +305,6 @@ class VideoCompositor {
 
         this.drawLayer('background');
         this.drawLayer('character');
-        this.drawLayer('overlay');
 
         this.updateTimeline();
     }
@@ -458,7 +476,7 @@ class VideoCompositor {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `composite_export_${Date.now()}.${extension}`;
+            a.download = `template_export_${Date.now()}.${extension}`;
             a.click();
             overlay.classList.add('hidden');
             this.isExporting = false;
