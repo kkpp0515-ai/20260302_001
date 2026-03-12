@@ -1,0 +1,5 @@
+{
+    "title": "Campaign Analyzer",
+    "icon": "📊",
+    "description": "CSVデータからキャンペーンの優先順位を分析。ダッシュボード付き。"
+}
