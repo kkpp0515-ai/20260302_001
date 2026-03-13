@@ -2,7 +2,7 @@
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
-  <title>動画リサイズ＆帯合成ツール v2.6 [Filename Master]</title>
+  <title>動画リサイズ＆帯合成ツール v2.7 [Filename Master]</title>
   <style>
     :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class='sidebar'>
-  <h1>🎬 動画リサイズ v2.6</h1>
+  <h1>🎬 動画リサイズ v2.7</h1>
   <div class='section'>
     <h3>1. 動画をアップロード</h3>
     <button class='btn-danger' onclick='clearVideo()'>削除</button>
@@ -217,11 +217,8 @@
     if (v) { 
       ctx.globalAlpha = isEx ? 1.0 : 0.8;
       if (useEndCard) {
-        // エンドカードは基本的に中央にフィットさせる（または全画面）
-        const scale = Math.max(s.w / vW, s.h / vH);
-        const x = (s.w - vW * scale) / 2;
-        const y = (s.h - vH * scale) / 2;
-        ctx.drawImage(v, x, y, vW * scale, vH * scale);
+        // メイン動画と全く同じ枠組み（位置・サイズ）で描画する
+        ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs);
       } else {
         ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs); 
       }
@@ -246,18 +243,24 @@
   async function exportVideo(k) {
     const s = state.slots[k]; const card = document.getElementById('card-' + k); const fill = card.querySelector('.progress-fill'); card.querySelector('.progress-bar').style.display = 'block';
     if(!aCtx) aCtx = new AudioContext();
+    if(aCtx.state === 'suspended') await aCtx.resume();
+    
+    // 既存のソースが古い可能性を考慮（動画変更時など）して安全に取得
     if(!aSource && state.video) aSource = aCtx.createMediaElementSource(state.video);
     if(!aEndSource && state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
     
     const dest = aCtx.createMediaStreamDestination();
-    [aSource, aEndSource].forEach(src => {
-      if (src && src.numberOfOutputs > 0) {
-        src.connect(dest);
-        src.connect(aCtx.destination);
-      }
-    });
+    try {
+      if(aSource && aSource.numberOfOutputs > 0) aSource.connect(dest);
+      if(aSource) aSource.connect(aCtx.destination);
+      if(aEndSource && aEndSource.numberOfOutputs > 0) aEndSource.connect(dest);
+      if(aEndSource) aEndSource.connect(aCtx.destination);
+    } catch(e) { console.warn("Audio connection skipped:", e); }
 
-    const stream = s.canvas.captureStream(30); const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+    const stream = s.canvas.captureStream(30); 
+    // 音声トラックを確実に取得
+    const audioTracks = dest.stream.getAudioTracks();
+    const combined = new MediaStream([...stream.getVideoTracks(), ...audioTracks]);
     
     const types = ['video/mp4;codecs=h264,aac','video/mp4;codecs=h264','video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus'];
     let selectedType = 'video/webm';
