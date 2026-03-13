@@ -2,7 +2,7 @@
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
-  <title>動画リサイズ＆帯合成ツール v3.1 [Filename Master]</title>
+  <title>動画リサイズ＆帯合成ツール v3.2 [Filename Master]</title>
   <style>
     :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class='sidebar'>
-  <h1>🎬 動画リサイズ v3.1</h1>
+  <h1>🎬 動画リサイズ v3.2</h1>
   <div class='section'>
     <h3>1. 動画をアップロード</h3>
     <button class='btn-danger' onclick='clearVideo()'>削除</button>
@@ -224,6 +224,11 @@
       const snapped = s.hole && Math.abs(s.vx - s.hole.x) < 1 && Math.abs(s.vy - s.hole.y) < 1;
       document.getElementById('card-' + k).classList.toggle('snapped', snapped);
     }
+  }
+  function checkReady() { 
+    const ok = !!state.video.src && state.video.src !== '';
+    document.getElementById('exportAllBtn').disabled = !ok;
+    document.querySelectorAll('.save-single').forEach(b => { b.disabled = !ok; });
   }
   async function ensureAudio() {
     if (!aCtx) {
