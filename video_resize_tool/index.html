@@ -2,7 +2,7 @@
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
-  <title>動画リサイズ＆帯合成ツール v2.5 [Filename Master]</title>
+  <title>動画リサイズ＆帯合成ツール v2.6 [Filename Master]</title>
   <style>
     :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class='sidebar'>
-  <h1>🎬 動画リサイズ v2.5</h1>
+  <h1>🎬 動画リサイズ v2.6</h1>
   <div class='section'>
     <h3>1. 動画をアップロード</h3>
     <button class='btn-danger' onclick='clearVideo()'>削除</button>
@@ -250,9 +250,12 @@
     if(!aEndSource && state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
     
     const dest = aCtx.createMediaStreamDestination();
-    if(aSource && aSource.numberOfOutputs > 0) aSource.connect(dest);
-    if(aEndSource && aEndSource.numberOfOutputs > 0) aEndSource.connect(dest);
-    dest.connect(aCtx.destination);
+    [aSource, aEndSource].forEach(src => {
+      if (src && src.numberOfOutputs > 0) {
+        src.connect(dest);
+        src.connect(aCtx.destination);
+      }
+    });
 
     const stream = s.canvas.captureStream(30); const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
     
