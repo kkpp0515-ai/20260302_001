@@ -184,8 +184,9 @@
     v.onloadedmetadata = () => { 
       state.video = v; state.vW = v.videoWidth; state.vH = v.videoHeight; 
       document.getElementById('videoInfo').innerText = 'サイズ: ' + state.vW + 'x' + state.vH; 
-      v.currentTime = 0.5; 
-      // 初回のシーク完了時のみ自動フィットを実行する
+      v.currentTime = 0.5;
+      checkReady(); // とりあえず即座に状態更新
+      
       const onInitialSeek = () => {
         Object.keys(state.slots).forEach(k => { if(state.slots[k].obi) autoFit(k); else drawSlot(k); });
         checkReady();
@@ -232,7 +233,16 @@
       document.getElementById('card-' + k).classList.toggle('snapped', snapped);
     }
   }
-  function checkReady() { const ok = state.video && Object.values(state.slots).some(s => s.obi); document.getElementById('exportAllBtn').disabled = !ok; document.querySelectorAll('.save-single').forEach(b => b.disabled = !(state.video && state.slots[b.dataset.size].obi)); }
+  function checkReady() { 
+    const ok = state.video && Object.values(state.slots).some(s => s.obi); 
+    document.getElementById('exportAllBtn').disabled = !ok;
+    
+    document.querySelectorAll('.save-single').forEach(b => {
+      const k = b.dataset.size;
+      const s = state.slots[k];
+      b.disabled = !(state.video && s && s.obi);
+    });
+  }
   async function exportVideo(k) {
     const s = state.slots[k]; const card = document.getElementById('card-' + k); const fill = card.querySelector('.progress-fill'); card.querySelector('.progress-bar').style.display = 'block';
     if(!aCtx) aCtx = new AudioContext();
