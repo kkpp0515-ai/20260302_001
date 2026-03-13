@@ -2,7 +2,7 @@
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
-  <title>動画リサイズ＆帯合成ツール v2.7 [Filename Master]</title>
+  <title>動画リサイズ＆帯合成ツール v2.8 [Filename Master]</title>
   <style>
     :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class='sidebar'>
-  <h1>🎬 動画リサイズ v2.7</h1>
+  <h1>🎬 動画リサイズ v2.8</h1>
   <div class='section'>
     <h3>1. 動画をアップロード</h3>
     <button class='btn-danger' onclick='clearVideo()'>削除</button>
@@ -197,7 +197,7 @@
   };
   document.getElementById('endCardInput').onchange = (e) => {
     const f = e.target.files[0]; if(!f) return;
-    const v = document.createElement('video'); v.src = URL.createObjectURL(f); v.muted = true;
+    const v = document.createElement('video'); v.src = URL.createObjectURL(f); v.muted = true; v.crossOrigin = 'anonymous';
     v.onloadedmetadata = () => { 
       state.endCard = v; state.ecW = v.videoWidth; state.ecH = v.videoHeight;
       document.getElementById('endCardInfo').innerText = 'サイズ: ' + state.ecW + 'x' + state.ecH;
@@ -216,14 +216,9 @@
     ctx.fillStyle = isEx ? '#000' : 'rgba(0,0,0,0.3)'; ctx.fillRect(0, 0, s.w, s.h);
     if (v) { 
       ctx.globalAlpha = isEx ? 1.0 : 0.8;
-      if (useEndCard) {
-        // メイン動画と全く同じ枠組み（位置・サイズ）で描画する
-        ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs);
-      } else {
-        ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs); 
-      }
+      ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs);
     }
-    if (s.obi && !useEndCard) { ctx.globalAlpha = isEx ? 1.0 : 0.5; ctx.drawImage(s.obi, 0, 0, s.w, s.h); }
+    if (s.obi) { ctx.globalAlpha = isEx ? 1.0 : 0.5; ctx.drawImage(s.obi, 0, 0, s.w, s.h); }
     ctx.restore();
     if (!useEndCard) {
       const snapped = s.hole && Math.abs(s.vx - s.hole.x) < 1 && Math.abs(s.vy - s.hole.y) < 1;
@@ -245,24 +240,23 @@
     if(!aCtx) aCtx = new AudioContext();
     if(aCtx.state === 'suspended') await aCtx.resume();
     
-    // 既存のソースが古い可能性を考慮（動画変更時など）して安全に取得
-    if(!aSource && state.video) aSource = aCtx.createMediaElementSource(state.video);
-    if(!aEndSource && state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
+    // ソースの再作成（以前の接続が残っている場合があるため）
+    if(aSource) { try { aSource.disconnect(); } catch(e){} }
+    if(aEndSource) { try { aEndSource.disconnect(); } catch(e){} }
+    aSource = aCtx.createMediaElementSource(state.video);
+    if(state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
     
     const dest = aCtx.createMediaStreamDestination();
-    try {
-      if(aSource && aSource.numberOfOutputs > 0) aSource.connect(dest);
-      if(aSource) aSource.connect(aCtx.destination);
-      if(aEndSource && aEndSource.numberOfOutputs > 0) aEndSource.connect(dest);
-      if(aEndSource) aEndSource.connect(aCtx.destination);
-    } catch(e) { console.warn("Audio connection skipped:", e); }
+    if(aSource) { aSource.connect(dest); aSource.connect(aCtx.destination); }
+    if(aEndSource) { aEndSource.connect(dest); aEndSource.connect(aCtx.destination); }
 
     const stream = s.canvas.captureStream(30); 
-    // 音声トラックを確実に取得
-    const audioTracks = dest.stream.getAudioTracks();
-    const combined = new MediaStream([...stream.getVideoTracks(), ...audioTracks]);
+    // 音声トラックを合成（少し待機して安定させる）
+    await new Promise(r => setTimeout(r, 100));
+    const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
     
-    const types = ['video/mp4;codecs=h264,aac','video/mp4;codecs=h264','video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus'];
+    // MP4を最優先
+    const types = ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=h264,opus','video/webm'];
     let selectedType = 'video/webm';
     for (const t of types) { if (MediaRecorder.isTypeSupported(t)) { selectedType = t; break; } }
 
