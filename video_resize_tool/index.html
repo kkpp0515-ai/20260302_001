@@ -2,7 +2,7 @@
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
-  <title>動画リサイズ＆帯合成ツール v2.8 [Filename Master]</title>
+  <title>動画リサイズ＆帯合成ツール v2.9 [Filename Master]</title>
   <style>
     :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class='sidebar'>
-  <h1>🎬 動画リサイズ v2.8</h1>
+  <h1>🎬 動画リサイズ v2.9</h1>
   <div class='section'>
     <h3>1. 動画をアップロード</h3>
     <button class='btn-danger' onclick='clearVideo()'>削除</button>
@@ -111,7 +111,7 @@
   </div>
 </div>
 <script>
-  let aCtx = null; let aSource = null; let aEndSource = null;
+  let aCtx = null; let aSource = null; let aEndSource = null; let aDest = null;
   const state = { video: null, endCard: null, vW: 0, vH: 0, ecW: 0, ecH: 0, baseFilename: 'video',
     slots: {
       '1080x1080': { w: 1080, h: 1080, obi: null, vx: 0, vy: 0, vs: 1.0, hole: null, canvas: null, ctx: null, blob: null },
@@ -184,8 +184,18 @@
     v.onloadedmetadata = () => { 
       state.video = v; state.vW = v.videoWidth; state.vH = v.videoHeight; 
       document.getElementById('videoInfo').innerText = 'サイズ: ' + state.vW + 'x' + state.vH; 
+      
+      // Audioの初期化（一度だけ）
+      if (!aCtx) {
+        aCtx = new AudioContext();
+        aDest = aCtx.createMediaStreamDestination();
+        aSource = aCtx.createMediaElementSource(v);
+        aSource.connect(aDest);
+        aSource.connect(aCtx.destination);
+      }
+
       v.currentTime = 0.5;
-      checkReady(); // とりあえず即座に状態更新
+      checkReady();
       
       const onInitialSeek = () => {
         Object.keys(state.slots).forEach(k => { if(state.slots[k].obi) autoFit(k); else drawSlot(k); });
@@ -201,6 +211,13 @@
     v.onloadedmetadata = () => { 
       state.endCard = v; state.ecW = v.videoWidth; state.ecH = v.videoHeight;
       document.getElementById('endCardInfo').innerText = 'サイズ: ' + state.ecW + 'x' + state.ecH;
+      
+      // EndCard用の音声接続（一度だけ）
+      if (aCtx && !aEndSource) {
+        aEndSource = aCtx.createMediaElementSource(v);
+        aEndSource.connect(aDest);
+        aEndSource.connect(aCtx.destination);
+      }
       checkReady();
     };
   };
@@ -237,23 +254,11 @@
   }
   async function exportVideo(k) {
     const s = state.slots[k]; const card = document.getElementById('card-' + k); const fill = card.querySelector('.progress-fill'); card.querySelector('.progress-bar').style.display = 'block';
-    if(!aCtx) aCtx = new AudioContext();
     if(aCtx.state === 'suspended') await aCtx.resume();
     
-    // ソースの再作成（以前の接続が残っている場合があるため）
-    if(aSource) { try { aSource.disconnect(); } catch(e){} }
-    if(aEndSource) { try { aEndSource.disconnect(); } catch(e){} }
-    aSource = aCtx.createMediaElementSource(state.video);
-    if(state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
-    
-    const dest = aCtx.createMediaStreamDestination();
-    if(aSource) { aSource.connect(dest); aSource.connect(aCtx.destination); }
-    if(aEndSource) { aEndSource.connect(dest); aEndSource.connect(aCtx.destination); }
-
     const stream = s.canvas.captureStream(30); 
-    // 音声トラックを合成（少し待機して安定させる）
-    await new Promise(r => setTimeout(r, 100));
-    const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+    // 合成ストリーム作成（音声トラックが確実にaDestから供給される）
+    const combined = new MediaStream([...stream.getVideoTracks(), ...aDest.stream.getAudioTracks()]);
     
     // MP4を最優先
     const types = ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=h264,opus','video/webm'];
