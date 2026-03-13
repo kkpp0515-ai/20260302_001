@@ -175,7 +175,18 @@
     });
 
     const v = document.createElement('video'); v.src = URL.createObjectURL(f); v.muted = true; v.crossOrigin = 'anonymous';
-    v.onloadedmetadata = () => { state.video = v; state.vW = v.videoWidth; state.vH = v.videoHeight; document.getElementById('videoInfo').innerText = 'サイズ: ' + state.vW + 'x' + state.vH; v.currentTime = 0.5; v.onseeked = () => { Object.keys(state.slots).forEach(k => { if(state.slots[k].obi) autoFit(k); else drawSlot(k); }); checkReady(); }; };
+    v.onloadedmetadata = () => { 
+      state.video = v; state.vW = v.videoWidth; state.vH = v.videoHeight; 
+      document.getElementById('videoInfo').innerText = 'サイズ: ' + state.vW + 'x' + state.vH; 
+      v.currentTime = 0.5; 
+      // 初回のシーク完了時のみ自動フィットを実行する
+      const onInitialSeek = () => {
+        Object.keys(state.slots).forEach(k => { if(state.slots[k].obi) autoFit(k); else drawSlot(k); });
+        checkReady();
+        v.removeEventListener('seeked', onInitialSeek);
+      };
+      v.addEventListener('seeked', onInitialSeek);
+    };
   };
   function clearVideo() { state.video = null; document.getElementById('videoInput').value = ''; document.getElementById('videoInfo').innerText = '削除済み'; Object.keys(state.slots).forEach(k => drawSlot(k)); checkReady(); }
   function clearObi(k) { state.slots[k].obi = null; state.slots[k].hole = null; document.getElementById('input-' + k).value = ''; drawSlot(k); checkReady(); }
@@ -194,8 +205,28 @@
     if(!aCtx) { aCtx = new AudioContext(); aSource = aCtx.createMediaElementSource(state.video); }
     const dest = aCtx.createMediaStreamDestination(); aSource.connect(dest); aSource.connect(aCtx.destination);
     const stream = s.canvas.captureStream(30); const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-    const rec = new MediaRecorder(combined, { mimeType: 'video/webm;codecs=vp8,opus' }); const chunks = [];
-    rec.ondataavailable = e => chunks.push(e.data); const done = new Promise(res => rec.onstop = () => res(new Blob(chunks, { type: 'video/webm' })));
+    
+    // サポートされているMIMEタイプを優先順位順に確認
+    const types = [
+      'video/mp4;codecs=h264,aac',
+      'video/mp4;codecs=h264',
+      'video/mp4',
+      'video/webm;codecs=h264,opus',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus'
+    ];
+    let selectedType = 'video/webm';
+    for (const t of types) {
+      if (MediaRecorder.isTypeSupported(t)) {
+        selectedType = t;
+        break;
+      }
+    }
+    console.log('Using MIME type:', selectedType);
+
+    const rec = new MediaRecorder(combined, { mimeType: selectedType }); const chunks = [];
+    rec.ondataavailable = e => chunks.push(e.data); 
+    const done = new Promise(res => rec.onstop = () => res(new Blob(chunks, { type: selectedType.split(';')[0] })));
     rec.start(); state.video.muted = false; state.video.currentTime = 0; await state.video.play();
     const render = () => { if (!state.video.paused && !state.video.ended) { drawSlot(k, true); fill.style.width = (state.video.currentTime / state.video.duration * 100) + '%'; requestAnimationFrame(render); } };
     render(); await new Promise(res => state.video.onended = res); rec.stop(); s.blob = await done; drawSlot(k, false); return s.blob;
