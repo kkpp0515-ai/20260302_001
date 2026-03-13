@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang='ja'>
 <head>
   <meta charset='UTF-8'>
@@ -42,7 +42,13 @@
     <div id='videoInfo' style='font-size:0.7rem; color:#888;'>サイズ未検出</div>
   </div>
   <div class='section'>
-    <h3>2. 各サイズ用の帯(PNG)</h3>
+    <h3>2. エンドカード (MP4)</h3>
+    <button class='btn-danger' onclick='clearEndCard()'>削除</button>
+    <input type='file' id='endCardInput' accept='video/mp4,video/webm'>
+    <div id='endCardInfo' style='font-size:0.7rem; color:#888;'>未設定</div>
+  </div>
+  <div class='section'>
+    <h3>3. 各サイズ用の帯(PNG)</h3>
     <div style='position:relative; margin-bottom:10px;'>
       <label>SQUARE (1080x1080)</label>
       <button class='btn-danger' style='top:0; padding:2px 6px;' onclick='clearObi("1080x1080")'>削除</button>
@@ -105,8 +111,8 @@
   </div>
 </div>
 <script>
-  let aCtx = null; let aSource = null;
-  const state = { video: null, vW: 0, vH: 0, baseFilename: 'video',
+  let aCtx = null; let aSource = null; let aEndSource = null;
+  const state = { video: null, endCard: null, vW: 0, vH: 0, ecW: 0, ecH: 0, baseFilename: 'video',
     slots: {
       '1080x1080': { w: 1080, h: 1080, obi: null, vx: 0, vy: 0, vs: 1.0, hole: null, canvas: null, ctx: null, blob: null },
       '1920x1080': { w: 1920, h: 1080, obi: null, vx: 0, vy: 0, vs: 1.0, hole: null, canvas: null, ctx: null, blob: null },
@@ -188,48 +194,103 @@
       v.addEventListener('seeked', onInitialSeek);
     };
   };
+  document.getElementById('endCardInput').onchange = (e) => {
+    const f = e.target.files[0]; if(!f) return;
+    const v = document.createElement('video'); v.src = URL.createObjectURL(f); v.muted = true;
+    v.onloadedmetadata = () => { 
+      state.endCard = v; state.ecW = v.videoWidth; state.ecH = v.videoHeight;
+      document.getElementById('endCardInfo').innerText = 'サイズ: ' + state.ecW + 'x' + state.ecH;
+      checkReady();
+    };
+  };
   function clearVideo() { state.video = null; document.getElementById('videoInput').value = ''; document.getElementById('videoInfo').innerText = '削除済み'; Object.keys(state.slots).forEach(k => drawSlot(k)); checkReady(); }
+  function clearEndCard() { state.endCard = null; document.getElementById('endCardInput').value = ''; document.getElementById('endCardInfo').innerText = '未設定'; checkReady(); }
   function clearObi(k) { state.slots[k].obi = null; state.slots[k].hole = null; document.getElementById('input-' + k).value = ''; drawSlot(k); checkReady(); }
-  function drawSlot(k, isEx = false) {
+  function drawSlot(k, isEx = false, useEndCard = false) {
     const s = state.slots[k]; const ctx = s.ctx; ctx.save(); ctx.clearRect(0, 0, s.w, s.h);
+    const v = useEndCard ? state.endCard : state.video;
+    const vW = useEndCard ? state.ecW : state.vW;
+    const vH = useEndCard ? state.ecH : state.vH;
+    
     ctx.fillStyle = isEx ? '#000' : 'rgba(0,0,0,0.3)'; ctx.fillRect(0, 0, s.w, s.h);
-    if (state.video) { ctx.globalAlpha = isEx ? 1.0 : 0.8; ctx.drawImage(state.video, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs); }
-    if (s.obi) { ctx.globalAlpha = isEx ? 1.0 : 0.5; ctx.drawImage(s.obi, 0, 0, s.w, s.h); }
+    if (v) { 
+      ctx.globalAlpha = isEx ? 1.0 : 0.8;
+      if (useEndCard) {
+        // エンドカードは基本的に中央にフィットさせる（または全画面）
+        const scale = Math.max(s.w / vW, s.h / vH);
+        const x = (s.w - vW * scale) / 2;
+        const y = (s.h - vH * scale) / 2;
+        ctx.drawImage(v, x, y, vW * scale, vH * scale);
+      } else {
+        ctx.drawImage(v, s.vx, s.vy, state.vW * s.vs, state.vH * s.vs); 
+      }
+    }
+    if (s.obi && !useEndCard) { ctx.globalAlpha = isEx ? 1.0 : 0.5; ctx.drawImage(s.obi, 0, 0, s.w, s.h); }
     ctx.restore();
-    const snapped = s.hole && Math.abs(s.vx - s.hole.x) < 1 && Math.abs(s.vy - s.hole.y) < 1;
-    document.getElementById('card-' + k).classList.toggle('snapped', snapped);
+    if (!useEndCard) {
+      const snapped = s.hole && Math.abs(s.vx - s.hole.x) < 1 && Math.abs(s.vy - s.hole.y) < 1;
+      document.getElementById('card-' + k).classList.toggle('snapped', snapped);
+    }
   }
   function checkReady() { const ok = state.video && Object.values(state.slots).some(s => s.obi); document.getElementById('exportAllBtn').disabled = !ok; document.querySelectorAll('.save-single').forEach(b => b.disabled = !(state.video && state.slots[b.dataset.size].obi)); }
   async function exportVideo(k) {
     const s = state.slots[k]; const card = document.getElementById('card-' + k); const fill = card.querySelector('.progress-fill'); card.querySelector('.progress-bar').style.display = 'block';
-    if(!aCtx) { aCtx = new AudioContext(); aSource = aCtx.createMediaElementSource(state.video); }
-    const dest = aCtx.createMediaStreamDestination(); aSource.connect(dest); aSource.connect(aCtx.destination);
+    if(!aCtx) aCtx = new AudioContext();
+    if(!aSource && state.video) aSource = aCtx.createMediaElementSource(state.video);
+    if(!aEndSource && state.endCard) aEndSource = aCtx.createMediaElementSource(state.endCard);
+    
+    const dest = aCtx.createMediaStreamDestination();
+    if(aSource) aSource.connect(dest);
+    if(aEndSource) aEndSource.connect(dest);
+    dest.connect(aCtx.destination);
+
     const stream = s.canvas.captureStream(30); const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
     
-    // サポートされているMIMEタイプを優先順位順に確認
-    const types = [
-      'video/mp4;codecs=h264,aac',
-      'video/mp4;codecs=h264',
-      'video/mp4',
-      'video/webm;codecs=h264,opus',
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus'
-    ];
+    const types = ['video/mp4;codecs=h264,aac','video/mp4;codecs=h264','video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus'];
     let selectedType = 'video/webm';
-    for (const t of types) {
-      if (MediaRecorder.isTypeSupported(t)) {
-        selectedType = t;
-        break;
-      }
-    }
-    console.log('Using MIME type:', selectedType);
+    for (const t of types) { if (MediaRecorder.isTypeSupported(t)) { selectedType = t; break; } }
 
     const rec = new MediaRecorder(combined, { mimeType: selectedType }); const chunks = [];
     rec.ondataavailable = e => chunks.push(e.data); 
     const done = new Promise(res => rec.onstop = () => res(new Blob(chunks, { type: selectedType.split(';')[0] })));
-    rec.start(); state.video.muted = false; state.video.currentTime = 0; await state.video.play();
-    const render = () => { if (!state.video.paused && !state.video.ended) { drawSlot(k, true); fill.style.width = (state.video.currentTime / state.video.duration * 100) + '%'; requestAnimationFrame(render); } };
-    render(); await new Promise(res => state.video.onended = res); rec.stop(); s.blob = await done; drawSlot(k, false); return s.blob;
+    
+    rec.start(); 
+    state.video.muted = false; state.video.currentTime = 0; await state.video.play();
+    
+    let isEndCardPlaying = false;
+    const totalDuration = state.video.duration + (state.endCard ? state.endCard.duration : 0);
+
+    const render = async () => {
+      if (!isEndCardPlaying) {
+        if (!state.video.paused && !state.video.ended) {
+          drawSlot(k, true, false);
+          fill.style.width = (state.video.currentTime / totalDuration * 100) + '%';
+          requestAnimationFrame(render);
+        } else {
+          if (state.endCard) {
+            isEndCardPlaying = true;
+            state.endCard.muted = false;
+            state.endCard.currentTime = 0;
+            await state.endCard.play();
+            requestAnimationFrame(render);
+          } else {
+            rec.stop();
+          }
+        }
+      } else {
+        if (!state.endCard.paused && !state.endCard.ended) {
+          drawSlot(k, true, true);
+          fill.style.width = ((state.video.duration + state.endCard.currentTime) / totalDuration * 100) + '%';
+          requestAnimationFrame(render);
+        } else {
+          rec.stop();
+        }
+      }
+    };
+    render();
+    s.blob = await done;
+    state.video.muted = true; if(state.endCard) state.endCard.muted = true;
+    drawSlot(k, false); return s.blob;
   }
   document.getElementById('exportAllBtn').onclick = async () => {
     const exportBtn = document.getElementById('exportAllBtn');
