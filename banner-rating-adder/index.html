@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banner Rating Adder</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Banner Rating Adder</h1>
+            <p>バナー画像の四隅にレーティングマークを一括付与します。</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Column: Settings -->
+            <div class="settings-panel block-panel">
+                <h2>1. レーティング管理 (初期設定)</h2>
+                <div class="settings-group">
+                    <p class="help-text">使用するレーティング画像をアップロードして保存します。</p>
+                    <div class="input-row">
+                        <input type="text" id="newRatingName" placeholder="名前 (例: 普遍級)" />
+                        <label class="btn btn-secondary file-upload-btn">
+                            画像選択
+                            <input type="file" id="newRatingImage" accept="image/png, image/jpeg, image/webp" hidden />
+                        </label>
+                        <button id="addRatingBtn" class="btn btn-primary">追加</button>
+                    </div>
+                    <div id="ratingPreviewContainer" class="preview-container hidden">
+                        <p>プレビュー:</p>
+                        <img id="newRatingPreview" src="" alt="preview">
+                    </div>
+                </div>
+                <div class="saved-ratings-list" id="savedRatingsList">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Right Column: Process Banners -->
+            <div class="process-panel block-panel">
+                <h2>2. バナー処理</h2>
+                
+                <div class="process-options">
+                    <div class="form-group">
+                        <label for="ratingSelect">付与するレーティング:</label>
+                        <select id="ratingSelect">
+                            <option value="">設定から追加してください</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="positionSelect">配置位置:</label>
+                        <select id="positionSelect">
+                            <option value="bottom-right">右下 (Bottom Right)</option>
+                            <option value="bottom-left">左下 (Bottom Left)</option>
+                            <option value="top-right">右上 (Top Right)</option>
+                            <option value="top-left">左上 (Top Left)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="suffixInput">ファイル名付与テキスト:</label>
+                        <input type="text" id="suffixInput" value="linerate" placeholder="例: linerate" title="サイズ名の前のアンダースコア部分に挿入されます。">
+                    </div>
+                </div>
+
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 16V13M12 16V9M17 16V11M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <strong>画像をドラッグ＆ドロップ</strong>
+                    <p>または</p>
+                    <label class="btn btn-primary file-upload-btn">
+                        ファイルを選択
+                        <input type="file" id="bannerInput" accept="image/png, image/jpeg, image/webp" multiple hidden />
+                    </label>
+                    <p class="help-text">※複数選択可能。処理後、自動的にZIPまたはファイルとしてダウンロードされます。</p>
+                </div>
+
+                <button id="processBtn" class="btn btn-success btn-large" disabled>選択した設定で処理開始</button>
+                
+                <div id="statusMessage" class="status-message"></div>
+                
+                <div class="progress-container hidden" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSZip for batch downloading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver for triggering downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
