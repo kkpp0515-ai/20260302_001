@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIFF to JPEG Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Load required libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="container glass-panel">
+        <header>
+            <h1>TIFF to JPEG <span class="gradient-text">Converter</span></h1>
+            <p>TIFFファイルを一括でJPEGに変換し、ZIPでダウンロードします。</p>
+        </header>
+
+        <div class="upload-area" id="drop-zone">
+            <div class="upload-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <h3>ファイルを選択、またはドロップ</h3>
+                <p>複数の .tif / .tiff ファイルに対応</p>
+                <input type="file" id="file-input" multiple accept=".tif, .tiff, image/tiff">
+                <button class="btn browse-btn" onclick="document.getElementById('file-input').click()">ファイルを探す</button>
+            </div>
+        </div>
+
+        <div class="file-list-container" id="file-list-container" style="display: none;">
+            <div class="list-header">
+                <h3>アップロードされたファイル (<span id="file-count">0</span>)</h3>
+            </div>
+            <ul id="file-list" class="file-list"></ul>
+            
+            <div class="action-area">
+                <button class="btn primary-btn" id="convert-btn">変換 & ZIPダウンロード</button>
+            </div>
+            
+            <div class="progress-area" id="progress-area" style="display: none;">
+                <p id="progress-status">変換中...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
