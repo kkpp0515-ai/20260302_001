@@ -10,7 +10,8 @@ const ratingSelect = document.getElementById('ratingSelect');
 const dropZone = document.getElementById('dropZone');
 const bannerInput = document.getElementById('bannerInput');
 const positionSelect = document.getElementById('positionSelect');
-const suffixInput = document.getElementById('suffixInput');
+const searchStringInput = document.getElementById('searchStringInput');
+const replaceStringInput = document.getElementById('replaceStringInput');
 const processBtn = document.getElementById('processBtn');
 const statusMessage = document.getElementById('statusMessage');
 const progressContainer = document.getElementById('progressContainer');
@@ -161,25 +162,20 @@ function validateProcessState() {
 ratingSelect.addEventListener('change', validateProcessState);
 
 // File Name Generation Logic
-function generateNewFileName(oldName, suffix) {
-    if (!suffix) suffix = "linerate"; // fallback
-    
-    // 1080-1080などのサイズ名の前の_を、テキスト（例: linerate）+ _ に置換する
-    // e.g., kakegurui_zh-TW_rf041_1080-1080.jpg -> kakegurui_zh-TW_rf041linerate_1080-1080.jpg
-    const sizeRegex = /_(\d+x\d+|\d+-\d+)(\.[a-zA-Z0-9]+)$/i;
-    
-    if (sizeRegex.test(oldName)) {
-        // Replace "_1080-1080.jpg" with "linerate_1080-1080.jpg"
-        return oldName.replace(sizeRegex, `${suffix}_$1$2`);
-    }
-
-    // Fallback: Just insert suffix before extension if no size pattern found
-    const lastDot = oldName.lastIndexOf('.');
-    if (lastDot !== -1) {
-        return oldName.substring(0, lastDot) + suffix + oldName.substring(lastDot);
+function generateNewFileName(oldName, searchStr, replaceStr) {
+    if (!searchStr) {
+        // もし検索文字列が空の場合は、元のファイル名をそのまま返すか、末尾に _rated をつけるなど
+        return oldName;
     }
     
-    return oldName + suffix;
+    // 単純な文字列置換
+    // 初めに一致した箇所のみ置換する
+    if (oldName.includes(searchStr)) {
+        return oldName.replace(searchStr, replaceStr);
+    }
+    
+    // 検索文字列が見つからない場合はそのまま
+    return oldName;
 }
 
 
@@ -187,7 +183,8 @@ function generateNewFileName(oldName, suffix) {
 processBtn.addEventListener('click', async () => {
     const selectedRatingId = ratingSelect.value;
     const position = positionSelect.value;
-    const suffix = suffixInput.value.trim() || 'linerate';
+    const searchStr = searchStringInput.value;
+    const replaceStr = replaceStringInput.value;
     
     if (!selectedRatingId || uploadedBanners.length === 0) return;
     
@@ -261,7 +258,7 @@ processBtn.addEventListener('click', async () => {
             ctx.drawImage(ratingImg, x, y, finalWidth, finalHeight);
             
             // Export image as blob
-            const newFileName = generateNewFileName(bannerFile.name, suffix);
+            const newFileName = generateNewFileName(bannerFile.name, searchStr, replaceStr);
             const blob = await new Promise(resolve => canvas.toBlob(resolve, bannerFile.type || 'image/jpeg', 0.95));
             
             processedFiles.push({

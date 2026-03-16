@@ -333,5 +333,6 @@
   };
   document.querySelectorAll('.save-single').forEach(b => b.onclick = async () => { const k = b.dataset.size; const blob = await exportVideo(k); const name = document.getElementById('name-' + k).value; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name + '.mp4'; a.click(); });
 </script>
+<script src="../sidebar.js"></script>
 </body>
 </html>

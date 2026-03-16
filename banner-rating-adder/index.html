@@ -61,8 +61,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="suffixInput">ファイル名付与テキスト:</label>
-                        <input type="text" id="suffixInput" value="linerate" placeholder="例: linerate" title="サイズ名の前のアンダースコア部分に挿入されます。">
+                        <label for="searchStringInput">ファイル名検索文字列:</label>
+                        <input type="text" id="searchStringInput" value="ja_" placeholder="例: ja_">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="replaceStringInput">ファイル名置換文字列:</label>
+                        <input type="text" id="replaceStringInput" value="ja_late" placeholder="例: ja_late">
                     </div>
                 </div>
 
@@ -97,5 +102,6 @@
     <!-- FileSaver for triggering downloads -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="script.js"></script>
+    <script src="../sidebar.js"></script>
 </body>
 </html>
