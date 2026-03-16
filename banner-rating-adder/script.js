@@ -164,22 +164,22 @@ ratingSelect.addEventListener('change', validateProcessState);
 function generateNewFileName(oldName, suffix) {
     if (!suffix) suffix = "linerate"; // fallback
     
-    // 1080-1080などのサイズ名の前の_にlinerateというファイル名を付与する
-    // e.g., kakegurui_zh-TW_rf041_1080-1080.jpg -> kakegurui_zh-TW_rf041_linerate_1080-1080.jpg
-    // This regex looks for an underscore followed by the size pattern and extension
+    // 1080-1080などのサイズ名の前の_を、テキスト（例: linerate）+ _ に置換する
+    // e.g., kakegurui_zh-TW_rf041_1080-1080.jpg -> kakegurui_zh-TW_rf041linerate_1080-1080.jpg
     const sizeRegex = /_(\d+x\d+|\d+-\d+)(\.[a-zA-Z0-9]+)$/i;
     
     if (sizeRegex.test(oldName)) {
-        return oldName.replace(sizeRegex, `_${suffix}_$1$2`);
+        // Replace "_1080-1080.jpg" with "linerate_1080-1080.jpg"
+        return oldName.replace(sizeRegex, `${suffix}_$1$2`);
     }
 
     // Fallback: Just insert suffix before extension if no size pattern found
     const lastDot = oldName.lastIndexOf('.');
     if (lastDot !== -1) {
-        return oldName.substring(0, lastDot) + `_${suffix}` + oldName.substring(lastDot);
+        return oldName.substring(0, lastDot) + suffix + oldName.substring(lastDot);
     }
     
-    return oldName + `_${suffix}`;
+    return oldName + suffix;
 }
 
 
