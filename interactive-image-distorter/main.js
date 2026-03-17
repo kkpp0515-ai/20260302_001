@@ -242,15 +242,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const tension = parseFloat(springTensionInput.value);
         const dampening = 0.85; // Friction
         
-        // Precompute some auto wobble terms
-        let isMoving = false;
-        let speedMult = 0;
-        let strength = 0;
+        // Calculate global wobble offset
+        let globalOffsetX = 0;
+        let globalOffsetY = 0;
 
         if (isAutoWobbling && currentMode === 'interact') {
-            speedMult = parseInt(autoWobbleSpeedInput.value) * 0.05;
+            const speedMult = parseInt(autoWobbleSpeedInput.value) * 0.05;
             autoWobbleTime += speedMult;
-            strength = parseInt(distortStrengthInput.value);
+            const strength = parseInt(distortStrengthInput.value) * 2.0;
+            
+            if (autoWobbleXCheckbox.checked) {
+                globalOffsetX = Math.sin(autoWobbleTime) * strength;
+            }
+            if (autoWobbleYCheckbox.checked) {
+                // Phase shifted slightly for a circular/elliptical wobble if both are on
+                globalOffsetY = Math.sin(autoWobbleTime + Math.PI / 4) * strength;
+            }
             isMoving = true;
         }
 
@@ -258,8 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rx = gridOriginal[i];
             const ry = gridOriginal[i + 1];
 
-            // Only apply physics to vertices that are within the masked area
-            // We sample the mask at the vertex's original position RestX, RestY
+            // Sample mask
             const maskX = Math.max(0, Math.min(mainCanvas.width - 1, Math.floor(rx)));
             const maskY = Math.max(0, Math.min(mainCanvas.height - 1, Math.floor(ry)));
             const maskVal = maskData[maskY * mainCanvas.width + maskX];
@@ -268,25 +274,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cx = gridPoints[i];
                 const cy = gridPoints[i + 1];
 
-                // Hooke's Law: F = -k * x
+                const weight = maskVal / 255.0;
+
+                // Hooke's Law: F = -k * x (towards original rest position)
                 let dx = rx - cx;
                 let dy = ry - cy;
                 
-                // Force towards original position
-                let fx = dx * tension * (maskVal / 255.0) * 0.5;
-                let fy = dy * tension * (maskVal / 255.0) * 0.5;
-
-                // Add cohesive pudding-like wobble force
-                if (isAutoWobbling && currentMode === 'interact') {
-                    // Apply a uniform directional force to the entire masked mass.
-                    // The spring physics taking hold of the anchored edges will naturally create a gelatinous/pudding jiggle.
-                    if (autoWobbleXCheckbox.checked) {
-                        fx += Math.sin(autoWobbleTime) * strength * 3.0 * (maskVal / 255.0);
-                    }
-                    if (autoWobbleYCheckbox.checked) {
-                        fx += Math.sin(autoWobbleTime * 1.3) * strength * 3.0 * (maskVal / 255.0);
-                    }
-                }
+                let fx = dx * tension * weight * 0.5;
+                let fy = dy * tension * weight * 0.5;
 
                 gridVelocity[i] += fx;
                 gridVelocity[i + 1] += fy;
@@ -294,8 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 gridVelocity[i] *= dampening;
                 gridVelocity[i + 1] *= dampening;
 
-                gridPoints[i] += gridVelocity[i];
-                gridPoints[i + 1] += gridVelocity[i + 1];
+                // Apply velocity AND the cohesive global pudding wobble
+                // The global wobble is applied directly as a position offset based on weight, 
+                // meaning the whole masked area shifts uniformly, but anchors pull it back.
+                gridPoints[i] += gridVelocity[i] + (globalOffsetX * weight * 0.1);
+                gridPoints[i + 1] += gridVelocity[i + 1] + (globalOffsetY * weight * 0.1);
 
                 if (Math.abs(gridVelocity[i]) > 0.05 || Math.abs(gridVelocity[i + 1]) > 0.05 || Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
                     isMoving = true;
