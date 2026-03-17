@@ -276,15 +276,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 let fx = dx * tension * (maskVal / 255.0) * 0.5;
                 let fy = dy * tension * (maskVal / 255.0) * 0.5;
 
-                // Add wavy auto wobble force relative to mask intensity
+                // Add cohesive pudding-like wobble force
                 if (isAutoWobbling && currentMode === 'interact') {
-                    // Phase offset creates a rippling jiggle effect across the mask
-                    const phase = (rx * 0.03) + (ry * 0.03); 
+                    // Apply a uniform directional force to the entire masked mass.
+                    // The spring physics taking hold of the anchored edges will naturally create a gelatinous/pudding jiggle.
                     if (autoWobbleXCheckbox.checked) {
-                        fx += Math.sin(autoWobbleTime + phase) * strength * 1.5 * (maskVal / 255.0);
+                        fx += Math.sin(autoWobbleTime) * strength * 3.0 * (maskVal / 255.0);
                     }
                     if (autoWobbleYCheckbox.checked) {
-                        fx += Math.cos(autoWobbleTime * 1.3 + phase) * strength * 1.5 * (maskVal / 255.0);
+                        fx += Math.sin(autoWobbleTime * 1.3) * strength * 3.0 * (maskVal / 255.0);
                     }
                 }
 
