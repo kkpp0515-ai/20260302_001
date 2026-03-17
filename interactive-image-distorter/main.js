@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const clearMaskBtn = document.getElementById('clearMaskBtn');
 
+    // Auto Wobble Elements
+    const autoWobbleXCheckbox = document.getElementById('autoWobbleX');
+    const autoWobbleYCheckbox = document.getElementById('autoWobbleY');
+    const autoWobbleSpeedInput = document.getElementById('autoWobbleSpeed');
+    const autoWobbleSpeedVal = document.getElementById('autoWobbleSpeedVal');
+    const toggleAutoWobbleBtn = document.getElementById('toggleAutoWobbleBtn');
+
     // --- State ---
     let imgSource = new Image();
     let originalImageData = null;
@@ -46,6 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMode = 'mask'; // 'mask' or 'interact'
     let lastMousePos = { x: 0, y: 0 };
     
+    // Auto Wobble State
+    let isAutoWobbling = false;
+    let autoWobbleTime = 0;
+    
     let physicsRafId = null;
 
     // --- Event Listeners: UI ---
@@ -57,6 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
     distortRadiusInput.addEventListener('input', (e) => distortRadiusVal.textContent = e.target.value);
     distortStrengthInput.addEventListener('input', (e) => distortStrengthVal.textContent = e.target.value);
     springTensionInput.addEventListener('input', (e) => springTensionVal.textContent = e.target.value);
+
+    // Auto Wobble Events
+    autoWobbleSpeedInput.addEventListener('input', (e) => autoWobbleSpeedVal.textContent = e.target.value);
+    
+    toggleAutoWobbleBtn.addEventListener('click', () => {
+        isAutoWobbling = !isAutoWobbling;
+        if (isAutoWobbling) {
+            toggleAutoWobbleBtn.textContent = '自動揺れ 停止';
+            toggleAutoWobbleBtn.style.backgroundColor = '#ef4444'; // Red
+            if (!physicsRafId && currentMode === 'interact') {
+                updatePhysics();
+            }
+        } else {
+            toggleAutoWobbleBtn.textContent = '自動揺れ 開始';
+            toggleAutoWobbleBtn.style.backgroundColor = '#f59e0b'; // Orange
+        }
+    });
 
     // --- Image Upload & Canvas Setup ---
 
@@ -214,8 +242,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const tension = parseFloat(springTensionInput.value);
         const dampening = 0.85; // Friction
         
-        // Flag to check if any point is still moving significantly
+        // Auto wobble force computation
+        let autoForceX = 0;
+        let autoForceY = 0;
         let isMoving = false;
+
+        if (isAutoWobbling && currentMode === 'interact') {
+            autoWobbleTime += parseInt(autoWobbleSpeedInput.value) * 0.05;
+            const strength = parseInt(distortStrengthInput.value);
+            
+            if (autoWobbleXCheckbox.checked) {
+                // Sine wave based on time
+                autoForceX = Math.sin(autoWobbleTime) * strength * 0.4;
+            }
+            if (autoWobbleYCheckbox.checked) {
+                // Cosine wave, slightly different frequency to look natural
+                autoForceY = Math.cos(autoWobbleTime * 1.3) * strength * 0.4;
+            }
+            isMoving = true;
+        }
 
         for (let i = 0; i < gridPoints.length; i += 2) {
             const rx = gridOriginal[i];
@@ -238,6 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Force towards original position
                 let fx = dx * tension * (maskVal / 255.0) * 0.5;
                 let fy = dy * tension * (maskVal / 255.0) * 0.5;
+
+                // Add auto wobble force relative to mask intensity
+                fx += autoForceX * (maskVal / 255.0);
+                fy += autoForceY * (maskVal / 255.0);
 
                 gridVelocity[i] += fx;
                 gridVelocity[i + 1] += fy;
@@ -263,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply grid distortion to pixel data
         renderGridToPixels();
         
-        if (isMoving || isInteracting) {
+        if (isMoving || isInteracting || isAutoWobbling) {
             physicsRafId = requestAnimationFrame(updatePhysics);
         } else {
             physicsRafId = null; 
