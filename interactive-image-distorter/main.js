@@ -75,10 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function setupCanvas() {
-        // Hide placeholder
-        canvasPlaceholder.style.display = 'none';
-        mainCanvas.style.display = 'block';
-
         // Calculate size to fit container while maintaining aspect ratio
         const maxWidth = canvasContainer.clientWidth - 40;
         const maxHeight = canvasContainer.clientHeight - 40;
@@ -98,18 +94,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // To make pixel manipulation and grid math easier, we set canvas resolution to the displayed size
         mainCanvas.width = Math.floor(width);
         mainCanvas.height = Math.floor(height);
+        
+        // Show canvas and hide placeholder now that dimensions are set
+        canvasPlaceholder.style.display = 'none';
+        mainCanvas.style.display = 'block';
 
         // Draw initial image
         ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
         ctx.drawImage(imgSource, 0, 0, mainCanvas.width, mainCanvas.height);
 
-        // Store pixel data
-        originalImageData = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
-        currentImageData = new ImageData(
-            new Uint8ClampedArray(originalImageData.data),
-            originalImageData.width,
-            originalImageData.height
-        );
+        try {
+            // Store pixel data
+            originalImageData = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+            currentImageData = new ImageData(
+                new Uint8ClampedArray(originalImageData.data),
+                originalImageData.width,
+                originalImageData.height
+            );
+        } catch (e) {
+            console.error("Canvas read error:", e);
+            alert("画像の読み込みに失敗しました。セキュリティ制限の可能性があります。");
+            return;
+        }
         
         // Update texture canvas for drawMeshTextured
         if (!window.texCanvas) {
