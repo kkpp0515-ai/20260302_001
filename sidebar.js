@@ -116,6 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>Banner Rating Adder</span>
                 </a>
             </li>
+            <li>
+                <a href="${basePath}interactive-image-distorter/index.html">
+                    <span class="portal-sidebar-icon">🍰</span>
+                    <span>Interactive Image Distorter</span>
+                </a>
+            </li>
         </ul>
     `;
     document.body.prepend(sidebar);

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Image Distorter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Interactive Image Distorter</h1>
+            <p>画像をアップロードし、マウスでなぞった部分を揺らす・変形させるツールです。</p>
+        </header>
+
+        <main class="main-content">
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>1. 画像を読み込む</h3>
+                    <input type="file" id="imageInput" accept="image/png, image/jpeg, image/bmp">
+                </div>
+
+                <div class="control-group">
+                    <h3>2. モード選択</h3>
+                    <div class="mode-toggles">
+                        <button id="modeMask" class="active">マスク領域を指定する</button>
+                        <button id="modeInteract">揺らす・変形する (Play)</button>
+                    </div>
+                </div>
+
+                <div class="control-group" id="brushControls">
+                    <h3>ブラシ設定 (マスク用)</h3>
+                    <label>
+                        サイズ: <span id="brushSizeVal">30</span>px
+                        <input type="range" id="brushSize" min="5" max="100" value="30">
+                    </label>
+                    <button id="clearMaskBtn" class="secondary-btn">マスクをクリア</button>
+                </div>
+
+                <div class="control-group" id="distortionControls" style="display:none;">
+                    <h3>変形設定 (Play用)</h3>
+                    <label>
+                        影響範囲: <span id="distortRadiusVal">50</span>px
+                        <input type="range" id="distortRadius" min="10" max="150" value="50">
+                    </label>
+                    <label>
+                        強さ: <span id="distortStrengthVal">5</span>
+                        <input type="range" id="distortStrength" min="1" max="20" value="5">
+                    </label>
+                    <label>
+                        弾力性 (バネ): <span id="springTensionVal">0.3</span>
+                        <input type="range" id="springTension" min="0.05" max="0.9" step="0.05" value="0.3">
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <h3>3. 録画と保存</h3>
+                    <div class="record-controls">
+                        <button id="recordBtn" class="action-btn">録画開始 (WebM)</button>
+                        <span id="recordingStatus" class="status-indicator"></span>
+                    </div>
+                    <div id="downloadContainer" style="display:none; margin-top: 10px;">
+                        <a id="downloadLink" class="download-btn">動画をダウンロード</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="mainCanvas"></canvas>
+                <div class="placeholder-text" id="canvasPlaceholder">画像を選択してください</div>
+            </div>
+        </main>
+    </div>
+    <script src="../sidebar.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

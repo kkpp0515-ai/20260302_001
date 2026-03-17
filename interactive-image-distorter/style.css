@@ -1,0 +1,205 @@
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary: #ec4899;
+    --background: #0f172a;
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --danger: #ef4444;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: var(--text-main);
+    min-height: 100vh;
+}
+
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 10px 0;
+    background: linear-gradient(to right, #818cf8, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+}
+
+/* Controls Panel */
+.controls-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: fit-content;
+}
+
+.control-group h3 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+input[type="range"] {
+    width: 100%;
+    margin-top: 5px;
+    accent-color: var(--primary);
+}
+
+/* Buttons */
+button, .download-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+}
+
+.mode-toggles {
+    display: flex;
+    gap: 10px;
+}
+
+.mode-toggles button {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.mode-toggles button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    margin-top: 10px;
+}
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn {
+    background: var(--secondary);
+    color: white;
+}
+.action-btn:hover {
+    background: #db2777;
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+}
+.action-btn.recording {
+    background: var(--danger);
+    animation: pulse 1.5s infinite;
+}
+
+.download-btn {
+    background: #10b981;
+    color: white;
+}
+.download-btn:hover {
+    background: #059669;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Canvas Container */
+.canvas-container {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    cursor: crosshair;
+    display: none; /* Hidden until image is loaded */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.placeholder-text {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    position: absolute;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    .canvas-container {
+        min-height: 400px;
+    }
+}
