@@ -111,6 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
             originalImageData.height
         );
         
+        // Update texture canvas for drawMeshTextured
+        if (!window.texCanvas) {
+            window.texCanvas = document.createElement('canvas');
+        }
+        window.texCanvas.width = mainCanvas.width;
+        window.texCanvas.height = mainCanvas.height;
+        const tctx = window.texCanvas.getContext('2d');
+        tctx.putImageData(originalImageData, 0, 0);
+
         // Initialize Mask (1 byte per pixel)
         maskData = new Uint8ClampedArray(mainCanvas.width * mainCanvas.height);
         
