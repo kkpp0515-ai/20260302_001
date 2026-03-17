@@ -242,23 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const tension = parseFloat(springTensionInput.value);
         const dampening = 0.85; // Friction
         
-        // Auto wobble force computation
-        let autoForceX = 0;
-        let autoForceY = 0;
+        // Precompute some auto wobble terms
         let isMoving = false;
+        let speedMult = 0;
+        let strength = 0;
 
         if (isAutoWobbling && currentMode === 'interact') {
-            autoWobbleTime += parseInt(autoWobbleSpeedInput.value) * 0.05;
-            const strength = parseInt(distortStrengthInput.value);
-            
-            if (autoWobbleXCheckbox.checked) {
-                // Sine wave based on time
-                autoForceX = Math.sin(autoWobbleTime) * strength * 0.4;
-            }
-            if (autoWobbleYCheckbox.checked) {
-                // Cosine wave, slightly different frequency to look natural
-                autoForceY = Math.cos(autoWobbleTime * 1.3) * strength * 0.4;
-            }
+            speedMult = parseInt(autoWobbleSpeedInput.value) * 0.05;
+            autoWobbleTime += speedMult;
+            strength = parseInt(distortStrengthInput.value);
             isMoving = true;
         }
 
@@ -284,9 +276,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 let fx = dx * tension * (maskVal / 255.0) * 0.5;
                 let fy = dy * tension * (maskVal / 255.0) * 0.5;
 
-                // Add auto wobble force relative to mask intensity
-                fx += autoForceX * (maskVal / 255.0);
-                fy += autoForceY * (maskVal / 255.0);
+                // Add wavy auto wobble force relative to mask intensity
+                if (isAutoWobbling && currentMode === 'interact') {
+                    // Phase offset creates a rippling jiggle effect across the mask
+                    const phase = (rx * 0.03) + (ry * 0.03); 
+                    if (autoWobbleXCheckbox.checked) {
+                        fx += Math.sin(autoWobbleTime + phase) * strength * 1.5 * (maskVal / 255.0);
+                    }
+                    if (autoWobbleYCheckbox.checked) {
+                        fx += Math.cos(autoWobbleTime * 1.3 + phase) * strength * 1.5 * (maskVal / 255.0);
+                    }
+                }
 
                 gridVelocity[i] += fx;
                 gridVelocity[i + 1] += fy;
