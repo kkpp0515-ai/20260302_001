@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Elements ---
     const imageInput = document.getElementById('imageInput');
     const mainCanvas = document.getElementById('mainCanvas');
+    const bgImage = document.getElementById('bgImage');
     const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
     const canvasContainer = document.querySelector('.canvas-container');
     const canvasPlaceholder = document.getElementById('canvasPlaceholder');
@@ -30,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentImageData = null;
     
     // Mask layer: 0 (unmasked) to 255 (fully masked/movable)
-    // We store it as a parallel Float32Array or Uint8ClampedArray for performance
     let maskData = null; 
 
     // Grid Mesh for distortion
@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupCanvas();
             };
             imgSource.src = event.target.result;
+            // Also set the background HTML Image for reliable display in all browsers
+            bgImage.src = event.target.result;
         };
         reader.readAsDataURL(file);
     });
@@ -91,21 +93,27 @@ document.addEventListener('DOMContentLoaded', () => {
             height = maxHeight;
         }
 
-        // To make pixel manipulation and grid math easier, we set canvas resolution to the displayed size
-        mainCanvas.width = Math.floor(width);
-        mainCanvas.height = Math.floor(height);
+        const rw = Math.floor(width);
+        const rh = Math.floor(height);
+
+        mainCanvas.width = rw;
+        mainCanvas.height = rh;
+
+        // Ensure BG image matches canvas dimensions exactly
+        bgImage.style.width = rw + 'px';
+        bgImage.style.height = rh + 'px';
         
         // Show canvas and hide placeholder now that dimensions are set
         canvasPlaceholder.style.display = 'none';
+        bgImage.style.display = 'block';
         mainCanvas.style.display = 'block';
 
-        // Draw initial image
-        ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-        ctx.drawImage(imgSource, 0, 0, mainCanvas.width, mainCanvas.height);
+        // Draw initial image to get pixel data
+        ctx.clearRect(0, 0, rw, rh);
+        ctx.drawImage(imgSource, 0, 0, rw, rh);
 
         try {
-            // Store pixel data
-            originalImageData = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+            originalImageData = ctx.getImageData(0, 0, rw, rh);
             currentImageData = new ImageData(
                 new Uint8ClampedArray(originalImageData.data),
                 originalImageData.width,
@@ -113,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         } catch (e) {
             console.error("Canvas read error:", e);
-            alert("画像の読み込みに失敗しました。セキュリティ制限の可能性があります。");
+            alert("画像データの取得に失敗しました。セキュリティ制限の可能性があります。");
             return;
         }
         
@@ -121,13 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!window.texCanvas) {
             window.texCanvas = document.createElement('canvas');
         }
-        window.texCanvas.width = mainCanvas.width;
-        window.texCanvas.height = mainCanvas.height;
+        window.texCanvas.width = rw;
+        window.texCanvas.height = rh;
         const tctx = window.texCanvas.getContext('2d');
         tctx.putImageData(originalImageData, 0, 0);
 
+        // Clear the main Canvas again so it acts as a transparent overlay on top of bgImage
+        ctx.clearRect(0, 0, rw, rh);
+
         // Initialize Mask (1 byte per pixel)
-        maskData = new Uint8ClampedArray(mainCanvas.width * mainCanvas.height);
+        maskData = new Uint8ClampedArray(rw * rh);
         
         // Initialize Physics Grid
         initGrid();
@@ -380,6 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawMaskOverlay() {
         if (!maskData) return;
         
+        ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+
         // We draw the mask array as an overlay
         const overData = ctx.createImageData(mainCanvas.width, mainCanvas.height);
         for (let i = 0; i < maskData.length; i++) {
@@ -391,15 +404,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 overData.data[i*4+3] = 100;   // Alpha (semi-transparent)
             }
         }
-        ctx.putImageData(overData, 0, 0, 0, 0, mainCanvas.width, mainCanvas.height);
+        ctx.putImageData(overData, 0, 0); // Put mask overlay
     }
 
     function drawFrame() {
         if (!originalImageData) return;
         
         if (currentMode === 'mask') {
-            // Draw original + mask
-            ctx.putImageData(originalImageData, 0, 0);
+            // Since we have an HTML image underneath, we just draw the mask overlay
             drawMaskOverlay();
         } else {
             // physics handles rendering in play mode

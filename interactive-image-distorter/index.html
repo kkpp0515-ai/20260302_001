@@ -66,8 +66,9 @@
             </div>
 
             <div class="canvas-container">
-                <canvas id="mainCanvas"></canvas>
-                <div class="placeholder-text" id="canvasPlaceholder">画像を選択してください</div>
+                <img id="bgImage" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); max-width:100%; max-height:100%; object-fit:contain; pointer-events:none; z-index:0;">
+                <canvas id="mainCanvas" style="position:relative; z-index:1;"></canvas>
+                <div class="placeholder-text" id="canvasPlaceholder" style="z-index:2;">画像を選択してください</div>
             </div>
         </main>
     </div>
