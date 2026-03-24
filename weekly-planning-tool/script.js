@@ -140,7 +140,9 @@ function render() {
                 let val = parseInt(e.target.value) || 0;
                 if (val < 0) val = 0;
                 state[lang].titles[t.name].total = val;
-                distributeToMembers(val, t.members, lang, t.name);
+                
+                const currentMembers = Object.keys(state[lang].titles[t.name].members);
+                distributeToMembers(val, currentMembers, lang, t.name);
                 saveState();
             });
 
@@ -152,7 +154,8 @@ function render() {
             const membersContainer = document.createElement('div');
             membersContainer.className = 'members-container';
             
-            t.members.forEach(member => {
+            const currentMembers = Object.keys(state[lang].titles[t.name].members);
+            currentMembers.forEach(member => {
                 const memberDiv = document.createElement('div');
                 memberDiv.className = 'member-item';
                 
@@ -178,6 +181,25 @@ function render() {
                 memberDiv.appendChild(mInput);
                 membersContainer.appendChild(memberDiv);
             });
+            
+            // Add member button
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-member-btn';
+            addBtn.innerHTML = '+ 担当追加';
+            addBtn.title = '新しい担当者を追加';
+            addBtn.addEventListener('click', () => {
+                const newMember = prompt('追加する担当者の名前を入力してください:');
+                if (newMember && newMember.trim() !== '') {
+                    const name = newMember.trim();
+                    if (state[lang].titles[t.name].members[name] === undefined) {
+                        state[lang].titles[t.name].members[name] = 0;
+                        saveState(); // this will re-render and show the new input
+                    } else {
+                        alert('その担当者は既に追加されています。');
+                    }
+                }
+            });
+            membersContainer.appendChild(addBtn);
             
             tdMembers.appendChild(membersContainer);
             tr.appendChild(tdMembers);
@@ -237,8 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     hasContent = true;
                     groupText += `・${t.name} (${total}本)\n  担当: `;
                     
+                    const currentMembers = Object.keys(state[lang].titles[t.name].members);
                     const assignees = [];
-                    t.members.forEach(m => {
+                    currentMembers.forEach(m => {
                         const mVal = state[lang].titles[t.name].members[m];
                         if (mVal > 0) {
                             assignees.push(`${m}：${mVal}`);

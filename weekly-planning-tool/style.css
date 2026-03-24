@@ -217,6 +217,34 @@ input[type=number] {
     font-weight: 800;
 }
 
+.add-member-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 2px dashed var(--border);
+    color: var(--text);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-height: 32px;
+}
+
+.add-member-btn:hover {
+    background-color: var(--table-header);
+    border-style: solid;
+    transform: translateY(-1px);
+    box-shadow: 2px 2px 0 var(--shadow);
+}
+
+.add-member-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 0 transparent;
+}
+
 @media (max-width: 768px) {
     body {
         padding: 1rem;

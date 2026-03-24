@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </a>
             </li>
             <li>
-                <a href="https://murata-syota-ctw.github.io/chromakey/" target="_blank" rel="noopener noreferrer">
+                <a href="${basePath}chromakey_compositor/ChromaKey Compositor.html">
                     <span class="portal-sidebar-icon">🎨</span>
                     <span>ChromaKey Compositor</span>
                 </a>
