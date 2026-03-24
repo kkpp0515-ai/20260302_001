@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)file:///C:/Users/ctwso/Downloads/greenscreen-compositor_12.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChromaKey Compositor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0b;--surface:#111113;--surface2:#1a1a1e;--surface3:#222228;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --accent:#00e87a;--accent-dim:rgba(0,232,122,0.15);--accent-glow:rgba(0,232,122,0.06);
+  --text:#f0f0f2;--text2:#888890;--text3:#555560;
+  --red:#ff4455;--blue:#4488ff;
+  --mono:'DM Mono',monospace;--sans:'Syne',sans-serif;
+}
+/* ---- layout: full viewport, no page scroll ---- */
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;flex-direction:column}
+header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--surface);flex-shrink:0;height:44px}
+.logo{font-size:16px;font-weight:800;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.badge{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(0,232,122,0.3);border-radius:4px;padding:2px 7px;letter-spacing:1px}
+.res-info{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:auto}
+.res-info span{color:var(--text2)}
+/* main: fills remaining height exactly */
+.main{display:grid;grid-template-columns:1fr 300px;flex:1;min-height:0;overflow:hidden;height:calc(100vh - 44px)}
+/* canvas side: flex column, canvas grows to fill */
+.canvas-area{padding:14px 16px;display:flex;flex-direction:column;gap:8px;overflow:hidden;min-height:0}
+.preview-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.canvas-wrapper{background:#000;border-radius:8px;border:1px solid var(--border);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
+#outputCanvas{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.placeholder-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-family:var(--mono);font-size:11px;pointer-events:none}
+.placeholder-icon{width:44px;height:44px;border:1.5px solid var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.controls-row{display:flex;align-items:center;gap:8px;flex-shrink:0;height:34px}
+.btn{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;white-space:nowrap}
+.btn:hover{background:var(--surface3)}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500}
+.btn-primary:hover:not(:disabled){background:#00ff88;border-color:#00ff88}
+.btn-danger{background:transparent;color:var(--red);border-color:rgba(255,68,85,0.4)}
+.btn-danger:hover:not(:disabled){background:rgba(255,68,85,0.1)}
+.timecode{font-family:var(--mono);font-size:11px;color:var(--text2);margin-left:auto}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.status-dot.active{background:var(--accent);animation:pulse 1s ease infinite}
+.status-dot.recording{background:var(--red);animation:pulse 0.6s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+/* sidebar: fixed height, scrolls internally */
+.sidebar{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow-y:auto;height:100%}
+/* compact sections */
+.section{padding:10px 12px;border-bottom:1px solid var(--border)}
+.section-title{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.drop-zone{border:1px dashed var(--border2);border-radius:6px;padding:8px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-glow)}
+.drop-zone.loaded{border-color:rgba(0,232,122,0.4);background:var(--accent-glow)}
+.drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{font-size:16px;margin-bottom:2px;display:block}
+.drop-title{font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px}
+.drop-sub{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.drop-zone.loaded .drop-title{color:var(--accent)}
+.drop-meta{font-family:var(--mono);font-size:9px;color:var(--accent);margin-top:2px}
+.field{margin-bottom:8px}
+.field label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:4px}
+.field label span{color:var(--text);font-weight:500}
+input[type="range"]{width:100%;appearance:none;height:3px;border-radius:2px;background:var(--surface3);outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);cursor:pointer}
+.color-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.color-row label{font-family:var(--mono);font-size:10px;color:var(--text2);flex:1}
+input[type="color"]{width:38px;height:24px;border:1px solid var(--border2);border-radius:5px;background:none;cursor:pointer;padding:2px}
+.preset-colors{display:flex;gap:4px;margin-bottom:8px}
+.preset-swatch{width:20px;height:20px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+.preset-swatch:hover,.preset-swatch.active{border-color:var(--text)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.toggle-label{font-family:var(--mono);font-size:10px;color:var(--text2)}
+.toggle{position:relative;width:32px;height:17px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:9px;cursor:pointer;transition:0.2s}
+.toggle-slider:before{content:'';position:absolute;width:11px;height:11px;left:3px;top:3px;background:var(--text2);border-radius:50%;transition:0.2s}
+.toggle input:checked+.toggle-slider{background:var(--accent-dim);border:1px solid rgba(0,232,122,0.3)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(15px);background:var(--accent)}
+.btn-group{display:flex;gap:5px;margin-bottom:6px}
+.btn-group .btn{flex:1;text-align:center;padding:6px 4px}
+.progress-bar{height:3px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden;display:none}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.08s}
+.export-note{font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.5;margin-top:8px}
+.warn-box{font-family:var(--mono);font-size:9px;color:#ff8866;background:rgba(255,80,50,0.08);border:1px solid rgba(255,80,50,0.2);border-radius:5px;padding:6px 8px;margin-top:6px;line-height:1.5;display:none}
+video{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Chroma<span>Key</span></div>
+  <div class="badge">WEB COMPOSITOR</div>
+  <div class="res-info" id="resInfo">BG: <span>—</span> &nbsp;|&nbsp; FG: <span>—</span></div>
+</header>
+
+<div class="main">
+  <div class="canvas-area">
+    <div class="preview-label">出力プレビュー</div>
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="outputCanvas" width="1280" height="720"></canvas>
+      <div class="placeholder-msg" id="placeholderMsg">
+        <div class="placeholder-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5">
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <polygon points="10,9 16,12 10,15" fill="rgba(255,255,255,0.2)" stroke="none"></polygon>
+          </svg>
+        </div>
+        動画を2つ読み込んでください
+      </div>
+    </div>
+    <div class="controls-row">
+      <div class="status-dot" id="statusDot"></div>
+      <button class="btn btn-primary" id="playBtn" disabled="">▶ 再生</button>
+      <button class="btn" id="stopBtn" disabled="">■ 停止</button>
+      <button class="btn btn-danger" id="recordBtn" disabled="">● 録画</button>
+      <div class="timecode" id="timecode">00:00.00</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+
+    <div class="section">
+      <div class="section-title">素材読み込み</div>
+      <div style="margin-bottom:10px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:5px">背景動画 (BG) — Canvasサイズの基準</div>
+        <div class="drop-zone" id="bgDrop">
+          <input type="file" id="bgFile" accept="video/*">
+          <span class="drop-icon">🎬</span>
+          <div class="drop-title" id="bgTitle">背景動画をドロップ</div>
+          <div class="drop-sub">MP4 / MOV / WebM</div>
+          <div class="drop-meta" id="bgMeta"></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:5px">グリーンバック (FG) — 原寸読み込み・引き延ばしなし</div>
+        <div class="drop-zone" id="fgDrop">
+          <input type="file" id="fgFile" accept="video/*">
+          <span class="drop-icon">🟩</span>
+          <div class="drop-title" id="fgTitle">FG動画をドロップ</div>
+          <div class="drop-sub">MP4 / MOV / WebM</div>
+          <div class="drop-meta" id="fgMeta"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">クロマキー</div>
+      <div class="color-row">
+        <label>キーカラー</label>
+        <input type="color" id="keyColor" value="#00b140">
+      </div>
+      <div class="preset-colors">
+        <div class="preset-swatch active" style="background:#00b140" data-color="#00b140" title="グリーン"></div>
+        <div class="preset-swatch" style="background:#0047AB" data-color="#0047AB" title="ブルー"></div>
+        <div class="preset-swatch" style="background:#FF0000" data-color="#FF0000" title="レッド"></div>
+        <div class="preset-swatch" style="background:#ffffff;border-color:#333" data-color="#ffffff" title="ホワイト"></div>
+      </div>
+      <div class="field">
+        <label>類似度 <span id="similarityVal">80</span></label>
+        <input type="range" id="similarity" min="1" max="200" value="80">
+      </div>
+      <div class="field">
+        <label>エッジ（スムース） <span id="smoothVal">10</span></label>
+        <input type="range" id="smooth" min="0" max="60" value="10">
+      </div>
+      <div class="field">
+        <label>スピル除去 <span id="spillVal">30</span>%</label>
+        <input type="range" id="spill" min="0" max="100" value="30">
+      </div>
+      <div class="field">
+        <label>FG不透明度 <span id="fgAlphaVal">100</span>%</label>
+        <input type="range" id="fgAlpha" min="0" max="100" value="100">
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">マスクプレビュー</span>
+        <label class="toggle"><input type="checkbox" id="maskPreview"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">FG トランスフォーム</div>
+      <div class="field">
+        <label>X位置 <span id="posXVal">0</span>px</label>
+        <input type="range" id="posX" min="-2000" max="2000" value="0" step="1">
+      </div>
+      <div class="field">
+        <label>Y位置 <span id="posYVal">0</span>px</label>
+        <input type="range" id="posY" min="-2000" max="2000" value="0" step="1">
+      </div>
+      <div class="field">
+        <label>スケール <span id="scaleVal">1.00</span>×</label>
+        <input type="range" id="fgScaleSlider" min="5" max="400" value="100" step="1">
+      </div>
+      <button class="btn" id="resetTransform" style="width:100%">↺ トランスフォームをリセット</button>
+    </div>
+
+    <div class="section">
+      <div class="toggle-row">
+        <span class="toggle-label">ループ再生</span>
+        <label class="toggle"><input type="checkbox" id="loopPlay" checked=""><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">音量</div>
+      <div class="field">
+        <label>BG ボリューム <span id="bgVolVal">100</span>%</label>
+        <input type="range" id="bgVol" min="0" max="100" value="100" step="1">
+      </div>
+      <div class="field">
+        <label>FG ボリューム <span id="fgVolVal">100</span>%</label>
+        <input type="range" id="fgVol" min="0" max="100" value="100" step="1">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <button class="btn" id="muteBgBtn" style="flex:1;font-size:10px">🔇 BG ミュート</button>
+        <button class="btn" id="muteFgBtn" style="flex:1;font-size:10px">🔇 FG ミュート</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">書き出し</div>
+      <button class="btn btn-primary" id="exportMp4Btn" disabled="" style="width:100%;margin-bottom:6px;font-size:12px;padding:10px">▼ MP4 で書き出し</button>
+      <button class="btn" id="exportWebmBtn" disabled="" style="width:100%;margin-bottom:8px">▼ WebM で書き出し</button>
+      <button class="btn btn-danger" id="liveRecordBtn" disabled="" style="width:100%;margin-bottom:10px">● リアルタイム録画</button>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div id="netlifyBanner" class="warn-box" style="display:none;color:#88aaff;background:rgba(68,120,255,0.08);border-color:rgba(68,120,255,0.25)">
+        ⚠️ MP4はhttps://上でのみ動作します<br><br>
+        <b style="color:#aabbff">無料公開手順（3ステップ）：</b><br>
+        ① <a href="https://app.netlify.com/drop" target="_blank" style="color:#88aaff">app.netlify.com/drop</a> を開く<br>
+        ② このHTMLファイルをそこにドロップ<br>
+        ③ 表示されたURLをChromeで開く<br><br>
+        それだけでMP4書き出しが使えます
+      </div>
+      <div class="warn-box" id="exportErrBox"></div>
+      <div class="export-note" id="exportNote">
+        書き出すと自動でダウンロードされます。
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<video id="bgVideo" playsinline=""></video>
+<video id="fgVideo" playsinline=""></video>
+<canvas id="fgCanvas" style="display:none"></canvas>
+
+<script>
+const bgVideo   = document.getElementById('bgVideo');
+const fgVideo   = document.getElementById('fgVideo');
+const outCanvas = document.getElementById('outputCanvas');
+const outCtx    = outCanvas.getContext('2d');
+const fgCanvas  = document.getElementById('fgCanvas');
+const fgCtx     = fgCanvas.getContext('2d', { willReadFrequently: true });
+
+let W = 1280, H = 720;
+let bgLoaded = false, fgLoaded = false;
+let animFrame = null, isPlaying = false;
+let mediaRecorder = null, recordedChunks = [];
+let isRecording = false, exportRunning = false;
+let fgOffsetX = 0, fgOffsetY = 0, fgScale = 1.0;
+
+// Shared Web Audio graph - created once, reused across all exports
+let sharedAudioCtx = null, bgGainNode = null, fgGainNode = null, bgSrcNode = null, fgSrcNode = null;
+function ensureAudioGraph() {
+  if (sharedAudioCtx) return true;
+  try {
+    sharedAudioCtx = new AudioContext();
+    bgSrcNode = sharedAudioCtx.createMediaElementSource(bgVideo);
+    fgSrcNode = sharedAudioCtx.createMediaElementSource(fgVideo);
+    bgGainNode = sharedAudioCtx.createGain();
+    fgGainNode = sharedAudioCtx.createGain();
+    bgGainNode.gain.value = bgVideo.volume;
+    fgGainNode.gain.value = fgVideo.volume;
+    bgSrcNode.connect(bgGainNode); bgGainNode.connect(sharedAudioCtx.destination);
+    fgSrcNode.connect(fgGainNode); fgGainNode.connect(sharedAudioCtx.destination);
+    return true;
+  } catch(e) { return false; }
+}
+function getAudioMixStream() {
+  if (!ensureAudioGraph()) return null;
+  // Update gain from current volume sliders
+  bgGainNode.gain.value = bgVideo.volume;
+  fgGainNode.gain.value = fgVideo.volume;
+  const dest = sharedAudioCtx.createMediaStreamDestination();
+  bgGainNode.connect(dest);
+  fgGainNode.connect(dest);
+  return { stream: dest.stream, dest };
+}
+
+// ---- chroma key ----
+function hexToRgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+
+function applyChromaKey(imgData, kr, kg, kb, similarity, smooth, spillPct) {
+  const d = imgData.data;
+  const lo = Math.max(0, similarity - smooth);
+  const spillF = spillPct / 100;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const dr = r-kr, dg = g-kg, db = b-kb;
+    const dist = Math.sqrt(dr*dr + dg*dg + db*db);
+    let alpha = dist < lo ? 0 : dist < similarity ? (dist - lo)/(similarity - lo) : 1;
+    if (spillF > 0 && alpha > 0 && alpha < 1) {
+      const f = (1 - alpha) * spillF;
+      const lum = 0.299*r + 0.587*g + 0.114*b;
+      d[i]   = Math.round(r + (lum-r)*f);
+      d[i+1] = Math.round(g + (lum-g)*f);
+      d[i+2] = Math.round(b + (lum-b)*f);
+    }
+    d[i+3] = Math.round(alpha * 255);
+  }
+  return imgData;
+}
+
+function getParams() {
+  const [kr,kg,kb] = hexToRgb(document.getElementById('keyColor').value);
+  return {
+    kr, kg, kb,
+    similarity : +document.getElementById('similarity').value,
+    smooth     : +document.getElementById('smooth').value,
+    spill      : +document.getElementById('spill').value,
+    fgAlpha    : +document.getElementById('fgAlpha').value / 100,
+    maskMode   : document.getElementById('maskPreview').checked,
+  };
+}
+
+// ---- render ----
+function processFrame() {
+  if (!bgLoaded || !fgLoaded) return;
+  const { kr, kg, kb, similarity, smooth, spill, fgAlpha, maskMode } = getParams();
+
+  // Draw FG at native pixel size, apply chroma key
+  const fvw = fgVideo.videoWidth, fvh = fgVideo.videoHeight;
+  if (fgCanvas.width !== fvw || fgCanvas.height !== fvh) {
+    fgCanvas.width = fvw; fgCanvas.height = fvh;
+  }
+  fgCtx.drawImage(fgVideo, 0, 0, fvw, fvh);
+  const imgData = fgCtx.getImageData(0, 0, fvw, fvh);
+  applyChromaKey(imgData, kr, kg, kb, similarity, smooth, spill);
+  fgCtx.putImageData(imgData, 0, 0);
+
+  // Calculate FG destination rect (center + offset + scale)
+  const dw = fvw * fgScale, dh = fvh * fgScale;
+  const dx = (W - dw) / 2 + fgOffsetX;
+  const dy = (H - dh) / 2 + fgOffsetY;
+
+  if (maskMode) {
+    // Show alpha mask
+    outCtx.fillStyle = '#111';
+    outCtx.fillRect(0, 0, W, H);
+    // Grayscale alpha mask
+    const tmp = document.createElement('canvas');
+    tmp.width = fvw; tmp.height = fvh;
+    const tc = tmp.getContext('2d', { willReadFrequently: true });
+    tc.drawImage(fgCanvas, 0, 0);
+    const td = tc.getImageData(0, 0, fvw, fvh);
+    for (let i = 0; i < td.data.length; i+=4) {
+      const v = td.data[i+3];
+      td.data[i]=v; td.data[i+1]=v; td.data[i+2]=v; td.data[i+3]=255;
+    }
+    tc.putImageData(td, 0, 0);
+    outCtx.drawImage(tmp, dx, dy, dw, dh);
+    return;
+  }
+
+  // BG at native output size
+  outCtx.drawImage(bgVideo, 0, 0, W, H);
+
+  // FG at original pixel size, positioned and scaled
+  outCtx.save();
+  outCtx.globalAlpha = fgAlpha;
+  outCtx.drawImage(fgCanvas, dx, dy, dw, dh);
+  outCtx.restore();
+}
+
+function updateTimecode() {
+  const t = fgVideo.currentTime;
+  const m  = String(Math.floor(t/60)).padStart(2,'0');
+  const s  = String(Math.floor(t%60)).padStart(2,'0');
+  const cs = String(Math.floor((t%1)*100)).padStart(2,'0');
+  document.getElementById('timecode').textContent = `${m}:${s}.${cs}`;
+}
+
+function renderLoop() {
+  if (!isPlaying) return;
+  processFrame();
+  updateTimecode();
+  animFrame = requestAnimationFrame(renderLoop);
+}
+
+// ---- video loading ----
+function updateResInfo() {
+  const bw = bgVideo.videoWidth||0, bh = bgVideo.videoHeight||0;
+  const fw = fgVideo.videoWidth||0, fh = fgVideo.videoHeight||0;
+  document.getElementById('resInfo').innerHTML =
+    `BG: <span>${bw ? bw+'×'+bh : '—'}</span> &nbsp;|&nbsp; FG: <span>${fw ? fw+'×'+fh : '—'}</span>`;
+}
+
+function loadBG(file) {
+  bgVideo.src = URL.createObjectURL(file);
+  bgVideo.load();
+  const t = document.getElementById('bgTitle');
+  t.textContent = file.name.length > 22 ? file.name.slice(0,20)+'…' : file.name;
+  document.getElementById('bgDrop').classList.add('loaded');
+  bgVideo.addEventListener('loadedmetadata', () => {
+    W = bgVideo.videoWidth  || 1280;
+    H = bgVideo.videoHeight || 720;
+    outCanvas.width  = W;
+    outCanvas.height = H;
+    document.getElementById('bgMeta').textContent = `Canvas: ${W}×${H}`;
+    updateResInfo();
+    bgLoaded = true;
+    checkReady();
+  }, { once:true });
+}
+
+function loadFG(file) {
+  fgVideo.src = URL.createObjectURL(file);
+  fgVideo.load();
+  const t = document.getElementById('fgTitle');
+  t.textContent = file.name.length > 22 ? file.name.slice(0,20)+'…' : file.name;
+  document.getElementById('fgDrop').classList.add('loaded');
+  fgVideo.addEventListener('loadedmetadata', () => {
+    const fw = fgVideo.videoWidth, fh = fgVideo.videoHeight;
+    document.getElementById('fgMeta').textContent = `原寸: ${fw}×${fh}`;
+    updateResInfo();
+    fgLoaded = true;
+    checkReady();
+  }, { once:true });
+}
+
+function checkReady() {
+  if (!bgLoaded || !fgLoaded) return;
+  document.getElementById('placeholderMsg').style.display = 'none';
+  ['playBtn','exportMp4Btn','exportWebmBtn','recordBtn','liveRecordBtn'].forEach(id => {
+    document.getElementById(id).disabled = false;
+  });
+  processFrame();
+}
+
+function setupDrop(dropId, fileId, loadFn) {
+  const drop = document.getElementById(dropId);
+  const inp  = document.getElementById(fileId);
+  inp.addEventListener('change', () => { if (inp.files[0]) loadFn(inp.files[0]); });
+  drop.addEventListener('dragover',  e => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('video/')) loadFn(f);
+  });
+}
+setupDrop('bgDrop','bgFile', loadBG);
+setupDrop('fgDrop','fgFile', loadFG);
+
+// ---- playback ----
+function startPlay() {
+  if (!bgLoaded || !fgLoaded) return;
+  isPlaying = true;
+  bgVideo.play(); fgVideo.play();
+  document.getElementById('playBtn').textContent = '⏸ 一時停止';
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('statusDot').className = 'status-dot active';
+  renderLoop();
+}
+function pausePlay() {
+  isPlaying = false;
+  bgVideo.pause(); fgVideo.pause();
+  cancelAnimationFrame(animFrame);
+  document.getElementById('playBtn').textContent = '▶ 再生';
+  document.getElementById('statusDot').className = 'status-dot';
+}
+function stopPlay() {
+  pausePlay();
+  bgVideo.currentTime = 0; fgVideo.currentTime = 0;
+  document.getElementById('stopBtn').disabled = true;
+  if (isRecording) stopRec();
+}
+
+[bgVideo, fgVideo].forEach(v => {
+  v.addEventListener('ended', () => {
+    if (document.getElementById('loopPlay').checked) {
+      bgVideo.currentTime = 0; fgVideo.currentTime = 0;
+      bgVideo.play(); fgVideo.play();
+    } else { stopPlay(); }
+  });
+});
+
+document.getElementById('playBtn').addEventListener('click', () => isPlaying ? pausePlay() : startPlay());
+document.getElementById('stopBtn').addEventListener('click', stopPlay);
+
+// ---- live recording ----
+function startRec() {
+  const _rs = outCanvas.captureStream(30);
+  const _mix = getAudioMixStream();
+  if (_mix) _mix.stream.getAudioTracks().forEach(t => _rs.addTrack(t));
+  const stream = _rs;
+  recordedChunks = [];
+  try { mediaRecorder = new MediaRecorder(stream, { mimeType:'video/webm;codecs=vp9' }); }
+  catch { mediaRecorder = new MediaRecorder(stream); }
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    dlBlob(new Blob(recordedChunks,{type:'video/webm'}), `composited_${Date.now()}.webm`);
+    isRecording = false;
+    ['recordBtn','liveRecordBtn'].forEach(id => document.getElementById(id).textContent = id === 'recordBtn' ? '● 録画' : '● リアルタイム録画 (WebM)');
+    document.getElementById('statusDot').className = isPlaying ? 'status-dot active' : 'status-dot';
+  };
+  mediaRecorder.start(100);
+  isRecording = true;
+  document.getElementById('recordBtn').textContent = '■ 録画停止';
+  document.getElementById('liveRecordBtn').textContent = '■ 録画停止';
+  document.getElementById('statusDot').className = 'status-dot recording';
+  if (!isPlaying) startPlay();
+}
+function stopRec() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+}
+document.getElementById('recordBtn').addEventListener('click', () => isRecording ? stopRec() : startRec());
+document.getElementById('liveRecordBtn').addEventListener('click', () => isRecording ? stopRec() : startRec());
+
+// ---- WebM export ----
+document.getElementById('exportWebmBtn').addEventListener('click', async () => {
+  if (!bgLoaded || !fgLoaded || exportRunning) return;
+  exportRunning = true;
+  setExportUI(true);
+  const _vs = outCanvas.captureStream(30);
+  const _wmix = getAudioMixStream();
+  if (_wmix) _wmix.stream.getAudioTracks().forEach(t => _vs.addTrack(t));
+  recordedChunks = [];
+  let mr;
+  try { mr = new MediaRecorder(_vs, { mimeType:'video/webm;codecs=vp9' }); }
+  catch { mr = new MediaRecorder(_vs); }
+  mr.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mr.onstop = () => {
+    dlBlob(new Blob(recordedChunks,{type:'video/webm'}), `composited_${Date.now()}.webm`);
+    setExportUI(false); exportRunning = false;
+  };
+  mr.start(100);
+  await runExportLoop(mr);
+});
+
+async function runExportLoop(mr) {
+  pausePlay();
+  bgVideo.currentTime = 0; fgVideo.currentTime = 0;
+  const dur = Math.min(bgVideo.duration||10, fgVideo.duration||10);
+  document.getElementById('progressBar').style.display = 'block';
+  isPlaying = true;
+  bgVideo.play(); fgVideo.play();
+  document.getElementById('statusDot').className = 'status-dot recording';
+  await new Promise(resolve => {
+    function loop() {
+      if (!isPlaying) { resolve(); return; }
+      processFrame();
+      document.getElementById('progressFill').style.width =
+        Math.min(100, Math.round((fgVideo.currentTime/dur)*100)) + '%';
+      if (fgVideo.ended || fgVideo.currentTime >= dur - 0.05) {
+        isPlaying = false; bgVideo.pause(); fgVideo.pause();
+        document.getElementById('statusDot').className = 'status-dot';
+        resolve(); return;
+      }
+      animFrame = requestAnimationFrame(loop);
+    }
+    cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(loop);
+  });
+  mr.stop();
+}
+
+
+
+function setExportUI(on, label) {
+  const mp4btn = document.getElementById('exportMp4Btn');
+  const webmbtn = document.getElementById('exportWebmBtn');
+  mp4btn.disabled = on; webmbtn.disabled = on;
+  mp4btn.textContent = on ? (label && label.includes('MP4') ? label : '▼ MP4 で書き出し') : '▼ MP4 で書き出し';
+  webmbtn.textContent = on ? (label && label.includes('WebM') ? label : '▼ WebM で書き出し') : '▼ WebM で書き出し';
+  if (!on) {
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('progressFill').style.width  = '0%';
+  }
+}
+
+function dlBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---- slider bindings ----
+['similarity','smooth','spill','fgAlpha'].forEach(id => {
+  const el = document.getElementById(id);
+  const vl = document.getElementById(id+'Val');
+  el.addEventListener('input', () => { vl.textContent = el.value; if (!isPlaying && bgLoaded && fgLoaded) processFrame(); });
+});
+
+document.getElementById('posX').addEventListener('input', function() {
+  fgOffsetX = +this.value;
+  document.getElementById('posXVal').textContent = this.value;
+  if (!isPlaying && bgLoaded && fgLoaded) processFrame();
+});
+document.getElementById('posY').addEventListener('input', function() {
+  fgOffsetY = +this.value;
+  document.getElementById('posYVal').textContent = this.value;
+  if (!isPlaying && bgLoaded && fgLoaded) processFrame();
+});
+document.getElementById('fgScaleSlider').addEventListener('input', function() {
+  fgScale = this.value / 100;
+  document.getElementById('scaleVal').textContent = fgScale.toFixed(2);
+  if (!isPlaying && bgLoaded && fgLoaded) processFrame();
+});
+
+document.getElementById('keyColor').addEventListener('input', () => { if (!isPlaying && bgLoaded && fgLoaded) processFrame(); });
+document.getElementById('maskPreview').addEventListener('change', () => { if (!isPlaying && bgLoaded && fgLoaded) processFrame(); });
+
+document.querySelectorAll('.preset-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.preset-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    document.getElementById('keyColor').value = sw.dataset.color;
+    if (!isPlaying && bgLoaded && fgLoaded) processFrame();
+  });
+});
+
+document.getElementById('resetTransform').addEventListener('click', () => {
+  fgOffsetX = 0; fgOffsetY = 0; fgScale = 1.0;
+  document.getElementById('posX').value = 0;
+  document.getElementById('posY').value = 0;
+  document.getElementById('fgScaleSlider').value = 100;
+  document.getElementById('posXVal').textContent  = '0';
+  document.getElementById('posYVal').textContent  = '0';
+  document.getElementById('scaleVal').textContent = '1.00';
+  if (!isPlaying && bgLoaded && fgLoaded) processFrame();
+});
+
+// ---- volume controls ----
+let bgMuted = false, fgMuted = false;
+
+document.getElementById('bgVol').addEventListener('input', function() {
+  document.getElementById('bgVolVal').textContent = this.value;
+  const v = this.value / 100;
+  if (!bgMuted) { bgVideo.volume = v; if (bgGainNode) bgGainNode.gain.value = v; }
+});
+document.getElementById('fgVol').addEventListener('input', function() {
+  document.getElementById('fgVolVal').textContent = this.value;
+  const v = this.value / 100;
+  if (!fgMuted) { fgVideo.volume = v; if (fgGainNode) fgGainNode.gain.value = v; }
+});
+
+document.getElementById('muteBgBtn').addEventListener('click', function() {
+  bgMuted = !bgMuted;
+  bgVideo.muted = bgMuted;
+  if (bgGainNode) bgGainNode.gain.value = bgMuted ? 0 : bgVideo.volume;
+  this.textContent = bgMuted ? '🔊 BG ミュート解除' : '🔇 BG ミュート';
+  this.style.color = bgMuted ? 'var(--accent)' : '';
+  this.style.borderColor = bgMuted ? 'rgba(0,232,122,0.4)' : '';
+});
+document.getElementById('muteFgBtn').addEventListener('click', function() {
+  fgMuted = !fgMuted;
+  fgVideo.muted = fgMuted;
+  if (fgGainNode) fgGainNode.gain.value = fgMuted ? 0 : fgVideo.volume;
+  this.textContent = fgMuted ? '🔊 FG ミュート解除' : '🔇 FG ミュート';
+  this.style.color = fgMuted ? 'var(--accent)' : '';
+  this.style.borderColor = fgMuted ? 'rgba(0,232,122,0.4)' : '';
+});
+
+// ---- MP4 export (MediaRecorder, Chrome 130+) ----
+(function() {
+  const mp4btn  = document.getElementById('exportMp4Btn');
+  const errBox  = document.getElementById('exportErrBox');
+  const noteEl  = document.getElementById('exportNote');
+  const banner  = document.getElementById('netlifyBanner');
+
+  function updateBanner() {
+    const mp4ok = MediaRecorder.isTypeSupported('video/mp4') ||
+                  MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
+                  MediaRecorder.isTypeSupported('video/mp4;codecs=h264');
+    if (!mp4ok) {
+      banner.innerHTML = '⚠️ このブラウザはMP4録画に対応していません。<br>Chrome 130以上をお使いください。<br>現在のバージョン: ' + navigator.userAgent.match(/Chrome\/([\d.]+)/)?.[1];
+      banner.style.display = 'block';
+      banner.style.color = '#ff8866';
+      banner.style.borderColor = 'rgba(255,80,50,0.3)';
+      mp4btn.disabled = true;
+      mp4btn.textContent = '▼ MP4 非対応';
+    }
+  }
+  updateBanner();
+
+  mp4btn.addEventListener('click', async () => {
+    if (!bgLoaded || !fgLoaded || exportRunning) return;
+    errBox.style.display = 'none';
+
+    // Pick best supported MP4 mimeType
+    const candidates = [
+      'video/mp4;codecs=avc1',
+      'video/mp4;codecs=h264',
+      'video/mp4',
+    ];
+    let mimeType = candidates.find(m => MediaRecorder.isTypeSupported(m));
+    if (!mimeType) {
+      errBox.textContent = 'MP4録画非対応。Chrome 130以上をお試しください。';
+      errBox.style.display = 'block'; return;
+    }
+
+    exportRunning = true;
+    setExportUI(true, '▼ MP4 書き出し中...');
+    pausePlay();
+
+    const chunks = [];
+
+    // Mix audio via shared Web Audio graph
+    const _mp4vs = outCanvas.captureStream(30);
+    const _mp4mix = getAudioMixStream();
+    if (_mp4mix) _mp4mix.stream.getAudioTracks().forEach(t => _mp4vs.addTrack(t));
+    const stream = _mp4vs;
+    let mr;
+    try { mr = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 }); }
+    catch(e) {
+      errBox.textContent = 'MediaRecorder起動失敗: ' + e.message;
+      errBox.style.display = 'block';
+      setExportUI(false); exportRunning = false; return;
+    }
+    mr.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    mr.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType });
+      dlBlob(blob, 'composited_' + Date.now() + '.mp4');
+      setExportUI(false);
+      exportRunning = false;
+      document.getElementById('statusDot').className = 'status-dot';
+    };
+
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('statusDot').className = 'status-dot recording';
+
+    // Seek to start
+    await new Promise(resolve => {
+      let n = 2;
+      const done = () => { if (--n === 0) resolve(); };
+      bgVideo.onseeked = done; fgVideo.onseeked = done;
+      bgVideo.currentTime = 0; fgVideo.currentTime = 0;
+    });
+
+    const dur = Math.min(bgVideo.duration || 0, fgVideo.duration || 0);
+
+    mr.start(200);
+    bgVideo.play(); fgVideo.play();
+
+    await new Promise(resolve => {
+      function loop() {
+        processFrame();
+        document.getElementById('progressFill').style.width =
+          Math.min(100, Math.round((fgVideo.currentTime / dur) * 100)) + '%';
+        if (fgVideo.ended || fgVideo.currentTime >= dur - 0.05) {
+          resolve(); return;
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    });
+
+    bgVideo.pause(); fgVideo.pause();
+    if (_mp4mix) { bgGainNode.disconnect(_mp4mix.dest); fgGainNode.disconnect(_mp4mix.dest); }
+    mr.stop();
+  });
+})();
+
+</script>
+
+
+</body></html>

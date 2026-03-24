@@ -1,0 +1,176 @@
+/* Neo-Brutalist Monochrome Theme */
+:root {
+  /* Default: Light Mode */
+  --bg: #ffffff;
+  --text: #000000;
+  --border: #000000;
+  --shadow: #000000;
+  --hover-bg: #f0f0f0;
+  --btn-bg: #ffffff;
+  --btn-text: #000000;
+  --btn-hover-bg: #000000;
+  --btn-hover-text: #ffffff;
+  --accent: #000000;
+  --card-bg: #ffffff;
+  --inactive: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  /* Dark Mode: Inverted */
+  --bg: #000000;
+  --text: #ffffff;
+  --border: #ffffff;
+  --shadow: #ffffff;
+  --hover-bg: #1a1a1a;
+  --btn-bg: #000000;
+  --btn-text: #ffffff;
+  --btn-hover-bg: #ffffff;
+  --btn-hover-text: #000000;
+  --accent: #ffffff;
+  --card-bg: #000000;
+  --inactive: #333333;
+}
+
+/* Global resets for the theme */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Base Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Global Neo-Brutalist Utilities */
+.neo-box {
+  background-color: var(--card-bg);
+  border: 3px solid var(--border);
+  box-shadow: 6px 6px 0 var(--shadow);
+  border-radius: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--shadow);
+}
+
+.neo-box-inset {
+  background-color: var(--bg);
+  border: 3px solid var(--border);
+  box-shadow: inset 4px 4px 0 rgba(0,0,0,0.1);
+  border-radius: 0;
+}
+[data-theme="dark"] .neo-box-inset {
+  box-shadow: inset 4px 4px 0 rgba(255,255,255,0.1);
+}
+
+/* Buttons */
+.neo-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: 3px solid var(--border);
+  box-shadow: 4px 4px 0 var(--shadow);
+  border-radius: 0;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--shadow);
+  background-color: var(--hover-bg);
+}
+
+.neo-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0 var(--shadow);
+}
+
+.neo-btn.primary {
+  background-color: var(--text);
+  color: var(--bg);
+}
+
+.neo-btn.primary:hover {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Inputs */
+.neo-input {
+  background-color: var(--bg);
+  color: var(--text);
+  border: 3px solid var(--border);
+  border-radius: 0;
+  padding: 10px;
+  font-size: 1rem;
+  box-shadow: 4px 4px 0 var(--shadow);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.neo-input:focus {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+/* Modals / Overlays */
+.neo-modal {
+  background: var(--bg);
+  border: 4px solid var(--border);
+  box-shadow: 12px 12px 0 var(--shadow);
+  padding: 30px;
+}
+
+/* Scrollbar styling for monochrome look */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 2px solid var(--border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text);
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hover-bg);
+}
+
+/* Pill / Badge styles */
+.neo-badge {
+  background-color: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--border);
+  padding: 4px 10px;
+  font-weight: bold;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border-radius: 999px; /* Some roundness for tags is ok, but we can stick to square if strictly brutalist. Users requested monochrome, image shows both square and pill. Let's make it pill as per image sample for badges. */
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+/* Divider */
+.neo-hr {
+  border: none;
+  border-top: 3px solid var(--border);
+  margin: 20px 0;
+}

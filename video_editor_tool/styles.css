@@ -1,13 +1,13 @@
 :root {
-    --bg-dark: #0a0a0c;
-    --sidebar-bg: rgba(20, 20, 25, 0.85);
-    --accent: #3b82f6;
-    --accent-glow: rgba(59, 130, 246, 0.4);
-    --text-main: #e2e8f0;
-    --text-muted: #94a3b8;
-    --border: rgba(255, 255, 255, 0.1);
-    --glass: rgba(255, 255, 255, 0.03);
-    --panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --bg-dark: var(--bg);
+    --sidebar-bg: var(--bg);
+    --accent: var(--text);
+    --accent-glow: transparent;
+    --text-main: var(--text);
+    --text-muted: var(--text);
+    --border: var(--border);
+    --glass: var(--card-bg);
+    --panel-shadow: 4px 4px 0 var(--shadow);
 }
 
 * {

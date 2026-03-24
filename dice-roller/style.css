@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --bg-gradient: radial-gradient(circle at top left, #1e1b4b, #0f172a);
-    --glass: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text: #f8fafc;
-    --text-muted: #94a3b8;
+    --primary: var(--text);
+    --primary-hover: var(--hover-bg);
+    --bg-gradient: var(--bg);
+    --glass: var(--bg);
+    --glass-border: var(--border);
+    --text: var(--text);
+    --text-muted: var(--text);
     --dice-size: 80px;
 }
 

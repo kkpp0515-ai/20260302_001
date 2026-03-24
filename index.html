@@ -1,42 +1,34 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CTW Marketing Ai Tool</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme-toggle.js"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --background: #0f172a;
-            --card-hover: rgba(255, 255, 255, 0.05);
-        }
-
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: white;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-            margin: 0;
-            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
         }
 
         h1 {
             font-size: 3rem;
             margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #818cf8, #f472b6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            text-align: center;
         }
 
         p.subtitle {
-            color: #94a3b8;
             margin-bottom: 3rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            text-align: center;
         }
 
         .grid {
@@ -48,50 +40,31 @@
         }
 
         .tool-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
             gap: 12px;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-8px);
-            background: var(--card-hover);
-            border-color: var(--primary);
-            box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.3);
+            padding: 24px;
+            cursor: pointer;
         }
 
         .tool-icon {
             font-size: 2rem;
+            margin-bottom: 10px;
         }
 
         .tool-title {
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         .tool-desc {
             font-size: 0.875rem;
-            color: #94a3b8;
             line-height: 1.5;
+            margin-top: 10px;
         }
 
-        .status-badge {
-            font-size: 10px;
-            text-transform: uppercase;
-            padding: 4px 8px;
-            border-radius: 9999px;
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            width: fit-content;
-        }
     </style>
 </head>
 
@@ -102,37 +75,45 @@
     <div class="grid">
         <!-- TOOL_CARDS_START -->
 
-        <a href="./video_resize_tool/" class="tool-card">
+        <a href="./video_resize_tool/" class="tool-card neo-box">
             <span class="tool-icon">✂️</span>
             <div class="tool-title">動画リサイズ＆帯合成</div>
-            <div class='status-badge'>v3.3</div>
+            <div class='status-badge neo-badge'>v3.3</div>
             <p class="tool-desc">動画のサイズ調整と帯（枠）の合成を一括で行える便利なツールです。</p>
         </a>
-        <a href="./tif2jpg/" class="tool-card">
+        <a href="./tif2jpg/" class="tool-card neo-box">
             <span class="tool-icon">📸</span>
             <div class="tool-title">TIFF to JPEG Converter</div>
-            <div class='status-badge'>New</div>
+            <div class='status-badge neo-badge'>New</div>
             <p class="tool-desc">複数TIFFを一括JPEG変換＆ZIP化できるブラウザ完結ツール。</p>
         </a>
-        <a href="./banner-rating-adder/" class="tool-card">
+        <a href="./banner-rating-adder/" class="tool-card neo-box">
             <span class="tool-icon">🏷️</span>
             <div class="tool-title">Banner Rating Adder</div>
-            <div class='status-badge'>New</div>
+            <div class='status-badge neo-badge'>New</div>
             <p class="tool-desc">バナー画像の四隅にレーティングマークを一括で付与できるツールです。</p>
         </a>
-        <a href="./interactive-image-distorter/" class="tool-card">
-            <span class="tool-icon">🍰</span>
-            <div class="tool-title">Interactive Image Distorter</div>
-            <div class='status-badge'>New (Web Ver)</div>
+        <a href="./interactive-image-distorter/" class="tool-card neo-box">
+            <span class="tool-icon">🍮</span>
+            <div class="tool-title">揺れプリン</div>
+            <div class='status-badge neo-badge'>New (Web Ver)</div>
             <p class="tool-desc">画像の一部をマウスで揺らしたり変形させたりできるインタラクティブな編集ツール（XX-CAKE Web版）</p>
+        </a>
+        <a href="./weekly-planning-tool/" class="tool-card neo-box">
+            <span class="tool-icon">📊</span>
+            <div class="tool-title">週間企画数割り振り</div>
+            <div class='status-badge neo-badge'>New</div>
+            <p class="tool-desc">言語・タイトルごとの制作本数を担当者に自動で数式割り振りするツールです。</p>
+        </a>
+        <a href="https://murata-syota-ctw.github.io/chromakey/" target="_blank" rel="noopener noreferrer" class="tool-card neo-box">
+            <span class="tool-icon">🎨</span>
+            <div class="tool-title">ChromaKey Compositor</div>
+            <div class='status-badge neo-badge'>External</div>
+            <p class="tool-desc">ブラウザ上で動画や画像のクロマキー合成（背景透過）ができるツールです。</p>
         </a>
         <!-- TOOL_CARDS_END -->
     </div>
     <script src="./sidebar.js"></script>
-</body>
-
-</html>
-
 
 
 

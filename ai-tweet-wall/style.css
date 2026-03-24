@@ -1,17 +1,17 @@
 :root {
-    --bg-color: #05070a;
-    --card-bg: rgba(20, 24, 33, 0.7);
-    --accent-color: #00f2ff;
-    --accent-glow: rgba(0, 242, 255, 0.4);
-    --secondary-color: #7000ff;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0b8;
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --hover-bg: rgba(255, 255, 255, 0.05);
+    --bg-color: var(--bg);
+    --card-bg: var(--bg);
+    --accent-color: var(--text);
+    --accent-glow: transparent;
+    --secondary-color: var(--text);
+    --text-primary: var(--text);
+    --text-secondary: var(--text);
+    --glass-border: var(--border);
+    --hover-bg: var(--hover-bg);
 
     --card-spacing: 16px;
-    --card-radius: 16px;
-    --transition-speed: 0.3s;
+    --card-radius: 0px;
+    --transition-speed: 0.1s;
 }
 
 * {

@@ -1,0 +1,234 @@
+:root {
+    --bg: #FFFFFF;
+    --text: #000000;
+    --border: #000000;
+    --shadow: #000000;
+    --panel-bg: #FFFFFF;
+    --table-header: #F1F1F1;
+    --subtotal-bg: #EAEAEA;
+    --hover: #F0F0F0;
+    --primary: #000000;
+    --primary-text: #FFFFFF;
+    --secondary: #FFFFFF;
+    --secondary-text: #000000;
+}
+
+:root[data-theme="dark"] {
+    --bg: #121212;
+    --text: #FFFFFF;
+    --border: #FFFFFF;
+    --shadow: #FFFFFF;
+    --panel-bg: #121212;
+    --table-header: #1E1E1E;
+    --subtotal-bg: #2A2A2A;
+    --hover: #222222;
+    --primary: #FFFFFF;
+    --primary-text: #000000;
+    --secondary: #121212;
+    --secondary-text: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    border: 3px solid var(--border);
+    background-color: var(--panel-bg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 6px 6px 0 var(--shadow);
+    transition: all 0.3s ease;
+}
+
+h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+header p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 3px solid var(--border);
+    transition: all 0.2s ease;
+    box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--shadow);
+}
+
+.btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 var(--shadow);
+}
+
+.primary-btn {
+    background-color: var(--primary);
+    color: var(--primary-text);
+}
+
+.secondary-btn {
+    background-color: var(--secondary);
+    color: var(--secondary-text);
+}
+
+.table-container {
+    border: 3px solid var(--border);
+    background-color: var(--panel-bg);
+    box-shadow: 8px 8px 0 var(--shadow);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th, td {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-top: none;
+    border-left: none;
+    vertical-align: middle;
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+thead tr th, .lang-cell {
+    background-color: var(--table-header);
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.subtotal-row {
+    background-color: var(--subtotal-bg);
+    font-weight: 800;
+}
+
+.grand-total-row {
+    background-color: var(--primary);
+    color: var(--primary-text);
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+/* Make inputs look neo-brutalist */
+input[type="number"] {
+    width: 80px;
+    padding: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: 2px solid var(--border);
+    background-color: var(--bg);
+    color: var(--text);
+    text-align: right;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05);
+}
+
+:root[data-theme="dark"] input[type="number"] {
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.5);
+}
+
+input[type="number"]:focus {
+    outline: none;
+    background-color: var(--hover);
+}
+
+/* Hide arrows from number input */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.members-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.member-item {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid var(--border);
+    background-color: var(--panel-bg);
+    padding-left: 0.5rem;
+}
+
+.member-item label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+}
+
+.member-item input[type="number"] {
+    width: 60px;
+    border: none;
+    border-left: 2px solid var(--border);
+    box-shadow: none;
+    padding: 0.4rem;
+}
+
+.number-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    header {
+        padding: 1.5rem;
+    }
+    .actions {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}

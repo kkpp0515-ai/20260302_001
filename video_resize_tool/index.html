@@ -4,7 +4,7 @@
   <meta charset='UTF-8'>
   <title>動画リサイズ＆帯合成ツール v3.3 [Filename Master]</title>
   <style>
-    :root { --primary: #00b900; --bg: #1a1a1b; --panel: #2d2d2e; --white: #ffffff; --border: #3e3e3f; --glow: #00ff00; --danger: #ff4d4d; }
+    :root { --primary: var(--text); --bg: var(--bg); --panel: var(--bg); --white: var(--text); --border: var(--border); --glow: var(--shadow); --danger: var(--text); }
     body { font-family: sans-serif; background: var(--bg); color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
     .sidebar { width: 320px; background: var(--panel); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
     h1 { color: var(--primary); font-size: 1.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
@@ -31,6 +31,8 @@
     .filename-box { margin-bottom: 15px; }
     .filename-box label { font-size: 0.7rem; color: #888; text-align: left; display: block; margin-bottom: 4px; }
   </style>
+    <link rel="stylesheet" href="../theme.css">
+    <script src="../theme-toggle.js"></script>
 </head>
 <body>
 <div class='sidebar'>
@@ -336,3 +338,4 @@
 <script src="../sidebar.js"></script>
 </body>
 </html>
+

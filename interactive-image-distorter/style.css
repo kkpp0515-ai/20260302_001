@@ -1,13 +1,13 @@
 :root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --secondary: #ec4899;
-    --background: #0f172a;
-    --panel-bg: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --danger: #ef4444;
+    --primary: var(--text);
+    --primary-hover: var(--hover-bg);
+    --secondary: var(--text);
+    --background: var(--bg);
+    --panel-bg: var(--bg);
+    --text-main: var(--text);
+    --text-muted: var(--text);
+    --border-color: var(--border);
+    --danger: var(--text);
 }
 
 body {

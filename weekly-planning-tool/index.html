@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>週間企画数割り振りツール</title>
+    <!-- 共通のフォント -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="glass-panel">
+            <h1 class="gradient-text">週間企画数割り振りツール</h1>
+            <p>言語・タイトルごとの制作本数を入力すると自動で担当者に割り振られます。<br>数字は後から自由に編集可能です。</p>
+        </header>
+
+        <main>
+            <div class="actions">
+                <button id="reset-btn" class="btn secondary-btn">リセット</button>
+                <button id="copy-btn" class="btn primary-btn">クリップボードにコピー</button>
+            </div>
+
+            <div class="table-container glass-panel">
+                <table id="allocation-table">
+                    <thead>
+                        <tr>
+                            <th>言語</th>
+                            <th>タイトル</th>
+                            <th>制作本数</th>
+                            <th>担当</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- ここにJavaScriptで動的に行が追加されます -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="grand-total-row">
+                            <td colspan="2">合計</td>
+                            <td id="grand-total-count" class="number-cell">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- ダークモード切り替え用の共通スクリプト -->
+    <script src="../theme-toggle.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

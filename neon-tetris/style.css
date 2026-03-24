@@ -1,10 +1,10 @@
 :root {
-    --bg-color: #050505;
-    --panel-bg: rgba(20, 20, 25, 0.7);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --text-color: #ffffff;
-    --primary-glow: #00f2ff;
-    --secondary-glow: #7000ff;
+    --bg-color: var(--bg);
+    --panel-bg: var(--bg);
+    --border-color: var(--border);
+    --text-color: var(--text);
+    --primary-glow: var(--text);
+    --secondary-glow: var(--text);
     
     --color-i: #00f0f0;
     --color-j: #0000f0;

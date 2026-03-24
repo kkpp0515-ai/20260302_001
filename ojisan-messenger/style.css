@@ -1,13 +1,13 @@
 :root {
-    --line-bg-blue: #8CABD0;
-    --line-green: #95eb6c;
-    --line-white: #ffffff;
-    --line-grey: #f2f3f7;
-    --line-text: #2c2c2c;
-    --line-timestamp: #667e99;
-    --accent-color: #55acee;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    --glass-bg: rgba(255, 255, 255, 0.85);
+    --line-bg-blue: var(--bg);
+    --line-green: var(--btn-bg);
+    --line-white: var(--card-bg);
+    --line-grey: var(--hover-bg);
+    --line-text: var(--text);
+    --line-timestamp: var(--text);
+    --accent-color: var(--text);
+    --shadow: 4px 4px 0 var(--shadow);
+    --glass-bg: var(--bg);
     --modal-bg: rgba(0, 0, 0, 0.6);
 }
 

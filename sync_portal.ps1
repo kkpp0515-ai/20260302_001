@@ -14,12 +14,12 @@ foreach ($dir in $toolDirs) {
     $title = $metadata.title
     $icon = $metadata.icon
     $desc = $metadata.description
-    $status = if ($metadata.status) { "<div class='status-badge'>$($metadata.status)</div>" } else { "" }
+    $status = if ($metadata.status) { "<div class='status-badge neo-badge'>$($metadata.status)</div>" } else { "" }
     $href = "./$($dir.Name)/"
     
     $toolCards += @"
 
-        <a href="$href" class="tool-card">
+        <a href="$href" class="tool-card neo-box">
             <span class="tool-icon">$icon</span>
             <div class="tool-title">$title</div>
             $status
