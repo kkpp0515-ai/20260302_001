@@ -263,7 +263,8 @@
     state.video.muted = false; state.video.currentTime = 0; await state.video.play();
     
     let isEndCardPlaying = false;
-    const totalDuration = state.video.duration + (state.endCard ? state.endCard.duration : 0);
+    const hasEndCard = !!state.endCard.src && state.endCard.src !== '';
+    const totalDuration = state.video.duration + (hasEndCard ? state.endCard.duration : 0);
 
     const render = async () => {
       if (!isEndCardPlaying) {
@@ -272,7 +273,7 @@
           fill.style.width = (state.video.currentTime / totalDuration * 100) + '%';
           requestAnimationFrame(render);
         } else {
-          if (state.endCard) {
+          if (hasEndCard) {
             isEndCardPlaying = true;
             state.endCard.muted = false;
             state.endCard.currentTime = 0;
@@ -294,7 +295,7 @@
     };
     render();
     s.blob = await done;
-    state.video.muted = true; if(state.endCard) state.endCard.muted = true;
+    state.video.muted = true; if(hasEndCard) state.endCard.muted = true;
     drawSlot(k, false); return s.blob;
   }
   document.getElementById('exportAllBtn').onclick = async () => {
