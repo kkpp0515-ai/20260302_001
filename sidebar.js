@@ -131,6 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>ChromaKey Compositor</span>
                 </a>
             </li>
+            <li>
+                <a href="${basePath}pixivads/index.html">
+                    <span class="portal-sidebar-icon">📝</span>
+                    <span>Pixiv広告CSV生成</span>
+                </a>
+            </li>
         </ul>
     `;
     document.body.prepend(sidebar);

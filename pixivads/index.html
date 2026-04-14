@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixiv広告CSV生成ツール v8</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .form-section, .table-section { margin-bottom: 30px; }
+        table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 8px; }
+        table { width: 100%; }
+        textarea { width: 100%; height: 120px; }
+        .sub-section { margin-top: 10px; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 14px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input, select {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pixiv広告CSV生成ツール v8</h1>
+
+    <div class="form-section">
+        <h2>テンプレート登録</h2>
+        <label>テンプレート名: <input id="templateName" /></label><br>
+        <label>appid: <input id="appid" /></label><br>
+        <label>R18: <input type="checkbox" id="r18" /></label><br>
+        <label>language: 
+            <select id="language">
+                <option value="ja">ja</option>
+                <option value="en">en</option>
+                <option value="zh-TW">zh-TW</option>
+                <option value="ko">ko</option>
+            </select>
+        </label><br>
+        <label>creative_title: <input id="creativeTitle" /></label><br>
+        <label>creative_text: <input id="creativeText" /></label><br>
+        <button onclick="saveTemplate()">テンプレート保存</button>
+    </div>
+
+    <div class="form-section">
+        <h2>テンプレート選択</h2>
+        <label>使用するテンプレート: 
+            <select id="templateSelect"></select>
+        </label>
+    </div>
+
+    <div class="form-section">
+        <h2>Pixiv管理画面コピー → 自動変換</h2>
+        <div class="sub-section">
+            <label>Pixiv管理画面からコピーした内容をここに貼り付け：</label><br>
+            <textarea id="rawInput" placeholder="38709\nクリエイティブ画像\nhighschool_ja_***.png\nスクエア..."></textarea><br>
+            <button onclick="convertPixivFormat()">変換</button>
+        </div>
+        <div class="sub-section">
+            <label>変換後（media_id, creative_name）：</label><br>
+            <textarea id="bulkInput" placeholder="38706, highschool_***"></textarea>
+        </div>
+        <button onclick="processBulkInput()">一括登録</button>
+    </div>
+
+    <div class="table-section">
+        <h2>入力済み一覧</h2>
+        <table id="entryTable">
+            <thead>
+                <tr>
+                    <th>category</th>
+                    <th>media_id</th>
+                    <th>creative_name</th>
+                    <th>creative_title</th>
+                    <th>creative_text</th>
+                    <th>URL</th>
+                    <th>CTA</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button onclick="clearEntries()" style="margin-right: 10px;">一覧をクリア</button>
+        <button onclick="downloadCSV()">CSV出力</button>
+    </div>
+
+<script>
+    let templates = {};
+
+    // 起動時に localStorage からテンプレート読み込み
+    window.onload = function() {
+        const saved = localStorage.getItem("pixiv_templates");
+        if (saved) {
+            templates = JSON.parse(saved);
+            updateTemplateSelect();
+        }
+    };
+
+    let entries = [];
+
+    function updateTemplateSelect() {
+        const select = document.getElementById('templateSelect');
+        select.innerHTML = "";
+        for (let name in templates) {
+            const option = document.createElement("option");
+            option.value = name;
+            option.text = name;
+            select.add(option);
+        }
+    }
+
+    function saveTemplate() {
+        const name = document.getElementById('templateName').value;
+        const appid = document.getElementById('appid').value;
+        const r18 = document.getElementById('r18').checked;
+        const lang = document.getElementById('language').value;
+        const title = document.getElementById('creativeTitle').value;
+        const text = document.getElementById('creativeText').value;
+
+        if (!name || !appid || !title || !text) {
+            alert("すべての項目を入力してください");
+            return;
+        }
+
+        templates[name] = {appid, r18, lang, title, text};
+        localStorage.setItem("pixiv_templates", JSON.stringify(templates));
+        updateTemplateSelect();
+        alert("テンプレート保存しました！");
+    }
+
+    function convertPixivFormat() {
+        const input = document.getElementById("rawInput").value.trim().split("\n");
+        let output = "";
+        for (let i = 0; i < input.length; i++) {
+            const line = input[i].trim();
+            if (/^\d+$/.test(line)) {
+                const mediaId = line;
+                // 次の10行以内に画像ファイルが出てくる前提
+                for (let j = i + 1; j < Math.min(i + 10, input.length); j++) {
+                    const maybeImg = input[j].trim();
+                    if (maybeImg.match(/\.(png|jpg|jpeg)$/i)) {
+                        output += `${mediaId}, ${maybeImg}\n`;
+                        i = j;
+                        break;
+                    }
+                }
+            }
+        }
+        if (output === "") {
+            alert("変換できるデータが見つかりませんでした。構造を確認してください。");
+        }
+        document.getElementById("bulkInput").value = output.trim();
+    }
+
+    function processBulkInput() {
+        const templateKey = document.getElementById('templateSelect').value;
+        if (!templateKey || !templates[templateKey]) {
+            alert("テンプレートを選択してください");
+            return;
+        }
+        const t = templates[templateKey];
+        const lines = document.getElementById("bulkInput").value.trim().split("\n");
+        lines.forEach(line => {
+            const parts = line.split(",");
+            if (parts.length !== 2) return;
+            const mediaId = parts[0].trim();
+            const creativeName = parts[1].trim();
+            const campaign = `${t.appid}_${t.lang}_${t.r18 ? "NewDisplayCpaR18" : "NewDisplayCpa"}_adn_sp`;
+            const url = `https://h5.g123.jp/game/${t.appid}?platform=pixiv&utm_source=pixiv&utm_campaign=${campaign}&utm_adgroup=${creativeName}&utm_content=${creativeName}`;
+            const entry = ["image", mediaId, creativeName, t.title, t.text, url, "2"];
+            entries.push(entry);
+
+            const row = document.createElement("tr");
+            entry.forEach(e => {
+                const cell = document.createElement("td");
+                cell.innerText = e;
+                row.appendChild(cell);
+            });
+            document.querySelector("#entryTable tbody").appendChild(row);
+        });
+    }
+
+    function clearEntries() {
+        entries = [];
+        document.querySelector("#entryTable tbody").innerHTML = "";
+    }
+
+    function downloadCSV() {
+        const header = ["category", "media_id", "creative_name", "creative_title", "creative_text", "URL", "CTA"];
+        const rows = entries.map(e => e.map(x => `"${x.replace(/"/g, '""')}"`).join(","));
+        const csv = [header.join(",")].concat(rows).join("\n");
+        const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        const link = document.createElement("a");
+        link.setAttribute("href", URL.createObjectURL(blob));
+        link.setAttribute("download", "pixiv_ad_upload.csv");
+        document.body.appendChild(link);
+        link.click();
+    }
+</script>
+</body>
+</html>
