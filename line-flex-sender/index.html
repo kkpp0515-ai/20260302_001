@@ -17,7 +17,7 @@
         
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], input[type="number"], textarea {
             width: 100%;
             padding: 10px;
             border: 2px solid var(--text-color, #000);
@@ -147,6 +147,11 @@
                 <label for="altText">一斉配信（または通知）のテキスト (altText)</label>
                 <input type="text" id="altText" value="一斉配信の通知テキスト">
             </div>
+            <div class="form-group">
+                <label for="broadcastLimit">配信数の上限 (オプション)</label>
+                <input type="number" id="broadcastLimit" placeholder="例: 100（空欄の場合は上限なしで全員に配信）" min="1">
+                <small style="display:block; margin-top:5px; opacity:0.8;">※上限を指定した場合、LINEの仕様により「属性が推定可能なユーザー」の中からランダムに指定人数まで配信されます（Narrowcast APIを使用）。</small>
+            </div>
         </div>
 
         <h3>Flex Message JSON (SimulatorでコピーしたJSONを入力)</h3>
@@ -163,7 +168,7 @@
 
         <div class="button-group">
             <button class="btn-test" id="btnTest">特定ユーザーにテスト送信 (Push API)</button>
-            <button class="btn-broadcast" id="btnBroadcast">全員へ一斉配信 (Broadcast API) [注意]</button>
+            <button class="btn-broadcast" id="btnBroadcast">本番配信 (上限指定時はNarrowcast) [注意]</button>
         </div>
 
         <div id="responseLog"></div>
@@ -552,10 +557,11 @@
             sendLineMessage('https://api.line.me/v2/bot/message/push', payload);
         });
 
-        // 一斉配信
+        // 一斉配信・上限指定配信
         btnBroadcast.addEventListener('click', () => {
             const altText = document.getElementById('altText').value.trim();
             const jsonText = jsonInput.value.trim();
+            const limitStr = document.getElementById('broadcastLimit').value.trim();
 
             if (!jsonText) {
                 alert('Flex MessageのJSONを入力してください。');
@@ -585,15 +591,29 @@
                 };
             }
 
-            if (!confirm('【警告】\n友だち追加している全員に一斉配信されます。本当によろしいですか？')) {
-                return;
-            }
-
+            let endpoint = 'https://api.line.me/v2/bot/message/broadcast';
             const payload = {
                 messages: [ messageObj ]
             };
 
-            sendLineMessage('https://api.line.me/v2/bot/message/broadcast', payload);
+            let confirmMsg = '【警告】\n友だち追加している全員に一斉配信されます。本当によろしいですか？';
+
+            if (limitStr) {
+                const limitNum = parseInt(limitStr, 10);
+                if (isNaN(limitNum) || limitNum < 1) {
+                    alert('配信数の上限には1以上の数値を入力してください。');
+                    return;
+                }
+                endpoint = 'https://api.line.me/v2/bot/message/narrowcast';
+                payload.limit = { max: limitNum };
+                confirmMsg = `【確認】\n属性が推定可能なユーザーの中から、最大 ${limitNum} 人にランダムに配信されます。\n本当によろしいですか？`;
+            }
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            sendLineMessage(endpoint, payload);
         });
 
     </script>
