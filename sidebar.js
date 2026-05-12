@@ -137,6 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>Pixiv広告CSV生成</span>
                 </a>
             </li>
+            <li>
+                <a href="${basePath}image-watermark-tool/index.html">
+                    <span class="portal-sidebar-icon">©️</span>
+                    <span>Image Watermark Tool</span>
+                </a>
+            </li>
         </ul>
     `;
     document.body.prepend(sidebar);
