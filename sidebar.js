@@ -102,6 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </a>
             </li>
             <li>
+                <a href="${basePath}video-overlay-tool/index.html">
+                    <span class="portal-sidebar-icon">🎞️</span>
+                    <span>動画オーバーレイ合成</span>
+                </a>
+            </li>
+            <li>
                 <a href="${basePath}tif2jpg/index.html">
                     <span class="portal-sidebar-icon">📸</span>
                     <span>TIFF to JPEG Converter</span>

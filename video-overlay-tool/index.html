@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>動画オーバーレイ合成ツール</title>
+  <style>
+    :root {
+      --primary: var(--text);
+      --bg: var(--bg);
+      --panel: var(--bg);
+      --white: var(--text);
+      --border: var(--border);
+      --glow: var(--shadow);
+      --danger: var(--text);
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 320px;
+      background: var(--panel);
+      border-right: 2px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    h1 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+    }
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .section h3 {
+      font-size: 0.9rem;
+      margin: 0 0 10px 0;
+      color: var(--primary);
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+      color: var(--text);
+      opacity: 0.8;
+    }
+    input[type="file"], input[type="range"], input[type="text"] {
+      width: 100%;
+      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-main {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .btn-main:hover:not(:disabled) {
+      background: transparent;
+      color: var(--text);
+    }
+    .btn-danger {
+      background: transparent;
+      color: var(--text);
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      width: auto;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .btn-danger:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(0, 0, 0, 0.02);
+      overflow-y: auto;
+      padding: 40px;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-card {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 25px;
+      border: 2px solid var(--border);
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+    }
+    .editor-viewport {
+      position: relative;
+      display: inline-block;
+      padding: 40px;
+      background: repeating-conic-gradient(rgba(128,128,128,0.1) 0% 25%, transparent 0% 50%) 50% / 20px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 15px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .canvas-container {
+      position: relative;
+      background: #000;
+      box-shadow: 0 0 0 1px var(--border);
+      display: inline-block;
+    }
+    canvas {
+      display: block;
+      cursor: move;
+      max-width: 100%;
+      height: auto;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(0,0,0,0.2);
+      margin-top: 15px;
+      border-radius: 3px;
+      display: none;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--text);
+      transition: width 0.2s;
+    }
+    .loader {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text);
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.5; } }
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .player-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+  </style>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme-toggle.js"></script>
+  <!-- Load FFmpeg.wasm -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+</head>
+<body>
+
+<div class="sidebar">
+  <h1>🎞️ 動画オーバーレイ合成</h1>
+  
+  <div class="section">
+    <h3>1. ベース動画</h3>
+    <button class="btn-danger" onclick="clearBaseVideo()">削除</button>
+    <input type="file" id="baseVideoInput" accept="video/*">
+    <div id="baseVideoInfo" style="font-size:0.7rem; opacity:0.7;">未設定</div>
+  </div>
+
+  <div class="section">
+    <h3>2. オーバーレイ動画 (透過MOV対応)</h3>
+    <button class="btn-danger" onclick="clearOverlayVideo()">削除</button>
+    <input type="file" id="overlayVideoInput" accept="video/*">
+    <div id="overlayLoader" class="loader">⚙️ 透過動画を処理中... (数分かかる場合があります)</div>
+    <div id="overlayVideoInfo" style="font-size:0.7rem; opacity:0.7;">未設定</div>
+  </div>
+
+  <div class="section">
+    <h3>3. オーバーレイ設定</h3>
+    <label>スケール (拡大/縮小)</label>
+    <input type="range" id="overlayScale" min="0.1" max="3.0" step="0.01" value="1.0">
+    <button class="btn" onclick="resetOverlayPosition()" style="padding:8px; font-size:0.8rem;">位置を中心に戻す</button>
+  </div>
+
+  <div style="margin-top:auto;">
+    <button class="btn btn-main" id="exportBtn" disabled>🚀 録画＆MP4書き出し</button>
+    <div class="progress-bar" id="exportProgress"><div class="progress-fill" id="exportFill"></div></div>
+    <div id="status" style="font-size:0.75rem; opacity:0.7; text-align:center; margin-top:5px;">動画を設定してください</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="preview-card">
+    <div class="player-controls">
+      <button class="btn" id="playPauseBtn" style="width: auto; padding: 8px 16px;">▶️ 再生</button>
+      <button class="btn" id="stopBtn" style="width: auto; padding: 8px 16px;">⏹️ 停止</button>
+    </div>
+    
+    <div class="editor-viewport">
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="previewCanvas" width="1280" height="720"></canvas>
+      </div>
+    </div>
+    
+    <div style="text-align: left;">
+      <label>保存ファイル名 (拡張子不要)</label>
+      <input type="text" id="filenameInput" placeholder="overlay_output" value="overlay_output">
+    </div>
+  </div>
+  
+  <video id="v-base" style="display:none" playsinline crossOrigin="anonymous"></video>
+  <video id="v-overlay" style="display:none" playsinline crossOrigin="anonymous"></video>
+</div>
+
+<script>
+  const { createFFmpeg, fetchFile } = FFmpeg;
+  const ffmpeg = createFFmpeg({ log: true });
+  let ffmpegLoaded = false;
+
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  const vBase = document.getElementById('v-base');
+  const vOverlay = document.getElementById('v-overlay');
+  
+  let animationFrameId = null;
+  let isPlaying = false;
+  
+  const state = {
+    baseW: 1280, baseH: 720,
+    overlayW: 0, overlayH: 0,
+    overlayX: 0, overlayY: 0,
+    overlayScale: 1.0,
+    isDragging: false,
+    dragStartX: 0, dragStartY: 0
+  };
+
+  // Canvas Drag & Drop
+  canvas.addEventListener('mousedown', (e) => {
+    state.isDragging = true;
+    state.dragStartX = e.offsetX;
+    state.dragStartY = e.offsetY;
+  });
+  window.addEventListener('mouseup', () => { state.isDragging = false; });
+  canvas.addEventListener('mousemove', (e) => {
+    if (!state.isDragging || !vOverlay.src) return;
+    const scaleX = canvas.width / canvas.clientWidth;
+    const scaleY = canvas.height / canvas.clientHeight;
+    state.overlayX += (e.offsetX - state.dragStartX) * scaleX;
+    state.overlayY += (e.offsetY - state.dragStartY) * scaleY;
+    state.dragStartX = e.offsetX;
+    state.dragStartY = e.offsetY;
+    if (!isPlaying) renderFrame();
+  });
+
+  // Scale Slider
+  document.getElementById('overlayScale').addEventListener('input', (e) => {
+    const oldScale = state.overlayScale;
+    state.overlayScale = parseFloat(e.target.value);
+    
+    if (state.overlayW > 0) {
+      // Keep centered while scaling
+      const cx = state.overlayX + (state.overlayW * oldScale) / 2;
+      const cy = state.overlayY + (state.overlayH * oldScale) / 2;
+      state.overlayX = cx - (state.overlayW * state.overlayScale) / 2;
+      state.overlayY = cy - (state.overlayH * state.overlayScale) / 2;
+    }
+    if (!isPlaying) renderFrame();
+  });
+
+  function resetOverlayPosition() {
+    if (state.overlayW > 0) {
+      state.overlayX = (state.baseW - state.overlayW * state.overlayScale) / 2;
+      state.overlayY = (state.baseH - state.overlayH * state.overlayScale) / 2;
+      if (!isPlaying) renderFrame();
+    }
+  }
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Base
+    if (vBase.src) {
+      ctx.drawImage(vBase, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#555";
+      ctx.font = "24px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("ベース動画がありません", canvas.width/2, canvas.height/2);
+    }
+    
+    // Draw Overlay
+    if (vOverlay.src) {
+      ctx.drawImage(vOverlay, state.overlayX, state.overlayY, state.overlayW * state.overlayScale, state.overlayH * state.overlayScale);
+    }
+  }
+
+  function loop() {
+    if (!isPlaying) return;
+    renderFrame();
+    animationFrameId = requestAnimationFrame(loop);
+  }
+
+  // Base Video Input
+  document.getElementById('baseVideoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    vBase.src = URL.createObjectURL(file);
+    vBase.onloadedmetadata = () => {
+      state.baseW = vBase.videoWidth;
+      state.baseH = vBase.videoHeight;
+      canvas.width = state.baseW;
+      canvas.height = state.baseH;
+      document.getElementById('baseVideoInfo').innerText = `サイズ: ${state.baseW}x${state.baseH}`;
+      vBase.currentTime = 0.5; // Seek to show poster
+      setTimeout(renderFrame, 200);
+      checkReady();
+    };
+  });
+
+  // Overlay Video Input (With FFmpeg conversion)
+  document.getElementById('overlayVideoInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    // If it's a MOV file, we might need to convert it to WEBM for Chrome transparency
+    if (ext === 'mov') {
+      const loader = document.getElementById('overlayLoader');
+      loader.style.display = 'block';
+      document.getElementById('overlayVideoInfo').innerText = "変換中...";
+      
+      try {
+        if (!ffmpegLoaded) {
+          await ffmpeg.load();
+          ffmpegLoaded = true;
+        }
+        
+        ffmpeg.FS('writeFile', 'input.mov', await fetchFile(file));
+        // Convert to webm with VP9, preserving alpha channel
+        await ffmpeg.run('-i', 'input.mov', '-c:v', 'libvpx-vp9', '-auto-alt-ref', '0', 'output.webm');
+        const data = ffmpeg.FS('readFile', 'output.webm');
+        const webmBlob = new Blob([data.buffer], { type: 'video/webm' });
+        vOverlay.src = URL.createObjectURL(webmBlob);
+        
+      } catch (err) {
+        console.error("FFmpeg conversion error:", err);
+        alert("動画の変換に失敗しました。そのまま読み込みを試みます。");
+        vOverlay.src = URL.createObjectURL(file);
+      } finally {
+        loader.style.display = 'none';
+      }
+    } else {
+      vOverlay.src = URL.createObjectURL(file);
+    }
+
+    vOverlay.onloadedmetadata = () => {
+      state.overlayW = vOverlay.videoWidth;
+      state.overlayH = vOverlay.videoHeight;
+      document.getElementById('overlayVideoInfo').innerText = `サイズ: ${state.overlayW}x${state.overlayH}`;
+      resetOverlayPosition();
+      vOverlay.currentTime = 0.5;
+      setTimeout(renderFrame, 200);
+      checkReady();
+    };
+  });
+
+  function clearBaseVideo() {
+    vBase.removeAttribute('src');
+    document.getElementById('baseVideoInput').value = '';
+    document.getElementById('baseVideoInfo').innerText = '未設定';
+    renderFrame();
+    checkReady();
+  }
+
+  function clearOverlayVideo() {
+    vOverlay.removeAttribute('src');
+    document.getElementById('overlayVideoInput').value = '';
+    document.getElementById('overlayVideoInfo').innerText = '未設定';
+    renderFrame();
+    checkReady();
+  }
+
+  function checkReady() {
+    const ok = vBase.src && vOverlay.src;
+    document.getElementById('exportBtn').disabled = !ok;
+    document.getElementById('status').innerText = ok ? "準備完了" : "動画を設定してください";
+  }
+
+  // Playback Controls
+  document.getElementById('playPauseBtn').addEventListener('click', () => {
+    if (isPlaying) {
+      vBase.pause();
+      vOverlay.pause();
+      isPlaying = false;
+      document.getElementById('playPauseBtn').innerText = '▶️ 再生';
+    } else {
+      vBase.play();
+      vOverlay.play();
+      isPlaying = true;
+      document.getElementById('playPauseBtn').innerText = '⏸️ 一時停止';
+      loop();
+    }
+  });
+
+  document.getElementById('stopBtn').addEventListener('click', () => {
+    vBase.pause();
+    vOverlay.pause();
+    vBase.currentTime = 0;
+    vOverlay.currentTime = 0;
+    isPlaying = false;
+    document.getElementById('playPauseBtn').innerText = '▶️ 再生';
+    setTimeout(renderFrame, 100);
+  });
+
+  // Export
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const exportBtn = document.getElementById('exportBtn');
+    const progressBar = document.getElementById('exportProgress');
+    const progressFill = document.getElementById('exportFill');
+    const statusText = document.getElementById('status');
+    
+    exportBtn.disabled = true;
+    progressBar.style.display = 'block';
+    statusText.innerText = "録画中...";
+    progressFill.style.width = '0%';
+
+    // Setup Audio Context for mixing
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = audioCtx.createMediaStreamDestination();
+    
+    const baseSource = audioCtx.createMediaElementSource(vBase);
+    baseSource.connect(dest);
+    baseSource.connect(audioCtx.destination); // Play to speakers too
+    
+    const overlaySource = audioCtx.createMediaElementSource(vOverlay);
+    overlaySource.connect(dest);
+    overlaySource.connect(audioCtx.destination);
+    
+    // Setup Canvas Stream
+    const canvasStream = canvas.captureStream(30); // 30 FPS
+    
+    // Combine Video and Audio tracks
+    const combinedStream = new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...dest.stream.getAudioTracks()
+    ]);
+
+    // Choose format
+    const types = ['video/mp4;codecs=h264,aac', 'video/mp4', 'video/webm;codecs=h264,opus', 'video/webm'];
+    let selectedType = 'video/webm';
+    for (const t of types) {
+      if (MediaRecorder.isTypeSupported(t)) {
+        selectedType = t;
+        break;
+      }
+    }
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType: selectedType });
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    
+    const done = new Promise(resolve => {
+      recorder.onstop = () => {
+        resolve(new Blob(chunks, { type: selectedType.split(';')[0] }));
+      };
+    });
+
+    // Start Recording
+    vBase.currentTime = 0;
+    vOverlay.currentTime = 0;
+    
+    recorder.start();
+    await vBase.play();
+    await vOverlay.play();
+    isPlaying = true;
+    document.getElementById('playPauseBtn').innerText = '⏸️ 一時停止';
+    
+    const totalDuration = Math.max(vBase.duration || 0, vOverlay.duration || 0);
+
+    const recordLoop = () => {
+      if (!vBase.paused && !vBase.ended) {
+        renderFrame();
+        if (totalDuration > 0) {
+          progressFill.style.width = (vBase.currentTime / totalDuration * 100) + '%';
+        }
+        requestAnimationFrame(recordLoop);
+      } else {
+        recorder.stop();
+        isPlaying = false;
+        document.getElementById('playPauseBtn').innerText = '▶️ 再生';
+      }
+    };
+    
+    requestAnimationFrame(recordLoop);
+    
+    const blob = await done;
+    
+    // Download
+    const name = document.getElementById('filenameInput').value || 'overlay_output';
+    const ext = selectedType.includes('mp4') ? '.mp4' : '.webm';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name + ext;
+    a.click();
+    
+    progressBar.style.display = 'none';
+    statusText.innerText = "書き出し完了！";
+    exportBtn.disabled = false;
+  });
+</script>
+<script src="../sidebar.js"></script>
+</body>
+</html>
