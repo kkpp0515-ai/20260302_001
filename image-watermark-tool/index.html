@@ -6,6 +6,8 @@
     <title>Image Watermark Tool - CTW Marketing Ai Tool</title>
     <link rel="stylesheet" href="../theme.css">
     <script src="../theme-toggle.js"></script>
+    <!-- JSZip for batch downloading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .container {
             max-width: 1200px;
@@ -87,13 +89,23 @@
             border-radius: 4px;
             transition: transform 0.1s, box-shadow 0.1s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             transform: translate(-2px, -2px);
             box-shadow: 4px 4px 0 var(--shadow);
         }
-        button:active {
+        button:active:not(:disabled) {
             transform: translate(0, 0);
             box-shadow: 0 0 0 var(--shadow);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .file-count {
+            font-size: 0.8rem;
+            color: var(--text);
+            margin-top: 4px;
+            font-weight: bold;
         }
         
         @media (max-width: 768px) {
@@ -109,8 +121,9 @@
         <div class="editor-grid">
             <div class="controls neo-box">
                 <div class="control-group">
-                    <label>Image Upload</label>
-                    <input type="file" id="imageInput" accept="image/*">
+                    <label>Image Upload (Multiple OK)</label>
+                    <input type="file" id="imageInput" accept="image/*" multiple>
+                    <div id="fileCountDisplay" class="file-count"></div>
                 </div>
                 <div class="control-group">
                     <label>Watermark Text</label>
