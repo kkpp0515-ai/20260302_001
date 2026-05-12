@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Mask Tool - CTW Marketing Ai Tool</title>
+    <link rel="stylesheet" href="../theme.css">
+    <script src="../theme-toggle.js"></script>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; text-align: center; }
+        .subtitle {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        .controls {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .control-group > label {
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .drop-zone {
+            border: 3px dashed var(--border);
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            background: var(--hover-bg);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--shadow);
+        }
+        .drop-zone input { display: none; }
+        .drop-zone-icon { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+        .file-name {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .dir-btn {
+            aspect-ratio: 1;
+            font-size: 1.3rem;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            font-family: inherit;
+        }
+        .dir-btn:hover:not([disabled]) {
+            background: var(--hover-bg);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--shadow);
+        }
+        .dir-btn.active {
+            background: var(--text);
+            color: var(--bg);
+            box-shadow: 3px 3px 0 var(--shadow);
+        }
+        .dir-btn[disabled] {
+            opacity: 0.15;
+            cursor: default;
+        }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--text);
+        }
+        .slider-val {
+            min-width: 36px;
+            text-align: right;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 2px solid var(--border);
+            padding: 2px;
+            cursor: pointer;
+            background: none;
+            border-radius: 0;
+        }
+        .canvas-wrap {
+            border: 3px solid var(--border);
+            box-shadow: 6px 6px 0 var(--shadow);
+            min-height: 420px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #fff;
+            background-image:
+                linear-gradient(45deg, #d0d0d0 25%, transparent 25%),
+                linear-gradient(-45deg, #d0d0d0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #d0d0d0 75%),
+                linear-gradient(-45deg, transparent 75%, #d0d0d0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+        .canvas-placeholder {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 70vh;
+            display: block;
+        }
+        .primary-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--text);
+            color: var(--bg);
+            border: 3px solid var(--border);
+            box-shadow: 4px 4px 0 var(--shadow);
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .primary-btn:hover:not([disabled]) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--shadow);
+        }
+        .primary-btn:active:not([disabled]) {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0 var(--shadow);
+        }
+        .primary-btn[disabled] {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .hint {
+            font-size: 0.72rem;
+            opacity: 0.6;
+            line-height: 1.4;
+        }
+        @media (max-width: 768px) {
+            .editor-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gradient Mask Tool</h1>
+        <p class="subtitle">透過PNGにグラデーションを合成 — 顔はそのまま、体をシルエットに</p>
+
+        <div class="editor-grid">
+            <div class="controls neo-box">
+
+                <div class="control-group">
+                    <label>画像アップロード（PNG推奨）</label>
+                    <div class="drop-zone" id="dropZone">
+                        <span class="drop-zone-icon">🖼️</span>
+                        <div>クリックまたはドラッグ＆ドロップ</div>
+                        <div class="file-name" id="fileName">ファイル未選択</div>
+                        <input type="file" id="fileInput" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>グラデーション方向（矢印の先 = 不透明側）</label>
+                    <div class="direction-grid" id="dirGrid">
+                        <button class="dir-btn" data-dir="ul">↖</button>
+                        <button class="dir-btn" data-dir="up">↑</button>
+                        <button class="dir-btn" data-dir="ur">↗</button>
+                        <button class="dir-btn" data-dir="left">←</button>
+                        <button class="dir-btn" data-dir="" disabled>·</button>
+                        <button class="dir-btn" data-dir="right">→</button>
+                        <button class="dir-btn" data-dir="dl">↙</button>
+                        <button class="dir-btn active" data-dir="down">↓</button>
+                        <button class="dir-btn" data-dir="dr">↘</button>
+                    </div>
+                    <span class="hint">↓ = 上が透明（顔）、下が不透明（体シルエット）</span>
+                </div>
+
+                <div class="control-group">
+                    <label>フェード開始位置</label>
+                    <div class="slider-row">
+                        <input type="range" id="fadeStart" min="0" max="95" value="25">
+                        <span class="slider-val" id="fadeStartVal">25%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>フェード終了位置（完全不透明）</label>
+                    <div class="slider-row">
+                        <input type="range" id="fadeEnd" min="5" max="100" value="65">
+                        <span class="slider-val" id="fadeEndVal">65%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>オーバーレイカラー</label>
+                    <input type="color" id="colorInput" value="#000000">
+                </div>
+
+                <div class="control-group">
+                    <label>最大不透明度</label>
+                    <div class="slider-row">
+                        <input type="range" id="opacityInput" min="10" max="100" value="100">
+                        <span class="slider-val" id="opacityVal">100%</span>
+                    </div>
+                </div>
+
+                <button class="primary-btn" id="downloadBtn" disabled>ダウンロード（PNG）</button>
+            </div>
+
+            <div class="canvas-wrap" id="canvasWrap">
+                <span class="canvas-placeholder" id="placeholder">画像をアップロードしてください</span>
+                <canvas id="previewCanvas" style="display:none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="../sidebar.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
