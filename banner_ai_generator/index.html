@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ad Banner AI Generator</title>
+  <link rel="stylesheet" href="../theme.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: inherit;
+      opacity: 0.6;
+      text-decoration: none;
+      margin-bottom: 40px;
+    }
+    .back-link:hover { opacity: 1; }
+    .hero-icon { font-size: 3rem; margin-bottom: 16px; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .badge { margin-bottom: 24px; }
+    .desc {
+      font-size: 1rem;
+      line-height: 1.7;
+      opacity: 0.7;
+      margin-bottom: 40px;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .step-item {
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .step-content strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+    .step-content span { font-size: 0.85rem; opacity: 0.6; line-height: 1.5; }
+    .code-block {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      opacity: 0.85;
+    }
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      color: #fff;
+    }
+    .github-link:hover { opacity: 0.9; }
+    h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../" class="back-link">← CTW Marketing Ai Tool</a>
+
+    <div class="hero-icon">🎨</div>
+    <h1>Ad Banner AI Generator</h1>
+    <div class="badge status-badge neo-badge">ローカル起動型</div>
+
+    <p class="desc">
+      成果の良かった広告バナーを学習して、GPT-4oが傾向を分析。<br>
+      3つのデザイン提案から承認したものをGPT Image 2.0が1080×1080で自動生成します。
+    </p>
+
+    <h2>セットアップ</h2>
+    <div class="steps">
+      <div class="step-item neo-box">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>リポジトリをクローン or ZIPダウンロード</strong>
+          <span>banner_ai_generator フォルダをローカルに用意します</span>
+        </div>
+      </div>
+      <div class="step-item neo-box">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>start.bat をダブルクリック</strong>
+          <span>必要なライブラリを自動インストールしてサーバーを起動します（Python 3.10+ 必要）</span>
+        </div>
+      </div>
+      <div class="step-item neo-box">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>ブラウザで http://localhost:5050 を開く</strong>
+          <span>OpenAI APIキー（sk-...）を入力して使用開始</span>
+        </div>
+      </div>
+    </div>
+
+    <a href="https://github.com/kkpp0515-ai/20260302_001/tree/main/banner_ai_generator" class="github-link" target="_blank" rel="noopener">
+      GitHubでコードを見る →
+    </a>
+  </div>
+  <script src="../sidebar.js"></script>
+</body>
+</html>

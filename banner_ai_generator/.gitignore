@@ -1,0 +1,6 @@
+uploads/
+generated/
+__pycache__/
+*.pyc
+.env
+*.log
