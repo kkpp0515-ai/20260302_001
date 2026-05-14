@@ -4,132 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ad Banner AI Generator</title>
-  <link rel="stylesheet" href="../theme.css">
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 20px;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 640px;
-      width: 100%;
-    }
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-      color: inherit;
-      opacity: 0.6;
-      text-decoration: none;
-      margin-bottom: 40px;
-    }
-    .back-link:hover { opacity: 1; }
-    .hero-icon { font-size: 3rem; margin-bottom: 16px; }
-    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
-    .badge { margin-bottom: 24px; }
-    .desc {
-      font-size: 1rem;
-      line-height: 1.7;
-      opacity: 0.7;
-      margin-bottom: 40px;
-    }
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-    .step-item {
-      display: flex;
-      gap: 16px;
-      padding: 20px;
-      border-radius: 12px;
-    }
-    .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    .step-content strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
-    .step-content span { font-size: 0.85rem; opacity: 0.6; line-height: 1.5; }
-    .code-block {
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      padding: 16px 20px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      opacity: 0.85;
-    }
-    .github-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      border-radius: 10px;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 0.95rem;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      color: #fff;
-    }
-    .github-link:hover { opacity: 0.9; }
-    h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <a href="../" class="back-link">← CTW Marketing Ai Tool</a>
 
-    <div class="hero-icon">🎨</div>
-    <h1>Ad Banner AI Generator</h1>
-    <div class="badge status-badge neo-badge">ローカル起動型</div>
+<header>
+  <a href="../" class="back-link">← CTW Tools</a>
+  <h1>Ad Banner AI Generator</h1>
+  <div class="api-key-section">
+    <input type="password" id="apiKey" placeholder="OpenAI APIキー (sk-...)" />
+    <button id="saveKey" class="btn-secondary">保存</button>
+    <span id="keyStatus"></span>
+  </div>
+</header>
 
-    <p class="desc">
-      成果の良かった広告バナーを学習して、GPT-4oが傾向を分析。<br>
-      3つのデザイン提案から承認したものをGPT Image 2.0が1080×1080で自動生成します。
-    </p>
+<main>
 
-    <h2>セットアップ</h2>
-    <div class="steps">
-      <div class="step-item neo-box">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <strong>リポジトリをクローン or ZIPダウンロード</strong>
-          <span>banner_ai_generator フォルダをローカルに用意します</span>
+  <!-- Step 1: Upload -->
+  <section id="step1" class="step active">
+    <h2><span class="step-num">1</span> 参考バナーをアップロード</h2>
+    <div class="upload-area" id="dropZone">
+      <div class="upload-icon">📁</div>
+      <p>画像をドラッグ&ドロップ<br>または</p>
+      <label class="btn-primary" for="fileInput">ファイルを選択</label>
+      <input type="file" id="fileInput" multiple accept="image/*" hidden>
+      <p class="hint">JPG / PNG / WebP 対応（最大10枚）</p>
+    </div>
+    <div id="uploadedGallery" class="gallery hidden"></div>
+    <button id="analyzeBtn" class="btn-primary large hidden">AI分析を開始 →</button>
+  </section>
+
+  <!-- Step 2: Analysis + Proposals -->
+  <section id="step2" class="step hidden">
+    <div class="two-col">
+
+      <div class="col-left">
+        <h2><span class="step-num">2</span> 参考画像</h2>
+        <div id="refGallery" class="gallery small"></div>
+        <div id="analysisBox" class="analysis-box hidden">
+          <h3>📊 AI傾向分析</h3>
+          <p id="analysisText"></p>
         </div>
       </div>
-      <div class="step-item neo-box">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <strong>start.bat をダブルクリック</strong>
-          <span>必要なライブラリを自動インストールしてサーバーを起動します（Python 3.10+ 必要）</span>
-        </div>
+
+      <div class="col-right">
+        <h2><span class="step-num">3</span> 提案 <span id="loadingSpinner" class="spinner hidden"></span></h2>
+        <div id="proposalsGrid" class="proposals-grid"></div>
       </div>
-      <div class="step-item neo-box">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <strong>ブラウザで http://localhost:5050 を開く</strong>
-          <span>OpenAI APIキー（sk-...）を入力して使用開始</span>
-        </div>
+
+    </div>
+  </section>
+
+  <!-- Step 3: Generated Result -->
+  <section id="step3" class="step hidden">
+    <h2><span class="step-num">4</span> 生成完了 (1080 × 1080)</h2>
+    <div class="result-area">
+      <img id="resultImage" src="" alt="生成されたバナー">
+      <div class="result-actions">
+        <a id="downloadBtn" href="#" class="btn-primary" download="banner_1080x1080.png">ダウンロード (PNG)</a>
+        <button id="backBtn" class="btn-secondary">別の提案を選ぶ</button>
+        <button id="restartBtn" class="btn-secondary">最初からやり直す</button>
       </div>
     </div>
+  </section>
 
-    <a href="https://github.com/kkpp0515-ai/20260302_001/tree/main/banner_ai_generator" class="github-link" target="_blank" rel="noopener">
-      GitHubでコードを見る →
-    </a>
+</main>
+
+<!-- Generating overlay -->
+<div id="generatingOverlay" class="overlay hidden">
+  <div class="overlay-content">
+    <div class="big-spinner"></div>
+    <p>GPT Image 2.0 で生成中...</p>
+    <p class="hint">通常30〜60秒かかります</p>
   </div>
-  <script src="../sidebar.js"></script>
+</div>
+
+<script src="script.js"></script>
+<script src="../sidebar.js"></script>
 </body>
 </html>
