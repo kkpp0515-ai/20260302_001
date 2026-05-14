@@ -190,10 +190,10 @@ async function approveAndGenerate(proposal) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-image-1",
+        model: "dall-e-3",
         prompt,
         size: "1024x1024",
-        quality: "high",
+        quality: "hd",
         n: 1,
       }),
     });
