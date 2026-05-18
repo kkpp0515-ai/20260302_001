@@ -31,12 +31,18 @@
         <label>テンプレート名 <input type="text" id="templateName" class="neo-input" /></label>
         <label>appid <input type="text" id="appid" class="neo-input" /></label>
         <label class="inline-label">R18 <input type="checkbox" id="r18" style="transform: scale(1.5); margin-left:10px;" /></label>
-        <label>language 
+        <label>language
             <select id="language" class="neo-input">
                 <option value="ja">ja</option>
                 <option value="en">en</option>
                 <option value="zh-TW">zh-TW</option>
                 <option value="ko">ko</option>
+            </select>
+        </label>
+        <label>type
+            <select id="type" class="neo-input">
+                <option value="image">image</option>
+                <option value="video">video</option>
             </select>
         </label>
         <label>creative_title <input type="text" id="creativeTitle" class="neo-input" /></label>
@@ -125,6 +131,7 @@
             const appid = document.getElementById('appid').value;
             const r18 = document.getElementById('r18').checked;
             const lang = document.getElementById('language').value;
+            const type = document.getElementById('type').value;
             const title = document.getElementById('creativeTitle').value;
             const text = document.getElementById('creativeText').value;
 
@@ -133,7 +140,7 @@
                 return;
             }
 
-            templates[name] = {appid, r18, lang, title, text};
+            templates[name] = {appid, r18, lang, type, title, text};
             localStorage.setItem("pixiv_templates", JSON.stringify(templates));
             updateTemplateSelect();
             alert("テンプレート保存しました！");
@@ -149,7 +156,7 @@
                     // 次の10行以内に画像ファイルが出てくる前提
                     for (let j = i + 1; j < Math.min(i + 10, input.length); j++) {
                         const maybeImg = input[j].trim();
-                        if (maybeImg.match(/\.(png|jpg|jpeg)$/i)) {
+                        if (maybeImg.match(/\.(png|jpg|jpeg|mp4)$/i)) {
                             output += `${mediaId}, ${maybeImg}\n`;
                             i = j;
                             break;
@@ -176,9 +183,13 @@
                 if (parts.length !== 2) return;
                 const mediaId = parts[0].trim();
                 const creativeName = parts[1].trim();
-                const campaign = `${t.appid}_${t.lang}_${t.r18 ? "NewDisplayCpaR18" : "NewDisplayCpa"}_adn_sp`;
-                const url = `https://h5.g123.jp/game/${t.appid}?platform=pixiv&utm_source=pixiv&utm_campaign=${campaign}&utm_adgroup=${creativeName}&utm_content=${creativeName}`;
-                const entry = ["image", mediaId, creativeName, t.title, t.text, url, "2"];
+                const isVideo = t.type === 'video';
+                const campaignType = t.r18
+                    ? (isVideo ? "NewDisplayCpaR18movie" : "NewDisplayCpaR18")
+                    : (isVideo ? "NewDisplayCpamovie" : "NewDisplayCpa");
+                const campaign = `${t.appid}_${t.lang}_${campaignType}_adn_sp`;
+                const url = `https://h5.g123.jp/game/${t.appid}?platform=pixiv&utm_source=pixiv&utm_campaign=${campaign}&utm_adgroup=${creativeName}&utm_content=${creativeName}&lang=${t.lang}`;
+                const entry = [isVideo ? "video" : "image", mediaId, creativeName, t.title, t.text, url, isVideo ? "0" : "2"];
                 entries.push(entry);
 
                 const row = document.createElement("tr");
