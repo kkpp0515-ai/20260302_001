@@ -134,23 +134,26 @@
         </div>
 
         <div class="panel">
-            <div class="form-group">
-                <label for="accessToken">チャネルアクセストークン (Channel Access Token)</label>
-                <input type="password" id="accessToken" placeholder="Bearer {トークン} の中身を入力してください">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <label style="margin:0; font-size:1.05rem; font-weight:bold;">送信元 公式アカウント（複数登録可）</label>
+                <button type="button" id="btnAddAccount" style="padding:6px 18px; font-size:0.9rem; cursor:pointer; border:2px solid var(--text-color,#000); border-radius:6px; background:var(--bg-color,#fff); color:var(--text-color,#000);">＋ アカウントを追加</button>
             </div>
+            <div id="accountList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+            <small style="display:block; margin-bottom:16px; opacity:0.8;">※「送信」ボタンを押すと、登録した全アカウントから順番に送信されます。</small>
+
             <div class="form-group">
-                <label for="targetUserId">テスト送信用 ターゲットユーザーID (User ID)</label>
-                <input type="text" id="targetUserId" placeholder="U4af4980629...（テスト送信ボタンを押す場合のみ必須）">
+                <label for="targetUserId">テスト送信先 ユーザーID（Push API使用時のみ必須）</label>
+                <input type="text" id="targetUserId" placeholder="U4af4980629...">
                 <small style="display:block; margin-top:5px; opacity:0.8;">※ユーザーIDはLINE Developersコンソールの「チャネル基本設定」一番下で確認できます。</small>
             </div>
             <div class="form-group">
-                <label for="altText">一斉配信（または通知）のテキスト (altText)</label>
+                <label for="altText">配信テキスト (altText)</label>
                 <input type="text" id="altText" value="一斉配信の通知テキスト">
             </div>
             <div class="form-group">
-                <label for="broadcastLimit">配信数の上限 (オプション)</label>
+                <label for="broadcastLimit">配信数の上限 (オプション、本番配信のみ)</label>
                 <input type="number" id="broadcastLimit" placeholder="例: 100（空欄の場合は上限なしで全員に配信）" min="1">
-                <small style="display:block; margin-top:5px; opacity:0.8;">※上限を指定した場合、LINEの仕様により「属性が推定可能なユーザー」の中からランダムに指定人数まで配信されます（Narrowcast APIを使用）。</small>
+                <small style="display:block; margin-top:5px; opacity:0.8;">※上限を指定した場合、LINEの仕様によりNarrowcast APIを使用します。</small>
             </div>
         </div>
 
@@ -167,8 +170,8 @@
         </div>
 
         <div class="button-group">
-            <button class="btn-test" id="btnTest">特定ユーザーにテスト送信 (Push API)</button>
-            <button class="btn-broadcast" id="btnBroadcast">本番配信 (上限指定時はNarrowcast) [注意]</button>
+            <button class="btn-test" id="btnTest">テスト送信（全アカウント → 指定ユーザーへ Push）</button>
+            <button class="btn-broadcast" id="btnBroadcast">本番配信（全アカウント → 全フォロワーへ Broadcast）[注意]</button>
         </div>
 
         <div id="responseLog"></div>
@@ -464,156 +467,161 @@
         });
         observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
 
-        // API送信関数
-        async function sendLineMessage(endpoint, payload) {
-            const token = document.getElementById('accessToken').value.trim();
-            if (!token) {
-                alert('チャネルアクセストークンを入力してください。');
+        // ---- アカウント管理 ----
+        function addAccountRow(name = '', token = '') {
+            const row = document.createElement('div');
+            row.className = 'account-row';
+            row.style.cssText = 'display:flex; gap:8px; align-items:center;';
+            row.innerHTML = `
+                <input type="text" class="acc-name" placeholder="アカウント名（例: hotd）" value="${name}"
+                    style="flex:0 0 160px; padding:8px; border:2px solid var(--text-color,#000); border-radius:4px; background:var(--bg-color,#fff); color:var(--text-color,#000); font-family:inherit;">
+                <input type="password" class="acc-token" placeholder="チャネルアクセストークン" value="${token}"
+                    style="flex:1; padding:8px; border:2px solid var(--text-color,#000); border-radius:4px; background:var(--bg-color,#fff); color:var(--text-color,#000); font-family:inherit;">
+                <button type="button" class="btn-remove-acc"
+                    style="flex:0 0 auto; padding:8px 12px; font-size:1rem; font-weight:bold; cursor:pointer; border:2px solid #7f1d1d; border-radius:6px; background:#ef4444; color:#fff;">✕</button>
+            `;
+            row.querySelector('.btn-remove-acc').addEventListener('click', () => {
+                row.remove();
+            });
+            document.getElementById('accountList').appendChild(row);
+        }
+
+        document.getElementById('btnAddAccount').addEventListener('click', () => addAccountRow());
+
+        // 初期1行
+        addAccountRow();
+
+        function getAccounts() {
+            return Array.from(document.querySelectorAll('.account-row')).map(row => ({
+                name: row.querySelector('.acc-name').value.trim() || '(無名)',
+                token: row.querySelector('.acc-token').value.trim()
+            })).filter(a => a.token.length > 0);
+        }
+
+        // ---- API送信（1アカウント分） ----
+        async function sendOneAccount(endpoint, payload, token) {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const responseText = await response.text();
+            let resJson = null;
+            try { resJson = JSON.parse(responseText); } catch(e) {}
+            return { ok: response.ok, status: response.status, statusText: response.statusText, body: resJson || responseText };
+        }
+
+        // ---- 全アカウントに送信 ----
+        async function sendToAllAccounts(endpointFn, payloadFn) {
+            const accounts = getAccounts();
+            if (accounts.length === 0) {
+                alert('アカウントが登録されていないか、トークンが入力されていません。');
                 return;
             }
 
             responseLog.style.display = 'block';
-            responseLog.innerHTML = `<span style="color:#2563eb">送信中...</span>`;
+            responseLog.innerHTML = `<span style="color:#2563eb; font-weight:bold;">送信中... (0 / ${accounts.length})</span>`;
 
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
+            let successCount = 0;
+            let html = '';
 
-                const responseText = await response.text();
-                let output = `<b>HTTP Status:</b> ${response.status} ${response.statusText}<br><br>`;
-                
+            for (let i = 0; i < accounts.length; i++) {
+                const { name, token } = accounts[i];
+                responseLog.innerHTML = `<span style="color:#2563eb; font-weight:bold;">送信中... (${i + 1} / ${accounts.length}) — ${name}</span>`;
                 try {
-                    const resJson = JSON.parse(responseText);
-                    output += `<b>Response:</b><br><pre>${JSON.stringify(resJson, null, 2)}</pre>`;
-                } catch(e) {
-                    output += `<b>Response:</b><br><pre>${responseText || '(空のレスポンス)'}</pre>`;
+                    const result = await sendOneAccount(endpointFn(token), payloadFn(token), token);
+                    const bodyStr = typeof result.body === 'object' ? JSON.stringify(result.body, null, 2) : result.body;
+                    if (result.ok) {
+                        successCount++;
+                        html += `<div style="margin-bottom:12px; padding:10px; border-left:4px solid #059669; background:rgba(5,150,105,0.08);">
+                            <b style="color:#059669;">✅ ${name}</b> — HTTP ${result.status}<br>
+                            <pre style="margin:4px 0 0 0; font-size:0.85em;">${bodyStr || '(空のレスポンス)'}</pre>
+                        </div>`;
+                    } else {
+                        html += `<div style="margin-bottom:12px; padding:10px; border-left:4px solid #ef4444; background:rgba(239,68,68,0.08);">
+                            <b style="color:#ef4444;">❌ ${name}</b> — HTTP ${result.status} ${result.statusText}<br>
+                            <pre style="margin:4px 0 0 0; font-size:0.85em;">${bodyStr}</pre>
+                        </div>`;
+                    }
+                } catch (error) {
+                    html += `<div style="margin-bottom:12px; padding:10px; border-left:4px solid #ef4444; background:rgba(239,68,68,0.08);">
+                        <b style="color:#ef4444;">❌ ${name}</b> — システムエラー<br>
+                        <pre style="margin:4px 0 0 0; font-size:0.85em;">${error.message}</pre>
+                    </div>`;
                 }
+            }
 
-                if (response.ok) {
-                    responseLog.innerHTML = `<span style="color:#059669; font-weight:bold;">成功しました！</span><br><br>` + output;
-                } else {
-                    responseLog.innerHTML = `<span style="color:#dc2626; font-weight:bold;">通信エラーまたはAPIエラーが発生しました。</span><br><br>` + output;
-                }
-            } catch (error) {
-                console.error(error);
-                responseLog.innerHTML = `<span style="color:#dc2626; font-weight:bold;">システムエラー：</span><br><br>CORSエラーによりブロックされた可能性があります。上部の「事前準備」を参考に検証用Chromeを使用しているか確認してください。<br><br>${error.message}`;
+            const summary = successCount === accounts.length
+                ? `<span style="color:#059669; font-weight:bold;">全 ${accounts.length} アカウント送信成功</span>`
+                : `<span style="color:#d97706; font-weight:bold;">${successCount} / ${accounts.length} アカウント成功（${accounts.length - successCount} 件失敗）</span>`;
+
+            responseLog.innerHTML = summary + '<hr style="margin:12px 0;">' + html;
+
+            if (successCount < accounts.length) {
+                responseLog.innerHTML += `<p style="color:#64748b; font-size:0.9em;">CORSエラーで失敗した場合は、上部「事前準備」の手順で検証用Chromeを使用してください。</p>`;
             }
         }
 
-        // テスト送信
+        function buildMessageObj(jsonText, altText) {
+            const parsed = JSON.parse(jsonText);
+            if (parsed.type === "flex" && parsed.contents) {
+                return { type: "flex", altText: altText || parsed.altText || "Flex Message", contents: parsed.contents };
+            }
+            return { type: "flex", altText: altText || "Flex Message", contents: parsed };
+        }
+
+        // ---- テスト送信ボタン ----
         btnTest.addEventListener('click', () => {
             const targetId = document.getElementById('targetUserId').value.trim();
             const altText = document.getElementById('altText').value.trim();
             const jsonText = jsonInput.value.trim();
 
-            if (!targetId) {
-                alert('テスト送信用のターゲットユーザーIDを入力してください。');
-                return;
-            }
-            if (!jsonText) {
-                alert('Flex MessageのJSONを入力してください。');
-                return;
-            }
-            
-            let parsed;
-            try {
-                parsed = JSON.parse(jsonText);
-            } catch (e) {
-                alert('JSONの形式が正しくありません。エラーを修正してから送信してください。');
-                return;
-            }
-
-            // もしJSONにルートの"type": "flex"が含まれているかチェック
-            let contents = parsed;
+            if (!targetId) { alert('テスト送信先のユーザーIDを入力してください。'); return; }
+            if (!jsonText) { alert('Flex MessageのJSONを入力してください。'); return; }
             let messageObj;
-            
-            if (parsed.type === "flex" && parsed.contents) {
-                // すでにメッセージオブジェクト全体をコピーしている場合
-                messageObj = {
-                    type: "flex",
-                    altText: altText || parsed.altText || "Flex Message",
-                    contents: parsed.contents
-                };
-            } else {
-                // contentsの中身（bubbleやcarousel）のみコピーしている場合
-                messageObj = {
-                    type: "flex",
-                    altText: altText || "Flex Message",
-                    contents: parsed
-                };
-            }
+            try { messageObj = buildMessageObj(jsonText, altText); }
+            catch (e) { alert('JSONの形式が正しくありません。\n' + e.message); return; }
 
-            const payload = {
-                to: targetId,
-                messages: [ messageObj ]
-            };
+            const accounts = getAccounts();
+            if (!confirm(`【確認】\n${accounts.length} アカウントから「${targetId}」にテスト送信します。よろしいですか？`)) return;
 
-            sendLineMessage('https://api.line.me/v2/bot/message/push', payload);
+            sendToAllAccounts(
+                () => 'https://api.line.me/v2/bot/message/push',
+                () => ({ to: targetId, messages: [messageObj] })
+            );
         });
 
-        // 一斉配信・上限指定配信
+        // ---- 本番配信ボタン ----
         btnBroadcast.addEventListener('click', () => {
             const altText = document.getElementById('altText').value.trim();
             const jsonText = jsonInput.value.trim();
             const limitStr = document.getElementById('broadcastLimit').value.trim();
 
-            if (!jsonText) {
-                alert('Flex MessageのJSONを入力してください。');
-                return;
-            }
-            
-            let parsed;
-            try {
-                parsed = JSON.parse(jsonText);
-            } catch (e) {
-                alert('JSONの形式が正しくありません。エラーを修正してから送信してください。');
-                return;
-            }
-
+            if (!jsonText) { alert('Flex MessageのJSONを入力してください。'); return; }
             let messageObj;
-            if (parsed.type === "flex" && parsed.contents) {
-                messageObj = {
-                    type: "flex",
-                    altText: altText || parsed.altText || "一斉配信",
-                    contents: parsed.contents
-                };
-            } else {
-                messageObj = {
-                    type: "flex",
-                    altText: altText || "一斉配信",
-                    contents: parsed
-                };
-            }
+            try { messageObj = buildMessageObj(jsonText, altText || '一斉配信'); }
+            catch (e) { alert('JSONの形式が正しくありません。\n' + e.message); return; }
 
-            let endpoint = 'https://api.line.me/v2/bot/message/broadcast';
-            const payload = {
-                messages: [ messageObj ]
-            };
-
-            let confirmMsg = '【警告】\n友だち追加している全員に一斉配信されます。本当によろしいですか？';
+            const accounts = getAccounts();
+            let endpointFn, payloadFn, confirmMsg;
 
             if (limitStr) {
                 const limitNum = parseInt(limitStr, 10);
-                if (isNaN(limitNum) || limitNum < 1) {
-                    alert('配信数の上限には1以上の数値を入力してください。');
-                    return;
-                }
-                endpoint = 'https://api.line.me/v2/bot/message/narrowcast';
-                payload.limit = { max: limitNum };
-                confirmMsg = `【確認】\n属性が推定可能なユーザーの中から、最大 ${limitNum} 人にランダムに配信されます。\n本当によろしいですか？`;
+                if (isNaN(limitNum) || limitNum < 1) { alert('配信数の上限には1以上の数値を入力してください。'); return; }
+                endpointFn = () => 'https://api.line.me/v2/bot/message/narrowcast';
+                payloadFn = () => ({ messages: [messageObj], limit: { max: limitNum } });
+                confirmMsg = `【警告】\n${accounts.length} アカウントから、各アカウントの最大 ${limitNum} 人にNarrowcast配信されます。\n本当によろしいですか？`;
+            } else {
+                endpointFn = () => 'https://api.line.me/v2/bot/message/broadcast';
+                payloadFn = () => ({ messages: [messageObj] });
+                confirmMsg = `【警告】\n${accounts.length} アカウントから、各アカウントの全フォロワーにBroadcast配信されます。\n本当によろしいですか？`;
             }
 
-            if (!confirm(confirmMsg)) {
-                return;
-            }
-
-            sendLineMessage(endpoint, payload);
+            if (!confirm(confirmMsg)) return;
+            sendToAllAccounts(endpointFn, payloadFn);
         });
 
     </script>
