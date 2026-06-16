@@ -33,14 +33,14 @@
             display: flex;
             gap: 20px;
             margin-bottom: 20px;
-            min-height: 500px;
+            align-items: flex-start;
         }
         .editor-container > div {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-        textarea#jsonInput { flex: 1; resize: vertical; font-family: monospace; white-space: pre; min-height: 500px; }
+        textarea#jsonInput { resize: vertical; font-family: monospace; white-space: pre; min-height: 220px; height: 220px; }
         .preview-box {
             flex: 1;
             border: 2px solid var(--text-color, #000);
@@ -733,20 +733,11 @@
             }
             try {
                 const parsed = JSON.parse(val);
-                visualPreview.innerHTML = ''; // クリア
-                
-                // 1. 公式Simulator風の自己完結プレビュー機能
+                visualPreview.innerHTML = '';
+
                 const simulatorContainer = document.createElement('div');
                 renderFlexMessage(parsed, simulatorContainer);
-
-                // 2. JSONの構文ハイライト
-                const highlightedJson = syntaxHighlight(JSON.stringify(parsed, null, 2));
-                const jsonHtml = document.createElement('div');
-                jsonHtml.className = 'json-code-section';
-                jsonHtml.innerHTML = `<h4 style="margin: 0 0 10px 0; color: #3b82f6;">📝 構文チェック (正常)</h4>${highlightedJson}`;
-
                 visualPreview.appendChild(simulatorContainer);
-                visualPreview.appendChild(jsonHtml);
 
                 // もし altText があればフォーム側の altText に自動入力する
                 if (parsed.type === "flex" && parsed.altText) {
