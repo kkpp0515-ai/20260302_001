@@ -460,49 +460,60 @@
 
         function renderFlexMessage(json, container) {
             container.innerHTML = '';
-            container.style.cssText = 'background:#c1cfd8;border-radius:8px;overflow:hidden;font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin-bottom:16px;';
+            // Outer: neutral bg, centered
+            container.style.cssText = 'background:#e8e8e8;border-radius:8px;padding:20px;display:flex;justify-content:center;align-items:flex-start;margin-bottom:16px;min-height:200px;';
 
-            // LINE chat header mock
+            // Phone frame (max 390px like iPhone)
+            const phone = document.createElement('div');
+            phone.style.cssText = 'width:100%;max-width:390px;background:#c1cfd8;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.2);font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;';
+
+            // LINE chat header
             const chatHeader = document.createElement('div');
-            chatHeader.style.cssText = 'background:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e0e0;';
-            chatHeader.innerHTML = `<span style="font-size:20px;color:#666;">←</span><div style="width:36px;height:36px;background:#06c755;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:bold;color:#fff;">G</div><div style="flex:1;font-weight:bold;font-size:14px;">公式アカウント</div><span style="font-size:22px;color:#666;">⋮</span>`;
-            container.appendChild(chatHeader);
+            chatHeader.style.cssText = 'background:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;';
+            chatHeader.innerHTML = `<span style="font-size:18px;color:#666;cursor:pointer;">←</span><div style="width:32px;height:32px;background:#06c755;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:bold;color:#fff;">G</div><div style="flex:1;font-weight:bold;font-size:14px;">公式アカウント</div><span style="font-size:20px;color:#666;cursor:pointer;">⋮</span>`;
+            phone.appendChild(chatHeader);
 
-            // Chat scroll area
+            // Chat area
             const chatArea = document.createElement('div');
-            chatArea.style.cssText = 'padding:16px;display:flex;flex-direction:column;gap:8px;';
+            chatArea.style.cssText = 'padding:12px;display:flex;flex-direction:column;gap:6px;';
 
             // Date badge
             const dateBadge = document.createElement('div');
-            dateBadge.style.cssText = 'text-align:center;margin:4px 0 8px;';
+            dateBadge.style.cssText = 'text-align:center;margin:4px 0 6px;';
             dateBadge.innerHTML = `<span style="background:rgba(0,0,0,0.22);color:#fff;font-size:11px;padding:3px 10px;border-radius:12px;">${new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}</span>`;
             chatArea.appendChild(dateBadge);
 
             // Message row: avatar + bubble + timestamp
             const msgRow = document.createElement('div');
-            msgRow.style.cssText = 'display:flex;align-items:flex-end;gap:8px;';
+            msgRow.style.cssText = 'display:flex;align-items:flex-end;gap:6px;';
 
             const avatar = document.createElement('div');
-            avatar.style.cssText = 'width:36px;height:36px;background:#06c755;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:#fff;';
+            avatar.style.cssText = 'width:32px;height:32px;background:#06c755;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#fff;';
             avatar.textContent = 'G';
             msgRow.appendChild(avatar);
 
             const bubbleCol = document.createElement('div');
-            bubbleCol.style.cssText = 'display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
-            bubbleCol.innerHTML = '<div style="font-size:11px;color:#444;margin-bottom:2px;">公式アカウント</div>';
+            bubbleCol.style.cssText = 'display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;';
+
+            const senderName = document.createElement('div');
+            senderName.style.cssText = 'font-size:11px;color:#444;';
+            senderName.textContent = '公式アカウント';
+            bubbleCol.appendChild(senderName);
 
             const bubbleTimeRow = document.createElement('div');
-            bubbleTimeRow.style.cssText = 'display:flex;align-items:flex-end;gap:6px;';
+            bubbleTimeRow.style.cssText = 'display:flex;align-items:flex-end;gap:4px;';
 
             let target = json;
             if (json.type === 'flex' && json.contents) target = json.contents;
 
-            const sizeWidths = { nano:'100px', micro:'140px', kilo:'200px', mega:'240px', giga:'100%' };
-            const bubbleWidth = sizeWidths[target.size] || '240px';
+            // giga fills the phone frame; others use fixed widths
+            const sizeWidths = { nano:'90px', micro:'130px', kilo:'180px', mega:'210px', giga:'100%' };
+            const bubbleWidth = sizeWidths[target.size] || '210px';
 
             const makeBubble = () => {
                 const b = document.createElement('div');
-                b.style.cssText = `display:flex;flex-direction:column;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12);min-width:0;width:${bubbleWidth};`;
+                b.style.cssText = 'display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.1);min-width:0;';
+                b.style.width = bubbleWidth;
                 if (bubbleWidth === '100%') b.style.flex = '1';
                 return b;
             };
@@ -516,10 +527,10 @@
                 bubbleTimeRow.appendChild(bubble);
             } else if (target.type === 'carousel') {
                 const carousel = document.createElement('div');
-                carousel.style.cssText = 'display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;flex:1;';
+                carousel.style.cssText = 'display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex:1;';
                 (target.contents || []).forEach(b => {
                     const cb = makeBubble();
-                    cb.style.width = '220px'; cb.style.flex = '0 0 auto';
+                    cb.style.width = '190px'; cb.style.flex = '0 0 auto';
                     if (b.header) cb.appendChild(renderFlexNode(b.header, 'column'));
                     if (b.hero)   cb.appendChild(renderFlexNode(b.hero,   'column'));
                     if (b.body)   cb.appendChild(renderFlexNode(b.body,   'column'));
@@ -528,18 +539,19 @@
                 });
                 bubbleTimeRow.appendChild(carousel);
             } else {
-                bubbleTimeRow.innerHTML = '<div style="color:red;background:white;padding:10px;border-radius:4px;">プレビュー非対応（bubbleまたはcarouselのみ）</div>';
+                bubbleTimeRow.innerHTML = '<div style="color:red;background:white;padding:10px;border-radius:4px;">プレビュー非対応</div>';
             }
 
             const ts = document.createElement('div');
-            ts.style.cssText = 'font-size:11px;color:#555;white-space:nowrap;flex-shrink:0;';
+            ts.style.cssText = 'font-size:10px;color:#555;white-space:nowrap;flex-shrink:0;padding-bottom:2px;';
             ts.textContent = new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
             bubbleTimeRow.appendChild(ts);
 
             bubbleCol.appendChild(bubbleTimeRow);
             msgRow.appendChild(bubbleCol);
             chatArea.appendChild(msgRow);
-            container.appendChild(chatArea);
+            phone.appendChild(chatArea);
+            container.appendChild(phone);
         }
 
         function renderFlexNode(node, prevLayout) {
