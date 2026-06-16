@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE Flex Message Sender</title>
+    <title>LINE Flex Tools</title>
     <style>
-        /* Neo-Brutalist Monochrome Theme */
         :root {
             --bg: #ffffff;
             --text: #000000;
@@ -60,7 +59,6 @@
         ::-webkit-scrollbar-thumb { background: var(--text); border: 2px solid var(--bg); }
         ::-webkit-scrollbar-thumb:hover { background: var(--hover-bg); }
 
-        /* Theme Toggle */
         .theme-toggle-btn {
             position: fixed;
             top: 20px;
@@ -90,9 +88,42 @@
             .theme-toggle-btn { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 16px; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--shadow); }
         }
 
-        /* Tool Styles */
         .container { display: flex; flex-direction: column; max-width: 1200px; margin: 0 auto; width: 100%; padding: 20px; box-sizing: border-box; }
         h1 { margin-top: 0; font-size: 2rem; margin-bottom: 20px; text-align: center; }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 2px solid var(--text-color, #000);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 4px 4px 0 var(--text-color, #000);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            border-right: 2px solid var(--text-color, #000);
+            background-color: var(--inactive, #e0e0e0);
+            color: var(--text-color, #000);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+        .tab-btn:last-child { border-right: none; }
+        .tab-btn.active {
+            background-color: var(--text-color, #000);
+            color: var(--bg-color, #fff);
+        }
+        .tab-btn:not(.active):hover { background-color: var(--hover-bg, #f0f0f0); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         .panel { padding: 20px; margin-bottom: 20px; background: var(--bg-color, #fff); border: 2px solid var(--text-color, #000); border-radius: 8px; box-shadow: 4px 4px 0 var(--text-color, #000); }
         .alert-panel { background-color: #ffeebf; border-color: #d97706; color: #92400e; }
@@ -161,7 +192,7 @@
             word-wrap: break-word;
         }
 
-        .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         button {
             padding: 12px 24px;
             font-size: 1.1rem;
@@ -175,11 +206,16 @@
         }
         button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 currentColor; }
         button:active { transform: translate(0, 0); box-shadow: none; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .btn-test { background-color: #3b82f6; border-color: #1e3a8a; color: white; }
         .btn-test:hover { box-shadow: 4px 4px 0 #1e3a8a; }
         .btn-broadcast { background-color: #ef4444; border-color: #7f1d1d; color: white; }
         .btn-broadcast:hover { box-shadow: 4px 4px 0 #7f1d1d; }
+        .btn-convert { background-color: #059669; border-color: #064e3b; color: white; }
+        .btn-convert:not(:disabled):hover { box-shadow: 4px 4px 0 #064e3b; }
+        .btn-transfer { background-color: #7c3aed; border-color: #3b0764; color: white; }
+        .btn-transfer:not(:disabled):hover { box-shadow: 4px 4px 0 #3b0764; }
 
         code { background: rgba(128,128,128,0.2); padding: 2px 6px; border-radius: 4px; }
 
@@ -196,6 +232,46 @@
 
         .preview-box::-webkit-scrollbar { width: 8px; }
         .preview-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Converter specific */
+        .converter-layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+        .output-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--text-color, #000);
+            margin: -20px -20px 16px -20px;
+        }
+        .output-panel-header span { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; }
+        .output-meta { font-size: 0.8rem; opacity: 0.6; }
+        pre#converterOutput {
+            margin: 0;
+            min-height: 300px;
+            max-height: 60vh;
+            overflow: auto;
+            padding: 16px;
+            background: #111827;
+            color: #e5e7eb;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            border-radius: 4px;
+            border: 2px solid var(--text-color, #000);
+        }
+        .converter-status {
+            min-height: 22px;
+            margin-top: 12px;
+            font-size: 13px;
+            opacity: 0.7;
+        }
+        .converter-status.error { color: #ef4444; opacity: 1; font-weight: bold; }
+        .converter-status.success { color: #059669; opacity: 1; font-weight: bold; }
 
         /* Manual */
         .manual-section { margin-top: 40px; }
@@ -234,6 +310,9 @@
         }
         [data-theme="dark"] .manual-warn { background: rgba(239,68,68,0.15); }
 
+        @media (max-width: 860px) {
+            .converter-layout { grid-template-columns: 1fr; }
+        }
         @media (max-width: 768px) {
             .editor-container { flex-direction: column; }
             .button-group { flex-direction: column; }
@@ -242,142 +321,198 @@
 </head>
 <body>
     <div class="container">
-        <h1>LINE Flex Message Sender</h1>
+        <h1>LINE Flex Tools</h1>
 
-        <div class="panel alert-panel">
-            <h3 style="margin-top: 0">⚠️ 事前準備：CORS制約の回避（検証用ブラウザの起動）</h3>
-            <p>ブラウザから直接LINEのAPIを叩くため、通常のChromeでは通信がブロック(CORSエラー)されます。以下の手順でセキュリティ設定を解除した検証用Chromeを起動してからこのツールを使用してください。</p>
-            <ol>
-                <li>キーボードの <code>Win + R</code> を押して「ファイル名を指定して実行」を開く。</li>
-                <li>以下のコマンドをコピーして貼り付け、「OK」を押す。<br>
-                    <code style="display:block; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); user-select: all;">chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code>
-                </li>
-                <li>新しく開いたChromeでこのツールのURLを開きなおす。</li>
-            </ol>
-            <p style="font-size: 0.9em; margin-bottom:0;">※LINE以外への通常のネットサーフィンにはこのChromeを使用しないでください。</p>
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="converter">① JSON変換</button>
+            <button class="tab-btn" data-tab="sender">② 送信</button>
         </div>
 
-        <div class="panel">
-            <div class="form-group">
-                <label for="accessToken">チャネルアクセストークン (Channel Access Token)</label>
-                <input type="password" id="accessToken" placeholder="Bearer {トークン} の中身を入力してください">
-            </div>
-            <div class="form-group">
-                <label for="targetUserId">テスト送信用 ターゲットユーザーID (User ID)</label>
-                <input type="text" id="targetUserId" placeholder="U4af4980629...（テスト送信ボタンを押す場合のみ必須）">
-                <small style="display:block; margin-top:5px; opacity:0.8;">※ユーザーIDはLINE Developersコンソールの「チャネル基本設定」一番下で確認できます。</small>
-            </div>
-            <div class="form-group">
-                <label for="altText">一斉配信（または通知）のテキスト (altText)</label>
-                <input type="text" id="altText" value="一斉配信の通知テキスト">
-            </div>
-            <div class="form-group">
-                <label for="broadcastLimit">配信数の上限 (オプション)</label>
-                <input type="number" id="broadcastLimit" placeholder="例: 100（空欄の場合は上限なしで全員に配信）" min="1">
-                <small style="display:block; margin-top:5px; opacity:0.8;">※上限を指定した場合、LINEの仕様により「属性が推定可能なユーザー」の中からランダムに指定人数まで配信されます（Narrowcast APIを使用）。</small>
-            </div>
-        </div>
+        <!-- ====== TAB 1: JSON変換 ====== -->
+        <div id="tab-converter" class="tab-content active">
 
-        <h3>Flex Message JSON (SimulatorでコピーしたJSONを入力)</h3>
-        <div class="editor-container">
-            <div>
-                <textarea id="jsonInput" placeholder='{"type": "flex", "altText": "...", "contents": { ...ここの中身を貼り付け... }}'></textarea>
+            <div class="panel alert-panel">
+                <h3 style="margin-top: 0">⚠️ 事前準備：CORS制約の回避（検証用ブラウザの起動）</h3>
+                <p>このツールはブラウザから直接 g123 の Broadcast API にリクエストを送ります。通常のChromeではCORSエラーが発生するため、以下の手順で検証用Chromeを起動してから使用してください。</p>
+                <ol>
+                    <li>キーボードの <code>Win + R</code> を押して「ファイル名を指定して実行」を開く。</li>
+                    <li>以下のコマンドをコピーして貼り付け、「OK」を押す。<br>
+                        <code style="display:block; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); user-select: all;">chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code>
+                    </li>
+                    <li>新しく開いたChromeでこのツールのURLを開きなおす。</li>
+                </ol>
+                <p style="font-size: 0.9em; margin-bottom:0;">※このChromeでは通常のネットサーフィンをしないでください。</p>
             </div>
-            <div>
-                <div class="preview-box" id="visualPreview">
-                    <div style="color: #64748b; margin-top: 20px;">ここに画像プレビューと構文チェックが表示されます</div>
+
+            <div class="converter-layout">
+                <div class="panel">
+                    <div class="form-group">
+                        <label for="broadcastToken">Broadcast API Token</label>
+                        <textarea id="broadcastToken" rows="4" placeholder="Bearer token、または token 本体を貼り付けてください" style="font-family: monospace; font-size: 13px; resize: vertical;"></textarea>
+                        <small style="display:block; margin-top:5px; opacity:0.7;">Bearer プレフィックスは自動補完されます。token はページメモリ内のみに保持されます。</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="contentId">Content ID</label>
+                        <input type="text" id="contentId" inputmode="numeric" placeholder="例：36" autocomplete="off">
+                        <small style="display:block; margin-top:5px; opacity:0.7;">数字のみ。API の戻り値 type は line_customer である必要があります。</small>
+                    </div>
+                    <div class="button-group" style="margin-top: 10px; justify-content: flex-start;">
+                        <button class="btn-convert" id="btnFetch">取得して変換</button>
+                        <button id="btnCopyConverter" disabled>JSONをコピー</button>
+                    </div>
+                    <div class="converter-status" id="converterStatus">入力待ちです。</div>
+                </div>
+
+                <div class="panel">
+                    <div class="output-panel-header">
+                        <span>変換結果</span>
+                        <span class="output-meta" id="converterMeta">JSONはまだ生成されていません</span>
+                    </div>
+                    <pre id="converterOutput">{}</pre>
+                    <div class="button-group" style="margin-top: 16px;">
+                        <button class="btn-transfer" id="btnTransfer" disabled>→ 送信タブで使う</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="button-group">
-            <button class="btn-test" id="btnTest">特定ユーザーにテスト送信 (Push API)</button>
-            <button class="btn-broadcast" id="btnBroadcast">本番配信 (上限指定時はNarrowcast) [注意]</button>
-        </div>
+        <!-- ====== TAB 2: 送信 ====== -->
+        <div id="tab-sender" class="tab-content">
 
-        <div id="responseLog"></div>
+            <div class="panel alert-panel">
+                <h3 style="margin-top: 0">⚠️ 事前準備：CORS制約の回避（検証用ブラウザの起動）</h3>
+                <p>ブラウザから直接LINEのAPIを叩くため、通常のChromeでは通信がブロック(CORSエラー)されます。以下の手順でセキュリティ設定を解除した検証用Chromeを起動してからこのツールを使用してください。</p>
+                <ol>
+                    <li>キーボードの <code>Win + R</code> を押して「ファイル名を指定して実行」を開く。</li>
+                    <li>以下のコマンドをコピーして貼り付け、「OK」を押す。<br>
+                        <code style="display:block; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); user-select: all;">chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code>
+                    </li>
+                    <li>新しく開いたChromeでこのツールのURLを開きなおす。</li>
+                </ol>
+                <p style="font-size: 0.9em; margin-bottom:0;">※LINE以外への通常のネットサーフィンにはこのChromeを使用しないでください。</p>
+            </div>
 
-        <!-- 取扱説明書 -->
-        <div class="manual-section panel">
-            <h2>📖 取扱説明書</h2>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="accessToken">チャネルアクセストークン (Channel Access Token)</label>
+                    <input type="password" id="accessToken" placeholder="Bearer {トークン} の中身を入力してください">
+                </div>
+                <div class="form-group">
+                    <label for="targetUserId">テスト送信用 ターゲットユーザーID (User ID)</label>
+                    <input type="text" id="targetUserId" placeholder="U4af4980629...（テスト送信ボタンを押す場合のみ必須）">
+                    <small style="display:block; margin-top:5px; opacity:0.8;">※ユーザーIDはLINE Developersコンソールの「チャネル基本設定」一番下で確認できます。</small>
+                </div>
+                <div class="form-group">
+                    <label for="altText">一斉配信（または通知）のテキスト (altText)</label>
+                    <input type="text" id="altText" value="一斉配信の通知テキスト">
+                </div>
+                <div class="form-group">
+                    <label for="broadcastLimit">配信数の上限 (オプション)</label>
+                    <input type="number" id="broadcastLimit" placeholder="例: 100（空欄の場合は上限なしで全員に配信）" min="1">
+                    <small style="display:block; margin-top:5px; opacity:0.8;">※上限を指定した場合、LINEの仕様により「属性が推定可能なユーザー」の中からランダムに指定人数まで配信されます（Narrowcast APIを使用）。</small>
+                </div>
+            </div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">1</div>
-                <div class="manual-step-body">
-                    <strong>検証用 Chrome を起動する</strong>
-                    <p>ブラウザからLINE APIに直接リクエストを送るにはCORS制限を解除する必要があります。<code>Win + R</code> を押し、以下のコマンドを実行してください。</p>
-                    <div class="manual-tip">
-                        <code>chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code><br>
-                        ※この検証用Chromeでのみ本ツールを使用してください。通常のネットサーフィンには使用しないでください。
+            <h3>Flex Message JSON (SimulatorでコピーしたJSONを入力)</h3>
+            <div class="editor-container">
+                <div>
+                    <textarea id="jsonInput" placeholder='{"type": "flex", "altText": "...", "contents": { ...ここの中身を貼り付け... }}'></textarea>
+                </div>
+                <div>
+                    <div class="preview-box" id="visualPreview">
+                        <div style="color: #64748b; margin-top: 20px;">ここに画像プレビューと構文チェックが表示されます</div>
                     </div>
                 </div>
             </div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">2</div>
-                <div class="manual-step-body">
-                    <strong>チャネルアクセストークンを入力する</strong>
-                    <p><a href="https://developers.line.biz/console/" target="_blank" rel="noopener">LINE Developers コンソール</a> → 対象チャネル → 「Messaging API設定」タブ → 「チャネルアクセストークン（長期）」を発行してコピーします。<br>「Bearer 」は不要です。トークン本文のみ入力してください。</p>
-                </div>
+            <div class="button-group">
+                <button class="btn-test" id="btnTest">特定ユーザーにテスト送信 (Push API)</button>
+                <button class="btn-broadcast" id="btnBroadcast">本番配信 (上限指定時はNarrowcast) [注意]</button>
             </div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">3</div>
-                <div class="manual-step-body">
-                    <strong>（テスト送信の場合）ターゲットユーザーIDを入力する</strong>
-                    <p>LINE Developers コンソール → 対象チャネル → 「チャネル基本設定」タブ → 最下部の「あなたのユーザーID」を確認してください。<code>U</code> から始まる文字列です。</p>
-                    <div class="manual-tip">テスト送信は <strong>本番配信前に自分のアカウントで必ず確認</strong> することをおすすめします。</div>
-                </div>
-            </div>
+            <div id="responseLog"></div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">4</div>
-                <div class="manual-step-body">
-                    <strong>Flex Message JSON を貼り付ける</strong>
-                    <p><a href="https://developers.line.biz/flex-simulator/" target="_blank" rel="noopener">LINE Flex Message Simulator</a> でメッセージを作成し、「JSON」タブに表示されるJSONをコピーして左のテキストエリアに貼り付けます。右側にリアルタイムプレビューが表示されます。</p>
-                    <div class="manual-tip">
-                        <b>対応フォーマット：</b><br>
-                        ・<code>{"type":"flex","altText":"...","contents":{...}}</code>（メッセージオブジェクト全体）<br>
-                        ・<code>{"type":"bubble",...}</code> または <code>{"type":"carousel",...}</code>（contentsの中身のみ）
+            <div class="manual-section panel">
+                <h2>📖 取扱説明書</h2>
+
+                <div class="manual-step">
+                    <div class="manual-step-num">1</div>
+                    <div class="manual-step-body">
+                        <strong>検証用 Chrome を起動する</strong>
+                        <p>ブラウザからLINE APIに直接リクエストを送るにはCORS制限を解除する必要があります。<code>Win + R</code> を押し、以下のコマンドを実行してください。</p>
+                        <div class="manual-tip">
+                            <code>chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code><br>
+                            ※この検証用Chromeでのみ本ツールを使用してください。通常のネットサーフィンには使用しないでください。
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">5</div>
-                <div class="manual-step-body">
-                    <strong>altText を設定する</strong>
-                    <p>プッシュ通知やトークリストに表示される代替テキストです。JSONに <code>altText</code> が含まれている場合は自動入力されます。任意で書き換えてください。</p>
-                </div>
-            </div>
-
-            <div class="manual-step">
-                <div class="manual-step-num">6</div>
-                <div class="manual-step-body">
-                    <strong>送信する</strong>
-                    <p>目的に応じていずれかのボタンを押してください。</p>
-                    <div class="manual-tip">
-                        <b>特定ユーザーにテスト送信（Push API）</b>：手順3で入力したユーザーIDにのみ送信。確認作業に使用します。<br><br>
-                        <b>本番配信（Broadcast / Narrowcast）</b>：<br>
-                        &nbsp;・配信数上限が<b>空欄</b>の場合 → 全友だちに一斉配信（Broadcast API）<br>
-                        &nbsp;・配信数上限を<b>入力</b>した場合 → 属性推定可能なユーザーの中から最大N人にランダム配信（Narrowcast API）
-                    </div>
-                    <div class="manual-warn">
-                        ⚠️ 本番配信ボタンは確認ダイアログが表示されますが、<b>押したら即送信</b>されます。本番配信前に必ずテスト送信で見た目を確認してください。
+                <div class="manual-step">
+                    <div class="manual-step-num">2</div>
+                    <div class="manual-step-body">
+                        <strong>チャネルアクセストークンを入力する</strong>
+                        <p><a href="https://developers.line.biz/console/" target="_blank" rel="noopener">LINE Developers コンソール</a> → 対象チャネル → 「Messaging API設定」タブ → 「チャネルアクセストークン（長期）」を発行してコピーします。<br>「Bearer 」は不要です。トークン本文のみ入力してください。</p>
                     </div>
                 </div>
-            </div>
 
-            <div class="manual-step">
-                <div class="manual-step-num">7</div>
-                <div class="manual-step-body">
-                    <strong>レスポンスを確認する</strong>
-                    <p>送信後、ページ下部に LINE API からのレスポンスが表示されます。<code>HTTP Status: 200</code> であれば送信成功です。エラーの場合はメッセージを確認してください。</p>
-                    <div class="manual-tip">
-                        よくあるエラー：<br>
-                        ・<b>CORSエラー</b>：検証用Chromeを使用していない → 手順1を確認<br>
-                        ・<b>401 Unauthorized</b>：アクセストークンが間違っている<br>
-                        ・<b>400 Bad Request</b>：JSONの形式が不正（プレビューでエラーが出ていないか確認）
+                <div class="manual-step">
+                    <div class="manual-step-num">3</div>
+                    <div class="manual-step-body">
+                        <strong>（テスト送信の場合）ターゲットユーザーIDを入力する</strong>
+                        <p>LINE Developers コンソール → 対象チャネル → 「チャネル基本設定」タブ → 最下部の「あなたのユーザーID」を確認してください。<code>U</code> から始まる文字列です。</p>
+                        <div class="manual-tip">テスト送信は <strong>本番配信前に自分のアカウントで必ず確認</strong> することをおすすめします。</div>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <div class="manual-step-num">4</div>
+                    <div class="manual-step-body">
+                        <strong>Flex Message JSON を貼り付ける</strong>
+                        <p><a href="https://developers.line.biz/flex-simulator/" target="_blank" rel="noopener">LINE Flex Message Simulator</a> でメッセージを作成し、「JSON」タブに表示されるJSONをコピーして左のテキストエリアに貼り付けます。右側にリアルタイムプレビューが表示されます。</p>
+                        <div class="manual-tip">
+                            <b>対応フォーマット：</b><br>
+                            ・<code>{"type":"flex","altText":"...","contents":{...}}</code>（メッセージオブジェクト全体）<br>
+                            ・<code>{"type":"bubble",...}</code> または <code>{"type":"carousel",...}</code>（contentsの中身のみ）
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <div class="manual-step-num">5</div>
+                    <div class="manual-step-body">
+                        <strong>altText を設定する</strong>
+                        <p>プッシュ通知やトークリストに表示される代替テキストです。JSONに <code>altText</code> が含まれている場合は自動入力されます。任意で書き換えてください。</p>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <div class="manual-step-num">6</div>
+                    <div class="manual-step-body">
+                        <strong>送信する</strong>
+                        <p>目的に応じていずれかのボタンを押してください。</p>
+                        <div class="manual-tip">
+                            <b>特定ユーザーにテスト送信（Push API）</b>：手順3で入力したユーザーIDにのみ送信。確認作業に使用します。<br><br>
+                            <b>本番配信（Broadcast / Narrowcast）</b>：<br>
+                            &nbsp;・配信数上限が<b>空欄</b>の場合 → 全友だちに一斉配信（Broadcast API）<br>
+                            &nbsp;・配信数上限を<b>入力</b>した場合 → 属性推定可能なユーザーの中から最大N人にランダム配信（Narrowcast API）
+                        </div>
+                        <div class="manual-warn">
+                            ⚠️ 本番配信ボタンは確認ダイアログが表示されますが、<b>押したら即送信</b>されます。本番配信前に必ずテスト送信で見た目を確認してください。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <div class="manual-step-num">7</div>
+                    <div class="manual-step-body">
+                        <strong>レスポンスを確認する</strong>
+                        <p>送信後、ページ下部に LINE API からのレスポンスが表示されます。<code>HTTP Status: 200</code> であれば送信成功です。エラーの場合はメッセージを確認してください。</p>
+                        <div class="manual-tip">
+                            よくあるエラー：<br>
+                            ・<b>CORSエラー</b>：検証用Chromeを使用していない → 手順1を確認<br>
+                            ・<b>401 Unauthorized</b>：アクセストークンが間違っている<br>
+                            ・<b>400 Bad Request</b>：JSONの形式が不正（プレビューでエラーが出ていないか確認）
+                        </div>
                     </div>
                 </div>
             </div>
@@ -385,7 +520,7 @@
     </div>
 
     <script>
-        // Theme Toggle
+        // ===== Theme Toggle =====
         (function() {
             const savedTheme = localStorage.getItem('neo-theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -408,7 +543,216 @@
             });
         })();
 
-        // Main Tool Logic
+        // ===== Tab Switching =====
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function switchTab(tabId) {
+            tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+            tabContents.forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        // ===== JSON Converter =====
+        const BROADCAST_API_BASE = "https://broadcast-api.g123.jp/api/v1/auxin/broadcast/contents";
+
+        const broadcastTokenInput = document.getElementById('broadcastToken');
+        const contentIdInput = document.getElementById('contentId');
+        const btnFetch = document.getElementById('btnFetch');
+        const btnCopyConverter = document.getElementById('btnCopyConverter');
+        const btnTransfer = document.getElementById('btnTransfer');
+        const converterOutput = document.getElementById('converterOutput');
+        const converterStatus = document.getElementById('converterStatus');
+        const converterMeta = document.getElementById('converterMeta');
+
+        let convertedJSON = '';
+
+        function setConverterStatus(msg, type) {
+            converterStatus.textContent = msg;
+            converterStatus.className = 'converter-status' + (type ? ' ' + type : '');
+        }
+
+        function snakeToCamel(s) {
+            return s.replace(/_([a-zA-Z0-9])/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toLowerCase());
+        }
+
+        function convertKeysToCamelCase(v) {
+            if (Array.isArray(v)) return v.map(convertKeysToCamelCase);
+            if (v && typeof v === 'object' && v.constructor === Object) {
+                return Object.fromEntries(Object.entries(v).map(([k, i]) => [snakeToCamel(k), convertKeysToCamelCase(i)]));
+            }
+            return v;
+        }
+
+        function eventCell(imgUrl, title, link, animated) {
+            const image = { type: 'image', url: imgUrl, size: 'full', aspectMode: 'cover' };
+            if (animated) { image.align = 'center'; image.gravity = 'center'; image.animated = true; image.aspectRatio = '1:1'; }
+            return {
+                type: 'box', layout: 'vertical',
+                contents: [
+                    image,
+                    {
+                        type: 'box', layout: 'vertical',
+                        contents: [{ type: 'text', text: title, color: '#ffffff', size: 'sm' }],
+                        position: 'absolute', offsetBottom: '0px', offsetStart: '0px',
+                        paddingAll: '10px', width: '100%',
+                        background: { type: 'linearGradient', angle: '0deg', startColor: '#000000BF', endColor: '#00000000' }
+                    }
+                ],
+                action: { type: 'uri', label: 'action', uri: link }
+            };
+        }
+
+        function titleCell(text, link) {
+            return {
+                type: 'box', layout: 'vertical',
+                contents: [{ type: 'text', text, color: '#000000', size: 'sm' }],
+                paddingStart: '6px', paddingEnd: '6px', flex: 1,
+                justifyContent: 'center',
+                action: { type: 'uri', label: 'action', uri: link }
+            };
+        }
+
+        function buildLinePushPayload(rawContent) {
+            const d = convertKeysToCamelCase(rawContent);
+            return {
+                type: 'bubble',
+                header: {
+                    type: 'box', layout: 'vertical',
+                    contents: [
+                        { type: 'text', text: d.digest, flex: 1, align: 'end', color: '#000000A6', size: 'xs' },
+                        {
+                            type: 'image',
+                            url: 'https://cdn-new.g123.jp/admin/2021/10/1635476153567.png',
+                            position: 'absolute', offsetTop: '0px', offsetStart: '12px',
+                            size: 'xxs', gravity: 'center', offsetBottom: '0px',
+                            animated: false, aspectMode: 'cover'
+                        }
+                    ],
+                    paddingEnd: '10px', paddingStart: '10px', paddingTop: '14px', paddingBottom: '14px',
+                    justifyContent: 'center'
+                },
+                hero: {
+                    type: 'box', layout: 'vertical',
+                    contents: [
+                        {
+                            type: 'image', url: d.event1ImgUrl, size: 'full',
+                            aspectRatio: '4:3', margin: '0px', align: 'end',
+                            gravity: 'center', aspectMode: 'cover'
+                        },
+                        {
+                            type: 'box', layout: 'vertical',
+                            contents: [
+                                { type: 'text', text: d.event1Title, color: '#ffffff', size: 'xxl', weight: 'bold' },
+                                { type: 'text', text: d.event1Description, color: '#ffffff', size: 'md' }
+                            ],
+                            position: 'absolute', offsetBottom: '0px', offsetStart: '0px',
+                            paddingAll: '10px', width: '100%', paddingBottom: '14px', spacing: 'xs',
+                            background: { type: 'linearGradient', angle: '0deg', startColor: '#000000BF', endColor: '#00000000' }
+                        }
+                    ],
+                    action: { type: 'uri', label: 'hero', uri: d.event1Link }
+                },
+                body: {
+                    type: 'box', layout: 'horizontal',
+                    contents: [
+                        {
+                            type: 'box', layout: 'vertical', flex: 1,
+                            contents: [
+                                eventCell(d.event2ImgUrl, d.event2Title, d.event2Link, false),
+                                eventCell(d.event3ImgUrl, d.event3Title, d.event3Link, true)
+                            ]
+                        },
+                        {
+                            type: 'box', layout: 'vertical', flex: 2,
+                            justifyContent: 'space-evenly', cornerRadius: 'none',
+                            contents: [
+                                titleCell(d.title1Text, d.title1Link),
+                                { type: 'separator' },
+                                titleCell(d.title2Text, d.title2Link),
+                                { type: 'separator' },
+                                titleCell(d.title3Text, d.title3Link),
+                                { type: 'separator' },
+                                titleCell(d.title4Text, d.title4Link),
+                                { type: 'separator' },
+                                titleCell(d.title5Text, d.title5Link)
+                            ]
+                        }
+                    ],
+                    paddingAll: '0px'
+                },
+                size: 'giga'
+            };
+        }
+
+        btnFetch.addEventListener('click', async () => {
+            const token = broadcastTokenInput.value.trim();
+            const id = contentIdInput.value.trim();
+
+            if (!token) { setConverterStatus('Broadcast API Token を入力してください。', 'error'); broadcastTokenInput.focus(); return; }
+            if (!/^\d+$/.test(id)) { setConverterStatus('Content ID は数字のみで入力してください。', 'error'); contentIdInput.focus(); return; }
+
+            btnFetch.disabled = true;
+            btnCopyConverter.disabled = true;
+            btnTransfer.disabled = true;
+            setConverterStatus('API をリクエストしています...', '');
+            converterMeta.textContent = '';
+
+            try {
+                const authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const res = await fetch(`${BROADCAST_API_BASE}/${id}`, {
+                    method: 'GET',
+                    headers: { accept: '*/*', authorization, 'content-type': 'application/json' }
+                });
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    throw new Error(`API リクエスト失敗：HTTP ${res.status}${text ? ' - ' + text.slice(0, 200) : ''}`);
+                }
+
+                const data = await res.json();
+
+                if (!data || typeof data !== 'object') throw new Error('API の戻り値が有効なオブジェクトではありません。');
+                if (data.type !== 'line_customer') throw new Error(`戻り値の type は ${JSON.stringify(data.type)} です。line_customer ではありません。`);
+                if (!data.content || typeof data.content !== 'object') throw new Error('API の戻り値に content オブジェクトがありません。');
+
+                const payload = buildLinePushPayload(data.content);
+                convertedJSON = JSON.stringify(payload, null, 2);
+                converterOutput.textContent = convertedJSON;
+                converterMeta.textContent = `ID ${data.id} / lang ${data.lang || '-'} / type ${data.type}`;
+                btnCopyConverter.disabled = false;
+                btnTransfer.disabled = false;
+                setConverterStatus('変換が完了しました。', 'success');
+            } catch (err) {
+                setConverterStatus(err.message || '変換に失敗しました。', 'error');
+                btnCopyConverter.disabled = !convertedJSON;
+            } finally {
+                btnFetch.disabled = false;
+            }
+        });
+
+        btnCopyConverter.addEventListener('click', async () => {
+            if (!convertedJSON) return;
+            try {
+                await navigator.clipboard.writeText(convertedJSON);
+                setConverterStatus('JSON をクリップボードにコピーしました。', 'success');
+            } catch {
+                setConverterStatus('ブラウザにより自動コピーがブロックされました。手動で選択してコピーしてください。', 'error');
+            }
+        });
+
+        btnTransfer.addEventListener('click', () => {
+            if (!convertedJSON) return;
+            document.getElementById('jsonInput').value = convertedJSON;
+            switchTab('sender');
+            document.getElementById('jsonInput').dispatchEvent(new Event('input'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ===== Flex Message Sender =====
         const jsonInput = document.getElementById('jsonInput');
         const visualPreview = document.getElementById('visualPreview');
         const btnTest = document.getElementById('btnTest');
@@ -486,10 +830,7 @@
             if (node.type === 'box') {
                 el.style.display = 'flex';
                 el.style.flexDirection = node.layout === 'horizontal' ? 'row' : 'column';
-                if (node.layout === 'baseline') {
-                    el.style.flexDirection = 'row';
-                    el.style.alignItems = 'baseline';
-                }
+                if (node.layout === 'baseline') { el.style.flexDirection = 'row'; el.style.alignItems = 'baseline'; }
                 if (node.paddingAll) el.style.padding = node.paddingAll;
                 if (node.paddingTop) el.style.paddingTop = node.paddingTop;
                 if (node.paddingBottom) el.style.paddingBottom = node.paddingBottom;
@@ -517,14 +858,8 @@
                 const s = sizeMap[node.size] || node.size || '16px';
                 el.style.fontSize = s.includes('px') ? s : s + 'px';
                 el.style.textAlign = node.align || 'left';
-                if (node.wrap) {
-                    el.style.whiteSpace = 'pre-wrap';
-                    el.style.wordBreak = 'break-word';
-                } else {
-                    el.style.whiteSpace = 'nowrap';
-                    el.style.overflow = 'hidden';
-                    el.style.textOverflow = 'ellipsis';
-                }
+                if (node.wrap) { el.style.whiteSpace = 'pre-wrap'; el.style.wordBreak = 'break-word'; }
+                else { el.style.whiteSpace = 'nowrap'; el.style.overflow = 'hidden'; el.style.textOverflow = 'ellipsis'; }
                 if (node.style === 'italic') el.style.fontStyle = 'italic';
                 if (node.decoration === 'line-through') el.style.textDecoration = 'line-through';
             } else if (node.type === 'image') {
@@ -537,10 +872,7 @@
                     const parts = node.aspectRatio.split(':');
                     if (parts.length === 2) img.style.aspectRatio = `${parts[0]} / ${parts[1]}`;
                 }
-                if (node.size && node.size !== 'full') {
-                    img.style.width = node.size;
-                    img.style.maxWidth = '100%';
-                }
+                if (node.size && node.size !== 'full') { img.style.width = node.size; img.style.maxWidth = '100%'; }
                 el.appendChild(img);
             } else if (node.type === 'button') {
                 el.style.padding = '0';
@@ -553,16 +885,9 @@
                 btn.style.fontWeight = 'bold';
                 btn.style.cursor = 'pointer';
                 btn.style.fontSize = '14px';
-                if (node.style === 'primary') {
-                    btn.style.backgroundColor = node.color || '#0ec354';
-                    btn.style.color = '#fff';
-                } else if (node.style === 'secondary') {
-                    btn.style.backgroundColor = node.color || '#d1d5db';
-                    btn.style.color = '#111111';
-                } else {
-                    btn.style.backgroundColor = 'transparent';
-                    btn.style.color = node.color || '#3b82f6';
-                }
+                if (node.style === 'primary') { btn.style.backgroundColor = node.color || '#0ec354'; btn.style.color = '#fff'; }
+                else if (node.style === 'secondary') { btn.style.backgroundColor = node.color || '#d1d5db'; btn.style.color = '#111111'; }
+                else { btn.style.backgroundColor = 'transparent'; btn.style.color = node.color || '#3b82f6'; }
                 el.appendChild(btn);
             } else if (node.type === 'separator') {
                 el.style.width = '100%';
@@ -591,17 +916,12 @@
 
         function syntaxHighlight(json) {
             json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
                 let color = '#2563eb';
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) color = '#d97706';
-                } else if (/true|false/.test(match)) {
-                    color = '#059669';
-                } else if (/null/.test(match)) {
-                    color = '#64748b';
-                } else {
-                    color = '#dc2626';
-                }
+                if (/^"/.test(match)) { if (/:$/.test(match)) color = '#d97706'; }
+                else if (/true|false/.test(match)) { color = '#059669'; }
+                else if (/null/.test(match)) { color = '#64748b'; }
+                else { color = '#dc2626'; }
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 if (isDark) {
                     if (color === '#2563eb') color = '#60a5fa';
@@ -631,7 +951,7 @@
                 jsonHtml.innerHTML = `<h4 style="margin: 0 0 10px 0; color: #3b82f6;">📝 構文チェック (正常)</h4>${highlightedJson}`;
                 visualPreview.appendChild(simulatorContainer);
                 visualPreview.appendChild(jsonHtml);
-                if (parsed.type === "flex" && parsed.altText) {
+                if (parsed.type === 'flex' && parsed.altText) {
                     document.getElementById('altText').value = parsed.altText;
                 }
             } catch (e) {
@@ -639,26 +959,18 @@
             }
         });
 
-        const observer = new MutationObserver(() => {
-            jsonInput.dispatchEvent(new Event('input'));
-        });
+        const observer = new MutationObserver(() => { jsonInput.dispatchEvent(new Event('input')); });
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
         async function sendLineMessage(endpoint, payload) {
             const token = document.getElementById('accessToken').value.trim();
-            if (!token) {
-                alert('チャネルアクセストークンを入力してください。');
-                return;
-            }
+            if (!token) { alert('チャネルアクセストークンを入力してください。'); return; }
             responseLog.style.display = 'block';
             responseLog.innerHTML = `<span style="color:#2563eb">送信中...</span>`;
             try {
                 const response = await fetch(endpoint, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(payload)
                 });
                 const responseText = await response.text();
@@ -689,10 +1001,10 @@
             let parsed;
             try { parsed = JSON.parse(jsonText); } catch (e) { alert('JSONの形式が正しくありません。エラーを修正してから送信してください。'); return; }
             let messageObj;
-            if (parsed.type === "flex" && parsed.contents) {
-                messageObj = { type: "flex", altText: altText || parsed.altText || "Flex Message", contents: parsed.contents };
+            if (parsed.type === 'flex' && parsed.contents) {
+                messageObj = { type: 'flex', altText: altText || parsed.altText || 'Flex Message', contents: parsed.contents };
             } else {
-                messageObj = { type: "flex", altText: altText || "Flex Message", contents: parsed };
+                messageObj = { type: 'flex', altText: altText || 'Flex Message', contents: parsed };
             }
             sendLineMessage('https://api.line.me/v2/bot/message/push', { to: targetId, messages: [messageObj] });
         });
@@ -705,10 +1017,10 @@
             let parsed;
             try { parsed = JSON.parse(jsonText); } catch (e) { alert('JSONの形式が正しくありません。エラーを修正してから送信してください。'); return; }
             let messageObj;
-            if (parsed.type === "flex" && parsed.contents) {
-                messageObj = { type: "flex", altText: altText || parsed.altText || "一斉配信", contents: parsed.contents };
+            if (parsed.type === 'flex' && parsed.contents) {
+                messageObj = { type: 'flex', altText: altText || parsed.altText || '一斉配信', contents: parsed.contents };
             } else {
-                messageObj = { type: "flex", altText: altText || "一斉配信", contents: parsed };
+                messageObj = { type: 'flex', altText: altText || '一斉配信', contents: parsed };
             }
             let endpoint = 'https://api.line.me/v2/bot/message/broadcast';
             const payload = { messages: [messageObj] };
