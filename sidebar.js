@@ -149,6 +149,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>Image Watermark Tool</span>
                 </a>
             </li>
+            <li>
+                <a href="${basePath}gradient-mask-tool/index.html">
+                    <span class="portal-sidebar-icon">🌓</span>
+                    <span>Gradient Mask Tool</span>
+                </a>
+            </li>
+            <li>
+                <a href="${basePath}banner_ai_generator/index.html">
+                    <span class="portal-sidebar-icon">🎨</span>
+                    <span>Ad Banner AI Generator</span>
+                </a>
+            </li>
+            <li>
+                <a href="${basePath}line-flex-sender/index.html">
+                    <span class="portal-sidebar-icon">💬</span>
+                    <span>LINE Flex Sender</span>
+                </a>
+            </li>
         </ul>
     `;
     document.body.prepend(sidebar);
