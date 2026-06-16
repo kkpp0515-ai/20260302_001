@@ -458,217 +458,229 @@
         const btnBroadcast = document.getElementById('btnBroadcast');
         const responseLog = document.getElementById('responseLog');
 
-        // JSONをLINEアプリ風のビジュアルコンポーネントに変換して描画する関数
         function renderFlexMessage(json, container) {
             container.innerHTML = '';
-            
-            // 背景（トークルーム風）
-            container.style.backgroundColor = '#8BA1B5'; 
-            container.style.padding = '20px';
-            container.style.display = 'flex';
-            container.style.justifyContent = 'center';
-            container.style.alignItems = 'flex-start';
-            container.style.borderBottom = '2px dashed #cbd5e1';
-            container.style.marginBottom = '20px';
-            container.style.borderRadius = '8px';
-            
-            // 吹き出しコンポーネントの基本定義
-            const createBubble = () => {
-                const bubble = document.createElement('div');
-                bubble.style.display = 'flex';
-                bubble.style.flexDirection = 'column';
-                bubble.style.width = '300px'; // スマホの標準的な幅
-                bubble.style.backgroundColor = '#fff';
-                bubble.style.borderRadius = '20px';
-                bubble.style.overflow = 'hidden';
-                bubble.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                bubble.style.fontFamily = 'sans-serif';
-                return bubble;
-            };
-            
+            container.style.cssText = 'background:#c1cfd8;border-radius:8px;overflow:hidden;font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;margin-bottom:16px;';
+
+            // LINE chat header mock
+            const chatHeader = document.createElement('div');
+            chatHeader.style.cssText = 'background:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e0e0;';
+            chatHeader.innerHTML = `<span style="font-size:20px;color:#666;">←</span><div style="width:36px;height:36px;background:#06c755;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:bold;color:#fff;">G</div><div style="flex:1;font-weight:bold;font-size:14px;">公式アカウント</div><span style="font-size:22px;color:#666;">⋮</span>`;
+            container.appendChild(chatHeader);
+
+            // Chat scroll area
+            const chatArea = document.createElement('div');
+            chatArea.style.cssText = 'padding:16px;display:flex;flex-direction:column;gap:8px;';
+
+            // Date badge
+            const dateBadge = document.createElement('div');
+            dateBadge.style.cssText = 'text-align:center;margin:4px 0 8px;';
+            dateBadge.innerHTML = `<span style="background:rgba(0,0,0,0.22);color:#fff;font-size:11px;padding:3px 10px;border-radius:12px;">${new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}</span>`;
+            chatArea.appendChild(dateBadge);
+
+            // Message row: avatar + bubble + timestamp
+            const msgRow = document.createElement('div');
+            msgRow.style.cssText = 'display:flex;align-items:flex-end;gap:8px;';
+
+            const avatar = document.createElement('div');
+            avatar.style.cssText = 'width:36px;height:36px;background:#06c755;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:#fff;';
+            avatar.textContent = 'G';
+            msgRow.appendChild(avatar);
+
+            const bubbleCol = document.createElement('div');
+            bubbleCol.style.cssText = 'display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
+            bubbleCol.innerHTML = '<div style="font-size:11px;color:#444;margin-bottom:2px;">公式アカウント</div>';
+
+            const bubbleTimeRow = document.createElement('div');
+            bubbleTimeRow.style.cssText = 'display:flex;align-items:flex-end;gap:6px;';
+
             let target = json;
             if (json.type === 'flex' && json.contents) target = json.contents;
-            
+
+            const sizeWidths = { nano:'100px', micro:'140px', kilo:'200px', mega:'240px', giga:'100%' };
+            const bubbleWidth = sizeWidths[target.size] || '240px';
+
+            const makeBubble = () => {
+                const b = document.createElement('div');
+                b.style.cssText = `display:flex;flex-direction:column;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12);min-width:0;width:${bubbleWidth};`;
+                if (bubbleWidth === '100%') b.style.flex = '1';
+                return b;
+            };
+
             if (target.type === 'bubble') {
-                const bubble = createBubble();
+                const bubble = makeBubble();
                 if (target.header) bubble.appendChild(renderFlexNode(target.header, 'column'));
-                if (target.hero) bubble.appendChild(renderFlexNode(target.hero, 'column'));
-                if (target.body) bubble.appendChild(renderFlexNode(target.body, 'column'));
+                if (target.hero)   bubble.appendChild(renderFlexNode(target.hero,   'column'));
+                if (target.body)   bubble.appendChild(renderFlexNode(target.body,   'column'));
                 if (target.footer) bubble.appendChild(renderFlexNode(target.footer, 'column'));
-                container.appendChild(bubble);
+                bubbleTimeRow.appendChild(bubble);
             } else if (target.type === 'carousel') {
-                container.style.justifyContent = 'flex-start';
-                container.style.overflowX = 'auto'; // 横スクロール対応
-                
-                if (target.contents && target.contents.length > 0) {
-                    target.contents.forEach((b) => {
-                        const cb = createBubble();
-                        if (b.header) cb.appendChild(renderFlexNode(b.header, 'column'));
-                        if (b.hero) cb.appendChild(renderFlexNode(b.hero, 'column'));
-                        if (b.body) cb.appendChild(renderFlexNode(b.body, 'column'));
-                        if (b.footer) cb.appendChild(renderFlexNode(b.footer, 'column'));
-                        cb.style.marginRight = '10px';
-                        cb.style.flexShrink = '0';
-                        container.appendChild(cb);
-                    });
-                }
+                const carousel = document.createElement('div');
+                carousel.style.cssText = 'display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;flex:1;';
+                (target.contents || []).forEach(b => {
+                    const cb = makeBubble();
+                    cb.style.width = '220px'; cb.style.flex = '0 0 auto';
+                    if (b.header) cb.appendChild(renderFlexNode(b.header, 'column'));
+                    if (b.hero)   cb.appendChild(renderFlexNode(b.hero,   'column'));
+                    if (b.body)   cb.appendChild(renderFlexNode(b.body,   'column'));
+                    if (b.footer) cb.appendChild(renderFlexNode(b.footer, 'column'));
+                    carousel.appendChild(cb);
+                });
+                bubbleTimeRow.appendChild(carousel);
             } else {
-                container.innerHTML = '<div style="color:red; background:white; padding:10px; border-radius:4px;">プレビュー非対応のフォーマットです(bubbleまたはcarouselのみ対応)</div>';
+                bubbleTimeRow.innerHTML = '<div style="color:red;background:white;padding:10px;border-radius:4px;">プレビュー非対応（bubbleまたはcarouselのみ）</div>';
             }
+
+            const ts = document.createElement('div');
+            ts.style.cssText = 'font-size:11px;color:#555;white-space:nowrap;flex-shrink:0;';
+            ts.textContent = new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+            bubbleTimeRow.appendChild(ts);
+
+            bubbleCol.appendChild(bubbleTimeRow);
+            msgRow.appendChild(bubbleCol);
+            chatArea.appendChild(msgRow);
+            container.appendChild(chatArea);
         }
 
         function renderFlexNode(node, prevLayout) {
+            if (!node || typeof node !== 'object') return document.createElement('div');
+
             const el = document.createElement('div');
             el.style.boxSizing = 'border-box';
-            
-            if (!node || typeof node !== 'object') return el;
 
-            // Margin
-            const marginMap = {md:'8px', lg:'12px', xl:'16px', xxl:'20px', sm:'4px', xs:'2px'};
-            if (node.margin) {
-                const m = marginMap[node.margin] || node.margin;
-                const mVal = m.includes('px') ? m : m + 'px';
-                if (prevLayout === 'horizontal') el.style.marginLeft = mVal;
-                else el.style.marginTop = mVal;
+            const marginMap = { none:'0px', xs:'2px', sm:'4px', md:'8px', lg:'12px', xl:'16px', xxl:'20px' };
+            const textSizeMap = { xxs:'11px', xs:'13px', sm:'14px', md:'16px', lg:'19px', xl:'22px', xxl:'29px', '3xl':'35px', '4xl':'48px', '5xl':'74px' };
+            const imgSizeMap  = { xxs:'20px', xs:'60px', sm:'100px', md:'168px', lg:'224px', xl:'280px', xxl:'336px', '3xl':'400px', '4xl':'464px', '5xl':'528px' };
+
+            // Absolute positioning
+            if (node.position === 'absolute') {
+                el.style.position = 'absolute';
+                if (node.offsetTop    !== undefined) el.style.top    = node.offsetTop;
+                if (node.offsetBottom !== undefined) el.style.bottom = node.offsetBottom;
+                if (node.offsetStart  !== undefined) el.style.left   = node.offsetStart;
+                if (node.offsetEnd    !== undefined) el.style.right  = node.offsetEnd;
+                if (node.width)  el.style.width  = node.width;
+                if (node.height) el.style.height = node.height;
+            } else {
+                if (node.margin) {
+                    const m = marginMap[node.margin] || node.margin;
+                    if (prevLayout === 'horizontal') el.style.marginLeft = m;
+                    else el.style.marginTop = m;
+                }
             }
 
-            if (node.flex) el.style.flex = node.flex;
+            if (node.flex !== undefined) el.style.flex = String(node.flex);
 
             if (node.type === 'box') {
                 el.style.display = 'flex';
-                el.style.flexDirection = node.layout === 'horizontal' ? 'row' : 'column';
-                if (node.layout === 'baseline') {
-                    el.style.flexDirection = 'row';
-                    el.style.alignItems = 'baseline';
-                }
-                
-                // Padding
-                if (node.paddingAll) el.style.padding = node.paddingAll;
-                if (node.paddingTop) el.style.paddingTop = node.paddingTop;
-                if (node.paddingBottom) el.style.paddingBottom = node.paddingBottom;
-                if (node.paddingStart) el.style.paddingLeft = node.paddingStart;
-                if (node.paddingEnd) el.style.paddingRight = node.paddingEnd;
-                
-                // Layout defaults based on LINE API specifications
-                if(node.layout === 'vertical' && !node.paddingAll && (!node.contents || node.contents.length > 0)) {
-                    // Typical defaults if not specified: body has 20px padding
-                    el.style.padding = '20px';
+                if (node.layout === 'horizontal') el.style.flexDirection = 'row';
+                else if (node.layout === 'baseline') { el.style.flexDirection = 'row'; el.style.alignItems = 'baseline'; }
+                else el.style.flexDirection = 'column';
+
+                // position:relative so absolutely-positioned children are contained
+                const hasAbsChild = node.contents && node.contents.some(c => c && c.position === 'absolute');
+                if (hasAbsChild) {
+                    if (node.position !== 'absolute') el.style.position = 'relative';
+                    el.style.overflow = 'hidden';
                 }
 
-                // Spacing
-                if (node.spacing) {
-                    const sp = marginMap[node.spacing] || node.spacing;
-                    el.style.gap = sp.includes('px') ? sp : sp + 'px';
+                // Explicit padding only — no defaults
+                if (node.paddingAll !== undefined) {
+                    el.style.padding = node.paddingAll;
+                } else {
+                    if (node.paddingTop)    el.style.paddingTop    = node.paddingTop;
+                    if (node.paddingBottom) el.style.paddingBottom = node.paddingBottom;
+                    if (node.paddingStart)  el.style.paddingLeft   = node.paddingStart;
+                    if (node.paddingEnd)    el.style.paddingRight  = node.paddingEnd;
                 }
 
+                if (node.spacing) { const sp = marginMap[node.spacing] || node.spacing; el.style.gap = sp; }
                 if (node.backgroundColor) el.style.backgroundColor = node.backgroundColor;
-                if (node.cornerRadius) el.style.borderRadius = node.cornerRadius.includes('px') ? node.cornerRadius : node.cornerRadius + 'px';
-                if (node.justifyContent) el.style.justifyContent = node.justifyContent.replace('space-', 'space-');
-                if (node.alignItems) el.style.alignItems = node.alignItems === 'center' ? 'center' : (node.alignItems === 'start' ? 'flex-start' : 'flex-end');
+
+                // linearGradient → CSS gradient
+                if (node.background && node.background.type === 'linearGradient') {
+                    const { angle = '0deg', startColor = '#000', endColor = '#fff' } = node.background;
+                    el.style.background = `linear-gradient(${angle}, ${startColor}, ${endColor})`;
+                }
+
+                if (node.cornerRadius && node.cornerRadius !== 'none') el.style.borderRadius = node.cornerRadius;
+                if (node.justifyContent) el.style.justifyContent = node.justifyContent;
+                if (node.alignItems) {
+                    el.style.alignItems = node.alignItems === 'center' ? 'center' : node.alignItems === 'start' ? 'flex-start' : 'flex-end';
+                }
+                if (node.action) el.style.cursor = 'pointer';
 
                 if (node.contents && Array.isArray(node.contents)) {
                     node.contents.forEach(child => el.appendChild(renderFlexNode(child, node.layout)));
                 }
 
+            } else if (node.type === 'image') {
+                // Absolutely-positioned images need flex centering for gravity
+                if (node.position === 'absolute') {
+                    el.style.display = 'flex';
+                    el.style.alignItems = node.gravity === 'bottom' ? 'flex-end' : node.gravity === 'top' ? 'flex-start' : 'center';
+                    el.style.justifyContent = node.align === 'end' ? 'flex-end' : node.align === 'center' ? 'center' : 'flex-start';
+                }
+
+                const img = document.createElement('img');
+                img.src = node.url || '';
+                img.alt = '';
+                img.style.display = 'block';
+                img.style.objectFit = node.aspectMode === 'cover' ? 'cover' : 'contain';
+
+                if (node.size && node.size !== 'full') {
+                    const sv = imgSizeMap[node.size] || node.size;
+                    img.style.width = sv;
+                    img.style.height = sv;
+                } else {
+                    img.style.width = '100%';
+                    if (node.aspectRatio) {
+                        const [w, h] = node.aspectRatio.split(':');
+                        img.style.aspectRatio = `${w} / ${h}`;
+                    } else if (node.position === 'absolute') {
+                        img.style.height = '100%';
+                    }
+                }
+                el.appendChild(img);
+
             } else if (node.type === 'text' || node.type === 'span') {
                 el.textContent = node.text || '';
                 el.style.color = node.color || '#111111';
                 el.style.fontWeight = node.weight === 'bold' ? 'bold' : 'normal';
-                
-                const sizeMap = {xxs:'11px', xs:'13px', sm:'14px', md:'16px', lg:'19px', xl:'22px', xxl:'29px', '3xl':'35px', '4xl':'48px', '5xl':'74px'};
-                const s = sizeMap[node.size] || node.size || '16px';
-                el.style.fontSize = s.includes('px') ? s : s + 'px';
-                
+                el.style.fontSize = textSizeMap[node.size] || node.size || '16px';
                 el.style.textAlign = node.align || 'left';
-                
-                if (node.wrap) {
-                    el.style.whiteSpace = 'pre-wrap';
-                    el.style.wordBreak = 'break-word';
-                } else {
-                    el.style.whiteSpace = 'nowrap';
-                    el.style.overflow = 'hidden';
-                    el.style.textOverflow = 'ellipsis';
-                }
-                if (node.style === 'normal') el.style.fontStyle = 'normal';
+                if (node.wrap) { el.style.whiteSpace = 'pre-wrap'; el.style.wordBreak = 'break-word'; }
+                else { el.style.whiteSpace = 'nowrap'; el.style.overflow = 'hidden'; el.style.textOverflow = 'ellipsis'; }
                 if (node.style === 'italic') el.style.fontStyle = 'italic';
                 if (node.decoration === 'line-through') el.style.textDecoration = 'line-through';
-
-            } else if (node.type === 'image') {
-                const img = document.createElement('img');
-                img.src = node.url || '';
-                img.style.display = 'block';
-                img.style.width = '100%';
-                
-                if (node.aspectMode === 'cover') {
-                    img.style.objectFit = 'cover';
-                } else {
-                    img.style.objectFit = 'contain';
-                }
-                
-                if (node.aspectRatio) {
-                    const parts = node.aspectRatio.split(':');
-                    if (parts.length === 2) {
-                        img.style.aspectRatio = `${parts[0]} / ${parts[1]}`;
-                    }
-                }
-                if (node.size && node.size !== 'full') {
-                    img.style.width = node.size;
-                    img.style.maxWidth = '100%';
-                }
-                el.appendChild(img);
+                if (node.decoration === 'underline')    el.style.textDecoration = 'underline';
 
             } else if (node.type === 'button') {
                 el.style.padding = '0';
                 const btn = document.createElement('button');
                 btn.textContent = (node.action && node.action.label) ? node.action.label : 'Button';
-                btn.style.width = '100%';
-                btn.style.padding = '10px';
-                btn.style.borderRadius = '4px';
-                btn.style.border = 'none';
-                btn.style.fontWeight = 'bold';
-                btn.style.cursor = 'pointer';
-                btn.style.fontSize = '14px';
-
-                if (node.style === 'primary') {
-                    btn.style.backgroundColor = node.color || '#0ec354';
-                    btn.style.color = '#fff';
-                } else if (node.style === 'secondary') {
-                    btn.style.backgroundColor = node.color || '#d1d5db';
-                    btn.style.color = '#111111';
-                } else {
-                    btn.style.backgroundColor = 'transparent';
-                    btn.style.color = node.color || '#3b82f6';
-                }
+                btn.style.cssText = 'width:100%;padding:10px;border-radius:4px;border:none;font-weight:bold;cursor:pointer;font-size:14px;';
+                if (node.style === 'primary')        { btn.style.backgroundColor = node.color || '#0ec354'; btn.style.color = '#fff'; }
+                else if (node.style === 'secondary') { btn.style.backgroundColor = node.color || '#d1d5db'; btn.style.color = '#111'; }
+                else { btn.style.backgroundColor = 'transparent'; btn.style.color = node.color || '#3b82f6'; }
                 el.appendChild(btn);
 
             } else if (node.type === 'separator') {
-                el.style.width = '100%';
-                el.style.height = '1px';
+                el.style.cssText = 'width:100%;height:1px;flex-shrink:0;';
                 el.style.backgroundColor = node.color || '#e5e7eb';
-                if (node.margin) {
-                    const m = marginMap[node.margin] || node.margin;
-                    el.style.margin = `${m} 0`;
-                } else {
-                    el.style.margin = `8px 0`;
-                }
+                if (node.margin) { const m = marginMap[node.margin] || node.margin; el.style.margin = `${m} 0`; }
 
             } else if (node.type === 'filler') {
                 el.style.flex = '1';
+
             } else if (node.type === 'video') {
-                const vid = document.createElement('div');
-                vid.style.width = '100%';
-                vid.style.height = '150px';
-                vid.style.backgroundColor = '#000';
-                vid.style.backgroundImage = `url(${node.previewUrl})`;
-                vid.style.backgroundSize = 'cover';
-                vid.style.backgroundPosition = 'center';
-                vid.style.display = 'flex';
-                vid.style.alignItems = 'center';
-                vid.style.justifyContent = 'center';
-                vid.innerHTML = '<div style="background:rgba(0,0,0,0.5);color:white;padding:10px;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">▶</div>';
-                el.appendChild(vid);
+                el.style.position = 'relative'; el.style.width = '100%'; el.style.backgroundColor = '#000';
+                if (node.previewUrl) { el.style.backgroundImage = `url(${node.previewUrl})`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
+                if (node.aspectRatio) { const [w,h] = node.aspectRatio.split(':'); el.style.aspectRatio = `${w}/${h}`; }
+                else el.style.height = '150px';
+                el.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;">▶</div>';
             }
-            
+
             return el;
         }
 
