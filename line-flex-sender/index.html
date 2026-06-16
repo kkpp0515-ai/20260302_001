@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE Flex Message Sender</title>
+    <title>LINE Flex Tools</title>
     <link rel="stylesheet" href="../theme.css">
     <script src="../theme-toggle.js"></script>
     <style>
@@ -114,12 +114,138 @@
         /* Custom scrollbar for preview */
         .preview-box::-webkit-scrollbar { width: 8px; }
         .preview-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 24px;
+            border: 2px solid var(--text-color, #000);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 4px 4px 0 var(--text-color, #000);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            border-right: 2px solid var(--text-color, #000);
+            background-color: var(--inactive, #e0e0e0);
+            color: var(--text-color, #000);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+        .tab-btn:last-child { border-right: none; }
+        .tab-btn.active { background-color: var(--text-color, #000); color: var(--bg-color, #fff); }
+        .tab-btn:not(.active):hover { background-color: #e8e8e8; }
+        [data-theme="dark"] .tab-btn:not(.active):hover { background-color: #1a1a1a; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        button:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        .btn-convert { background-color: #059669; border-color: #064e3b; color: white; }
+        .btn-convert:not(:disabled):hover { box-shadow: 4px 4px 0 #064e3b; }
+        .btn-transfer { background-color: #7c3aed; border-color: #3b0764; color: white; }
+        .btn-transfer:not(:disabled):hover { box-shadow: 4px 4px 0 #3b0764; }
+
+        .converter-layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+        .output-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--text-color, #000);
+            margin: -20px -20px 16px -20px;
+        }
+        .output-panel-header span { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; }
+        .output-meta { font-size: 0.8rem; opacity: 0.6; }
+        pre#converterOutput {
+            margin: 0;
+            min-height: 300px;
+            max-height: 60vh;
+            overflow: auto;
+            padding: 16px;
+            background: #111827;
+            color: #e5e7eb;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            border-radius: 4px;
+            border: 2px solid var(--text-color, #000);
+        }
+        .converter-status { min-height: 22px; margin-top: 12px; font-size: 13px; opacity: 0.7; }
+        .converter-status.error { color: #ef4444; opacity: 1; font-weight: bold; }
+        .converter-status.success { color: #059669; opacity: 1; font-weight: bold; }
+        @media (max-width: 860px) { .converter-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>LINE Flex Message Sender</h1>
-        
+        <h1>LINE Flex Tools</h1>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="converter">① JSON変換</button>
+            <button class="tab-btn" data-tab="sender">② 送信</button>
+        </div>
+
+        <!-- ====== TAB 1: JSON変換 ====== -->
+        <div id="tab-converter" class="tab-content active">
+            <div class="panel alert-panel">
+                <h3 style="margin-top: 0">⚠️ 事前準備：CORS制約の回避（検証用ブラウザの起動）</h3>
+                <p>このツールはブラウザから直接 g123 の Broadcast API にリクエストを送ります。通常のChromeではCORSエラーが発生するため、以下の手順で検証用Chromeを起動してから使用してください。</p>
+                <ol>
+                    <li>キーボードの <code>Win + R</code> を押して「ファイル名を指定して実行」を開く。</li>
+                    <li>以下のコマンドをコピーして貼り付け、「OK」を押す。<br>
+                        <code style="display:block; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); user-select: all;">chrome.exe --user-data-dir="C:\ChromeDev" --disable-web-security --disable-site-isolation-trials</code>
+                    </li>
+                    <li>新しく開いたChromeでこのツールのURLを開きなおす。</li>
+                </ol>
+                <p style="font-size: 0.9em; margin-bottom:0;">※このChromeでは通常のネットサーフィンをしないでください。</p>
+            </div>
+
+            <div class="converter-layout">
+                <div class="panel">
+                    <div class="form-group">
+                        <label for="broadcastToken">Broadcast API Token</label>
+                        <textarea id="broadcastToken" rows="4" placeholder="Bearer token、または token 本体を貼り付けてください" style="font-family: monospace; font-size: 13px; resize: vertical;"></textarea>
+                        <small style="display:block; margin-top:5px; opacity:0.7;">Bearer プレフィックスは自動補完されます。</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="contentId">Content ID</label>
+                        <input type="text" id="contentId" inputmode="numeric" placeholder="例：36" autocomplete="off">
+                        <small style="display:block; margin-top:5px; opacity:0.7;">数字のみ。API の戻り値 type は line_customer である必要があります。</small>
+                    </div>
+                    <div class="button-group" style="justify-content: flex-start; margin-top: 10px;">
+                        <button class="btn-convert" id="btnFetch">取得して変換</button>
+                        <button id="btnCopyConverter" disabled>JSONをコピー</button>
+                    </div>
+                    <div class="converter-status" id="converterStatus">入力待ちです。</div>
+                </div>
+
+                <div class="panel">
+                    <div class="output-panel-header">
+                        <span>変換結果</span>
+                        <span class="output-meta" id="converterMeta">JSONはまだ生成されていません</span>
+                    </div>
+                    <pre id="converterOutput">{}</pre>
+                    <div class="button-group" style="margin-top: 16px;">
+                        <button class="btn-transfer" id="btnTransfer" disabled>→ 送信タブで使う</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== TAB 2: 送信 ====== -->
+        <div id="tab-sender" class="tab-content">
         <div class="panel alert-panel">
             <h3 style="margin-top: 0">⚠️ 事前準備：CORS制約の回避（検証用ブラウザの起動）</h3>
             <p>ブラウザから直接LINEのAPIを叩くため、通常のChromeでは通信がブロック(CORSエラー)されます。以下の手順でセキュリティ設定を解除した検証用Chromeを起動してからこのツールを使用してください。</p>
@@ -175,10 +301,157 @@
         </div>
 
         <div id="responseLog"></div>
+        </div><!-- end tab-sender -->
     </div>
 
     <script src="../sidebar.js"></script>
     <script>
+        // ===== Tab Switching =====
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        function switchTab(tabId) {
+            tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
+        }
+        tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+        // ===== JSON Converter =====
+        const BROADCAST_API_BASE = "https://broadcast-api.g123.jp/api/v1/auxin/broadcast/contents";
+        const btnFetch = document.getElementById('btnFetch');
+        const btnCopyConverter = document.getElementById('btnCopyConverter');
+        const btnTransfer = document.getElementById('btnTransfer');
+        const converterOutput = document.getElementById('converterOutput');
+        const converterStatus = document.getElementById('converterStatus');
+        const converterMeta = document.getElementById('converterMeta');
+        let convertedJSON = '';
+
+        function setConverterStatus(msg, type) {
+            converterStatus.textContent = msg;
+            converterStatus.className = 'converter-status' + (type ? ' ' + type : '');
+        }
+
+        function snakeToCamel(s) {
+            return s.replace(/_([a-zA-Z0-9])/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toLowerCase());
+        }
+        function convertKeysToCamelCase(v) {
+            if (Array.isArray(v)) return v.map(convertKeysToCamelCase);
+            if (v && typeof v === 'object' && v.constructor === Object)
+                return Object.fromEntries(Object.entries(v).map(([k, i]) => [snakeToCamel(k), convertKeysToCamelCase(i)]));
+            return v;
+        }
+        function eventCell(imgUrl, title, link, animated) {
+            const image = { type: 'image', url: imgUrl, size: 'full', aspectMode: 'cover' };
+            if (animated) { image.align = 'center'; image.gravity = 'center'; image.animated = true; image.aspectRatio = '1:1'; }
+            return {
+                type: 'box', layout: 'vertical',
+                contents: [image, {
+                    type: 'box', layout: 'vertical',
+                    contents: [{ type: 'text', text: title, color: '#ffffff', size: 'sm' }],
+                    position: 'absolute', offsetBottom: '0px', offsetStart: '0px',
+                    paddingAll: '10px', width: '100%',
+                    background: { type: 'linearGradient', angle: '0deg', startColor: '#000000BF', endColor: '#00000000' }
+                }],
+                action: { type: 'uri', label: 'action', uri: link }
+            };
+        }
+        function titleCell(text, link) {
+            return {
+                type: 'box', layout: 'vertical',
+                contents: [{ type: 'text', text, color: '#000000', size: 'sm' }],
+                paddingStart: '6px', paddingEnd: '6px', flex: 1,
+                justifyContent: 'center', action: { type: 'uri', label: 'action', uri: link }
+            };
+        }
+        function buildLinePushPayload(rawContent) {
+            const d = convertKeysToCamelCase(rawContent);
+            return {
+                type: 'bubble',
+                header: {
+                    type: 'box', layout: 'vertical',
+                    contents: [
+                        { type: 'text', text: d.digest, flex: 1, align: 'end', color: '#000000A6', size: 'xs' },
+                        { type: 'image', url: 'https://cdn-new.g123.jp/admin/2021/10/1635476153567.png', position: 'absolute', offsetTop: '0px', offsetStart: '12px', size: 'xxs', gravity: 'center', offsetBottom: '0px', animated: false, aspectMode: 'cover' }
+                    ],
+                    paddingEnd: '10px', paddingStart: '10px', paddingTop: '14px', paddingBottom: '14px', justifyContent: 'center'
+                },
+                hero: {
+                    type: 'box', layout: 'vertical',
+                    contents: [
+                        { type: 'image', url: d.event1ImgUrl, size: 'full', aspectRatio: '4:3', margin: '0px', align: 'end', gravity: 'center', aspectMode: 'cover' },
+                        { type: 'box', layout: 'vertical', contents: [
+                            { type: 'text', text: d.event1Title, color: '#ffffff', size: 'xxl', weight: 'bold' },
+                            { type: 'text', text: d.event1Description, color: '#ffffff', size: 'md' }
+                        ], position: 'absolute', offsetBottom: '0px', offsetStart: '0px', paddingAll: '10px', width: '100%', paddingBottom: '14px', spacing: 'xs',
+                        background: { type: 'linearGradient', angle: '0deg', startColor: '#000000BF', endColor: '#00000000' } }
+                    ],
+                    action: { type: 'uri', label: 'hero', uri: d.event1Link }
+                },
+                body: {
+                    type: 'box', layout: 'horizontal',
+                    contents: [
+                        { type: 'box', layout: 'vertical', flex: 1, contents: [eventCell(d.event2ImgUrl, d.event2Title, d.event2Link, false), eventCell(d.event3ImgUrl, d.event3Title, d.event3Link, true)] },
+                        { type: 'box', layout: 'vertical', flex: 2, justifyContent: 'space-evenly', cornerRadius: 'none', contents: [
+                            titleCell(d.title1Text, d.title1Link), { type: 'separator' },
+                            titleCell(d.title2Text, d.title2Link), { type: 'separator' },
+                            titleCell(d.title3Text, d.title3Link), { type: 'separator' },
+                            titleCell(d.title4Text, d.title4Link), { type: 'separator' },
+                            titleCell(d.title5Text, d.title5Link)
+                        ]}
+                    ],
+                    paddingAll: '0px'
+                },
+                size: 'giga'
+            };
+        }
+
+        btnFetch.addEventListener('click', async () => {
+            const token = document.getElementById('broadcastToken').value.trim();
+            const id = document.getElementById('contentId').value.trim();
+            if (!token) { setConverterStatus('Broadcast API Token を入力してください。', 'error'); return; }
+            if (!/^\d+$/.test(id)) { setConverterStatus('Content ID は数字のみで入力してください。', 'error'); return; }
+            btnFetch.disabled = true; btnCopyConverter.disabled = true; btnTransfer.disabled = true;
+            setConverterStatus('API をリクエストしています...', '');
+            try {
+                const authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const res = await fetch(`${BROADCAST_API_BASE}/${id}`, {
+                    method: 'GET', headers: { accept: '*/*', authorization, 'content-type': 'application/json' }
+                });
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    throw new Error(`API リクエスト失敗：HTTP ${res.status}${text ? ' - ' + text.slice(0, 200) : ''}`);
+                }
+                const data = await res.json();
+                if (!data || typeof data !== 'object') throw new Error('API の戻り値が有効なオブジェクトではありません。');
+                if (data.type !== 'line_customer') throw new Error(`戻り値の type は ${JSON.stringify(data.type)} です。line_customer ではありません。`);
+                if (!data.content || typeof data.content !== 'object') throw new Error('API の戻り値に content オブジェクトがありません。');
+                const payload = buildLinePushPayload(data.content);
+                convertedJSON = JSON.stringify(payload, null, 2);
+                converterOutput.textContent = convertedJSON;
+                converterMeta.textContent = `ID ${data.id} / lang ${data.lang || '-'} / type ${data.type}`;
+                btnCopyConverter.disabled = false; btnTransfer.disabled = false;
+                setConverterStatus('変換が完了しました。', 'success');
+            } catch (err) {
+                setConverterStatus(err.message || '変換に失敗しました。', 'error');
+                btnCopyConverter.disabled = !convertedJSON;
+            } finally {
+                btnFetch.disabled = false;
+            }
+        });
+
+        btnCopyConverter.addEventListener('click', async () => {
+            if (!convertedJSON) return;
+            try { await navigator.clipboard.writeText(convertedJSON); setConverterStatus('JSON をクリップボードにコピーしました。', 'success'); }
+            catch { setConverterStatus('ブラウザにより自動コピーがブロックされました。手動で選択してコピーしてください。', 'error'); }
+        });
+
+        btnTransfer.addEventListener('click', () => {
+            if (!convertedJSON) return;
+            document.getElementById('jsonInput').value = convertedJSON;
+            switchTab('sender');
+            document.getElementById('jsonInput').dispatchEvent(new Event('input'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ===== Sender =====
         const jsonInput = document.getElementById('jsonInput');
         const visualPreview = document.getElementById('visualPreview');
         const btnTest = document.getElementById('btnTest');
