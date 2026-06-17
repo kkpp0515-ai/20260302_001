@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画像一括リサイズツール</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme-toggle.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; margin: 0; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 28px; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border, #555);
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 24px;
+    }
+    .drop-zone.dragover { border-color: #00aa00; background: rgba(0,170,0,0.07); }
+    .drop-zone svg { width: 48px; height: 48px; margin-bottom: 12px; color: #888; }
+    .drop-zone p { margin: 4px 0; color: #aaa; font-size: 0.9rem; }
+    .drop-zone .browse-btn {
+      margin-top: 14px;
+      padding: 8px 20px;
+      background: var(--primary, #00aa00);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    input[type="file"] { display: none; }
+
+    /* Settings panel */
+    .settings-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      border-radius: 10px;
+      background: var(--panel, #252526);
+      border: 1px solid var(--border, #444);
+    }
+    .setting-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .setting-group input[type="number"],
+    .setting-group select {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border, #444);
+      background: var(--input-bg, #1a1a1b);
+      color: var(--text, #eee);
+      font-size: 0.9rem;
+    }
+    .setting-group .size-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .setting-group .size-row input { flex: 1; }
+    .setting-group .size-row span { color: #888; font-size: 0.85rem; }
+
+    /* Preset buttons */
+    .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+    .preset-btn {
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border, #555);
+      background: var(--panel, #333);
+      color: var(--text, #eee);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .preset-btn:hover { border-color: #00aa00; color: #00aa00; }
+
+    /* File list */
+    .file-section { display: none; }
+    .file-section.visible { display: block; }
+    .file-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .file-list-header h3 { margin: 0; font-size: 1rem; }
+    .clear-btn {
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      background: #c0392b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding: 4px;
+    }
+    .file-thumb {
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1a1a1b;
+      border: 1px solid var(--border, #444);
+      position: relative;
+      aspect-ratio: 1;
+    }
+    .file-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .file-thumb .thumb-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.65);
+      font-size: 0.62rem;
+      padding: 3px 5px;
+      color: #ddd;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-thumb .thumb-size {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.6);
+      font-size: 0.6rem;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #aaa;
+    }
+
+    /* Action bar */
+    .action-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+    .btn-main {
+      flex: 1;
+      padding: 13px;
+      background: var(--primary, #00aa00);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-main:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-main:disabled { background: #444; cursor: not-allowed; }
+    .btn-sub {
+      padding: 13px 20px;
+      background: #555;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .btn-sub:hover { background: #666; }
+
+    /* Progress */
+    .progress-area { display: none; margin-bottom: 20px; }
+    .progress-area.visible { display: block; }
+    .progress-status { font-size: 0.85rem; color: #aaa; margin-bottom: 6px; }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary, #00aa00);
+      transition: width 0.1s;
+    }
+
+    /* Result */
+    .result-area { display: none; }
+    .result-area.visible { display: block; }
+    .result-info {
+      padding: 14px 18px;
+      border-radius: 8px;
+      background: rgba(0,170,0,0.1);
+      border: 1px solid rgba(0,170,0,0.3);
+      font-size: 0.9rem;
+      color: #4ecb4e;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🖼️ 画像一括リサイズツール</h1>
+  <p class="subtitle">複数の画像を指定サイズに一括リサイズ、ZIPでダウンロード</p>
+
+  <!-- Drop zone -->
+  <div class="drop-zone" id="dropZone">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </svg>
+    <p>画像をここにドロップ</p>
+    <p>JPG / PNG / WebP / GIF 対応、複数ファイルOK</p>
+    <button class="browse-btn" onclick="document.getElementById('fileInput').click()">ファイルを選択</button>
+    <input type="file" id="fileInput" multiple accept="image/*">
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-panel">
+    <div class="setting-group">
+      <label>出力サイズ (px)</label>
+      <div class="size-row">
+        <input type="number" id="outWidth" value="1080" min="1" max="8000" placeholder="幅">
+        <span>×</span>
+        <input type="number" id="outHeight" value="1080" min="1" max="8000" placeholder="高さ">
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>フィットモード</label>
+      <select id="fitMode">
+        <option value="stretch">引き伸ばし（原寸変換）</option>
+        <option value="contain">contain（余白あり）</option>
+        <option value="cover" selected>cover（クロップ）</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label>余白カラー（contain時）</label>
+      <input type="color" id="bgColor" value="#000000" style="width:100%;height:34px;border:1px solid var(--border,#444);border-radius:6px;background:none;cursor:pointer;">
+    </div>
+    <div class="setting-group">
+      <label>出力フォーマット</label>
+      <select id="outFormat">
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/png">PNG</option>
+        <option value="image/webp">WebP</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label>品質（JPEG/WebP: 1〜100）</label>
+      <input type="number" id="quality" value="92" min="1" max="100">
+    </div>
+    <div class="setting-group">
+      <label>ファイルサイズ上限（KB、空白=無制限）</label>
+      <input type="number" id="maxKB" placeholder="例: 200" min="1" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border,#444);background:var(--input-bg,#1a1a1b);color:var(--text,#eee);font-size:0.9rem;">
+    </div>
+  </div>
+
+  <!-- Presets -->
+  <div class="presets">
+    <strong style="font-size:0.75rem;color:#888;align-self:center;margin-right:4px;">プリセット:</strong>
+    <button class="preset-btn" onclick="setSize(1080,1080)">1080×1080</button>
+    <button class="preset-btn" onclick="setSize(1920,1080)">1920×1080</button>
+    <button class="preset-btn" onclick="setSize(1080,1920)">1080×1920</button>
+    <button class="preset-btn" onclick="setSize(1200,628)">1200×628</button>
+    <button class="preset-btn" onclick="setSize(800,800)">800×800</button>
+    <button class="preset-btn" onclick="setSize(600,315)">600×315</button>
+    <button class="preset-btn" onclick="setSize(720,1280)">720×1280</button>
+    <button class="preset-btn" onclick="setSize(1280,720)">1280×720</button>
+  </div>
+
+  <!-- File list -->
+  <div class="file-section" id="fileSection">
+    <div class="file-list-header">
+      <h3 id="fileCountLabel">0 ファイル</h3>
+      <button class="clear-btn" onclick="clearFiles()">すべて削除</button>
+    </div>
+    <div class="file-grid" id="fileGrid"></div>
+
+    <!-- Action -->
+    <div class="action-bar">
+      <button class="btn-main" id="resizeBtn" onclick="startResize()">一括リサイズ &amp; ZIPダウンロード</button>
+      <button class="btn-sub" onclick="document.getElementById('fileInput').click()">追加</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-area" id="progressArea">
+    <div class="progress-status" id="progressStatus">処理中...</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-area" id="resultArea">
+    <div class="result-info" id="resultInfo"></div>
+  </div>
+</div>
+
+<script src="../sidebar.js"></script>
+<script>
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileSection = document.getElementById('fileSection');
+  const fileGrid = document.getElementById('fileGrid');
+  const fileCountLabel = document.getElementById('fileCountLabel');
+  const progressArea = document.getElementById('progressArea');
+  const progressStatus = document.getElementById('progressStatus');
+  const progressFill = document.getElementById('progressFill');
+  const resultArea = document.getElementById('resultArea');
+  const resultInfo = document.getElementById('resultInfo');
+
+  let files = [];
+
+  // Drag & drop
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    addFiles([...e.dataTransfer.files]);
+  });
+  fileInput.addEventListener('change', () => {
+    addFiles([...fileInput.files]);
+    fileInput.value = '';
+  });
+
+  function setSize(w, h) {
+    document.getElementById('outWidth').value = w;
+    document.getElementById('outHeight').value = h;
+  }
+
+  function addFiles(newFiles) {
+    const images = newFiles.filter(f => f.type.startsWith('image/'));
+    if (!images.length) return;
+    images.forEach(f => {
+      if (!files.find(x => x.name === f.name && x.size === f.size)) {
+        files.push(f);
+        renderThumb(f);
+      }
+    });
+    updateFileSection();
+  }
+
+  function renderThumb(file) {
+    const div = document.createElement('div');
+    div.className = 'file-thumb';
+    div.dataset.name = file.name;
+
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(file);
+    img.src = url;
+    img.onload = () => {
+      const sizeSpan = div.querySelector('.thumb-size');
+      if (sizeSpan) sizeSpan.textContent = `${img.naturalWidth}×${img.naturalHeight}`;
+      URL.revokeObjectURL(url);
+    };
+
+    const label = document.createElement('div');
+    label.className = 'thumb-label';
+    label.textContent = file.name;
+
+    const sizeTag = document.createElement('div');
+    sizeTag.className = 'thumb-size';
+    sizeTag.textContent = '...';
+
+    div.appendChild(img);
+    div.appendChild(label);
+    div.appendChild(sizeTag);
+    fileGrid.appendChild(div);
+  }
+
+  function updateFileSection() {
+    fileSection.classList.toggle('visible', files.length > 0);
+    fileCountLabel.textContent = `${files.length} ファイル`;
+    resultArea.classList.remove('visible');
+  }
+
+  function clearFiles() {
+    files = [];
+    fileGrid.innerHTML = '';
+    updateFileSection();
+    progressArea.classList.remove('visible');
+    resultArea.classList.remove('visible');
+  }
+
+  async function startResize() {
+    if (!files.length) return;
+
+    const W = parseInt(document.getElementById('outWidth').value) || 1080;
+    const H = parseInt(document.getElementById('outHeight').value) || 1080;
+    const fitMode = document.getElementById('fitMode').value;
+    const bgColor = document.getElementById('bgColor').value;
+    const fmt = document.getElementById('outFormat').value;
+    const quality = Math.min(100, Math.max(1, parseInt(document.getElementById('quality').value))) / 100;
+    const maxKB = parseInt(document.getElementById('maxKB').value) || 0;
+    // KB指定時は強制的にJPEGで出力
+    const activeFmt = maxKB > 0 ? 'image/jpeg' : fmt;
+    const ext = activeFmt === 'image/jpeg' ? 'jpg' : activeFmt === 'image/webp' ? 'webp' : 'png';
+
+    document.getElementById('resizeBtn').disabled = true;
+    progressArea.classList.add('visible');
+    resultArea.classList.remove('visible');
+
+    const zip = new JSZip();
+    let done = 0;
+
+    for (const file of files) {
+      progressStatus.textContent = `処理中: ${file.name} (${done + 1}/${files.length})`;
+      progressFill.style.width = `${Math.round(done / files.length * 100)}%`;
+
+      let blob;
+      if (maxKB > 0) {
+        blob = await compressToSize(file, W, H, fitMode, bgColor, 'image/jpeg', maxKB);
+      } else {
+        blob = await resizeImage(file, W, H, fitMode, bgColor, activeFmt, quality);
+      }
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      zip.file(`${baseName}_${W}x${H}.${ext}`, blob);
+      done++;
+    }
+
+    progressStatus.textContent = 'ZIP生成中...';
+    progressFill.style.width = '100%';
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob);
+    a.download = `resized_${W}x${H}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    progressArea.classList.remove('visible');
+    const note = maxKB > 0 ? `（KB指定のためJPEGに変換、上限 ${maxKB}KB）` : '';
+    resultInfo.textContent = `完了: ${done} 枚を ${W}×${H} にリサイズしてZIPダウンロードしました。${note}`;
+    resultArea.classList.add('visible');
+    document.getElementById('resizeBtn').disabled = false;
+  }
+
+  async function compressToSize(file, W, H, fitMode, bgColor, fmt, maxKB) {
+    const targetBytes = maxKB * 1024;
+    let lo = 0.01, hi = 1.0, blob = null;
+    // binary search on quality
+    for (let i = 0; i < 12; i++) {
+      const mid = (lo + hi) / 2;
+      blob = await resizeImage(file, W, H, fitMode, bgColor, fmt, mid);
+      if (blob.size <= targetBytes) lo = mid; else hi = mid;
+      if (hi - lo < 0.01) break;
+    }
+    // final pass at lo to ensure under limit
+    blob = await resizeImage(file, W, H, fitMode, bgColor, fmt, lo);
+    return blob;
+  }
+
+  function resizeImage(file, W, H, fitMode, bgColor, fmt, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        // Fill background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, W, H);
+
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        let dx = 0, dy = 0, dw = W, dh = H;
+
+        if (fitMode === 'contain') {
+          const scale = Math.min(W / img.width, H / img.height);
+          dw = img.width * scale;
+          dh = img.height * scale;
+          dx = (W - dw) / 2;
+          dy = (H - dh) / 2;
+        } else if (fitMode === 'cover') {
+          const scale = Math.max(W / img.width, H / img.height);
+          const scaledW = img.width * scale;
+          const scaledH = img.height * scale;
+          dx = (W - scaledW) / 2;
+          dy = (H - scaledH) / 2;
+          dw = scaledW;
+          dh = scaledH;
+        }
+        // stretch: dx=dy=0, dw=W, dh=H (default)
+
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+
+        canvas.toBlob(blob => resolve(blob), fmt, quality);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+</script>
+</body>
+</html>
