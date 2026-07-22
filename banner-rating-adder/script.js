@@ -20,9 +20,13 @@ const progressBar = document.getElementById('progressBar');
 let pendingRatingBase64 = null;
 let uploadedBanners = [];
 
-// Load ratings from LocalStorage
+// Load ratings from LocalStorage (seeded with built-in presets on first run)
 function loadRatings() {
-    const ratings = JSON.parse(localStorage.getItem('savedRatings') || '[]');
+    let ratings = JSON.parse(localStorage.getItem('savedRatings') || 'null');
+    if (ratings === null) {
+        ratings = (typeof BUILTIN_RATINGS !== 'undefined') ? BUILTIN_RATINGS.slice() : [];
+        localStorage.setItem('savedRatings', JSON.stringify(ratings));
+    }
     renderRatingsList(ratings);
     updateRatingSelect(ratings);
 }
