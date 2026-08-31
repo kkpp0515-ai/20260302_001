@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Pivot Table</title>
+    <link rel="stylesheet" href="../theme.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="pv-shell">
+        <header class="pv-header">
+            <div class="pv-brand">
+                <span class="pv-icon">🧮</span>
+                <div>
+                    <h1>Campaign Pivot Table</h1>
+                    <p class="pv-tagline">CSVを日別×グループでピボット表示。合算行・合算列と日別を同時に確認できます。</p>
+                </div>
+            </div>
+        </header>
+
+        <section id="pvUpload" class="pv-upload neo-box">
+            <div id="pvDropZone" class="pv-dropzone" tabindex="0" role="button" aria-label="CSVファイルを選択">
+                <div class="pv-dropzone-icon">📁</div>
+                <p class="pv-dropzone-title">CSV / TSV ファイルをドロップ</p>
+                <p class="pv-dropzone-sub">またはクリックしてファイルを選択（タブ区切り・UTF-16 / UTF-8 いずれも対応）</p>
+                <input type="file" id="pvFileInput" accept=".csv,.tsv,.txt" hidden>
+            </div>
+            <p id="pvError" class="pv-error" role="alert" hidden></p>
+        </section>
+
+        <section id="pvWorkspace" class="pv-workspace" hidden>
+            <div class="pv-controls neo-box">
+                <div class="pv-control">
+                    <label for="pvGroupBy">列（グループ軸）</label>
+                    <select id="pvGroupBy" class="neo-input"></select>
+                </div>
+                <div class="pv-control">
+                    <label for="pvMetric">指標</label>
+                    <select id="pvMetric" class="neo-input"></select>
+                </div>
+                <div class="pv-control">
+                    <label for="pvSearch">グループ名で絞り込み</label>
+                    <input type="text" id="pvSearch" class="neo-input" placeholder="例: ja / ryoran / advantage">
+                </div>
+                <div id="pvQuickFilters" class="pv-quick-filters"></div>
+                <div class="pv-control">
+                    <label>期間</label>
+                    <div class="pv-date-range">
+                        <input type="date" id="pvDateFrom" class="neo-input">
+                        <span>〜</span>
+                        <input type="date" id="pvDateTo" class="neo-input">
+                    </div>
+                </div>
+                <div class="pv-control">
+                    <label for="pvSort">列の並び替え</label>
+                    <select id="pvSort" class="neo-input">
+                        <option value="total-desc">合計が多い順</option>
+                        <option value="total-asc">合計が少ない順</option>
+                        <option value="name-asc">名前順</option>
+                    </select>
+                </div>
+                <div class="pv-control">
+                    <label for="pvLimit">表示件数</label>
+                    <select id="pvLimit" class="neo-input">
+                        <option value="all">すべて</option>
+                        <option value="10">上位10件</option>
+                        <option value="20">上位20件</option>
+                        <option value="50">上位50件</option>
+                    </select>
+                </div>
+                <div class="pv-control">
+                    <label for="pvTarget">目標値（任意・色分けの基準）</label>
+                    <input type="number" id="pvTarget" class="neo-input" placeholder="例: 15" step="any">
+                </div>
+                <div class="pv-control pv-control-checkbox">
+                    <label class="pv-checkbox">
+                        <input type="checkbox" id="pvLowerBetter">
+                        小さいほど良い指標として色付け
+                    </label>
+                </div>
+                <button id="pvReload" class="neo-btn">別のファイルを読み込む</button>
+            </div>
+
+            <div id="pvSummary" class="pv-summary"></div>
+
+            <div class="pv-table-wrap neo-box">
+                <div class="pv-table-scroll" id="pvTableScroll">
+                    <table class="pv-table" id="pvTable"></table>
+                </div>
+            </div>
+
+            <p class="pv-footnote">
+                ※ ROAS・CPA・LTV は「合計」行・列・全体合計において分子と分母をそれぞれ合算してから再計算した加重値です（単純平均ではありません）。
+                色分けは目標値未入力時は表内の相対評価（赤〜黄〜緑）、目標値入力時はその値との比較になります。
+            </p>
+        </section>
+    </div>
+
+    <script src="../theme-toggle.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,344 @@
+:root {
+  --pv-col1-w: 100px;
+  --pv-col2-w: 112px;
+  --pv-row-h: 38px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 24px 60px;
+  min-height: 100vh;
+}
+
+.pv-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- Header ---------- */
+
+.pv-header {
+  padding: 20px 24px;
+}
+
+.pv-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pv-icon {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.pv-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+.pv-tagline {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.75;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+/* ---------- Upload ---------- */
+
+.pv-upload {
+  padding: 24px;
+}
+
+.pv-dropzone {
+  border: 3px dashed var(--border);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.pv-dropzone:hover,
+.pv-dropzone:focus-visible,
+.pv-dropzone.pv-dragover {
+  background-color: var(--hover-bg);
+  outline: none;
+}
+
+.pv-dropzone-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.pv-dropzone-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.pv-dropzone-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.pv-error {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  background: var(--hover-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ---------- Controls ---------- */
+
+.pv-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pv-controls {
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px 20px;
+}
+
+.pv-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.pv-control label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+.pv-control select,
+.pv-control input[type="text"],
+.pv-control input[type="number"],
+.pv-control input[type="date"] {
+  min-width: 150px;
+}
+
+.pv-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pv-date-range input {
+  min-width: 130px;
+}
+
+.pv-quick-filters {
+  display: contents;
+}
+
+.pv-control-checkbox {
+  min-width: unset;
+}
+
+.pv-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pv-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+#pvReload {
+  margin-left: auto;
+}
+
+/* ---------- Summary ---------- */
+
+.pv-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pv-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pv-chip .pv-chip-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Table ---------- */
+
+.pv-table-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+
+.pv-table-scroll {
+  overflow: auto;
+  max-height: 70vh;
+}
+
+.pv-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+}
+
+.pv-table th,
+.pv-table td {
+  height: var(--pv-row-h);
+  padding: 0 12px;
+  border-right: 1px solid var(--inactive);
+  border-bottom: 1px solid var(--inactive);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  vertical-align: middle;
+  background: var(--card-bg);
+  font-size: 0.82rem;
+}
+
+.pv-corner,
+.pv-colhead,
+.pv-colhead-total,
+.pv-rowhead,
+.pv-rowhead-total,
+.pv-rowtotal {
+  text-align: left;
+}
+
+/* column 1 (row label) — sticky left */
+.pv-corner,
+.pv-rowhead,
+.pv-rowhead-total {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  width: var(--pv-col1-w);
+  min-width: var(--pv-col1-w);
+  font-weight: 600;
+}
+
+/* column 2 (grand-total column) — sticky left, offset by column 1's width */
+.pv-colhead-total,
+.pv-rowtotal,
+.pv-grand {
+  position: sticky;
+  left: var(--pv-col1-w);
+  z-index: 3;
+  min-width: var(--pv-col2-w);
+  background: var(--hover-bg);
+  font-weight: 700;
+}
+
+/* row 1 (column headers) — sticky top */
+.pv-corner,
+.pv-colhead,
+.pv-colhead-total {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  border-bottom: 2px solid var(--border);
+}
+
+/* row 2 (total row) — sticky top, offset by row height */
+.pv-rowhead-total,
+.pv-totalcell,
+.pv-grand {
+  position: sticky;
+  top: var(--pv-row-h);
+  z-index: 4;
+  background: var(--hover-bg);
+  font-weight: 800;
+  border-bottom: 2px solid var(--border);
+}
+
+/* cells sticky on both axes need the highest stacking */
+.pv-corner,
+.pv-colhead-total,
+.pv-rowhead-total,
+.pv-grand {
+  z-index: 6;
+  background: var(--card-bg);
+}
+
+.pv-rowhead-total,
+.pv-grand {
+  background: var(--hover-bg);
+}
+
+.pv-null {
+  text-align: center;
+  opacity: 0.4;
+}
+
+.pv-table tbody tr:hover td:not([class]) {
+  outline: 1px solid var(--border);
+  outline-offset: -1px;
+}
+
+/* ---------- Footnote ---------- */
+
+.pv-footnote {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.65;
+  line-height: 1.6;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  body {
+    padding: 16px 12px 40px;
+  }
+
+  .pv-brand {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #pvReload {
+    margin-left: 0;
+  }
+}
