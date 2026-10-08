@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1080 → 1200 一括変換 | CTW Marketing Ai Tool</title>
+  <link rel="stylesheet" href="../theme.css">
+  <script src="../theme-toggle.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 900px; margin: auto; padding: 40px 24px; }
+    h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); margin-bottom: 12px; }
+    p { line-height: 1.8; }
+    .steps { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+    .steps span { border: 2px solid var(--border); padding: 10px 16px; font-weight: bold; }
+    #drop-zone { display: block; width: 100%; padding: 48px 20px; text-align: center; background: var(--card-bg); color: var(--text); border: 3px dashed var(--border); cursor: pointer; font: inherit; }
+    #drop-zone strong { display: block; font-size: 1.3rem; margin-bottom: 12px; }
+    #drop-zone.dragover, #drop-zone:hover { background: var(--hover-bg); }
+    #drop-zone:disabled { cursor: wait; opacity: .6; }
+    #drop-zone:focus-visible, a:focus-visible { outline: 3px solid #2479e8; outline-offset: 4px; }
+    #status { margin: 24px 0 12px; font-weight: bold; }
+    #download { display: inline-block; padding: 12px 20px; color: var(--text); font-weight: bold; }
+    #download[hidden] { display: none; }
+    #results { list-style: none; padding: 0; }
+    #results li { border-bottom: 1px solid var(--border); padding: 14px 0; overflow-wrap: anywhere; line-height: 1.7; }
+    .error { color: #b42d2d; }
+    [data-theme="dark"] .error { color: #ff9494; }
+    .note { font-size: .9rem; }
+  </style>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main>
+    <a href="../index.html">← ツール一覧</a>
+    <h1>1080 → 1200 一括変換</h1>
+    <p>1080×1080の画像を1200×1200に拡大し、ファイル名の<br><strong>1080-1080</strong> を <strong>1200-1200</strong> に自動変更します。</p>
+    <div class="steps"><span>① 画像をまとめて選択</span><span>② 自動で変換・リネーム</span><span>③ 自動ダウンロード</span></div>
+    <button id="drop-zone" type="button"><strong>画像をここにドロップ</strong>またはクリックして選択（複数選択OK）</button>
+    <input id="files" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple hidden>
+    <p class="note">PNG・JPEG・WebP対応。元の形式とPNG・WebPの透過を保持します。複数選択時は変換できた画像をZIPにまとめます。画像はサーバーに送信されません。</p>
+    <p class="note">1080×1080以外の画像、名前に「1080-1080」がないファイルはスキップします。アニメーション画像には対応していません。</p>
+    <p id="status" role="status" aria-live="polite">画像を選ぶと、変換が始まります。</p>
+    <a id="download" class="neo-box" hidden>もう一度ダウンロード</a>
+    <ul id="results" aria-label="ファイルごとの変換結果"></ul>
+  </main>
+  <script src="../sidebar.js"></script>
+</body>
+</html>
