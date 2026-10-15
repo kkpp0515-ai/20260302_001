@@ -9,15 +9,47 @@
 main{max-width:650px;margin:24px auto;padding:24px 20px;background:white;border-radius:18px}h1{font-size:26px;line-height:1.5}
 .button{display:block;margin:24px 0;padding:17px;border:1px solid #196448;border-radius:12px;font-weight:700;text-decoration:none;color:#196448}
 a:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}small{font-size:14px}
+
+.environment{margin:24px 0;padding:18px 16px;background:#edf3fc;border:2px solid #46668b;border-radius:14px}.environment h2{font-size:20px;margin-top:0}#environment-status{font-weight:700}#environment-ua{overflow-wrap:anywhere;white-space:pre-wrap}details{margin:16px 0}summary{padding:8px 0;cursor:pointer}
 </style>
 </head>
 <body><main>
 <h1>確認ページに到着しました</h1>
 <p><strong>ページの移動は成功です。</strong></p>
+<section class="environment" aria-labelledby="environment-heading">
+<h2 id="environment-heading">今回の確認：表示環境</h2>
+<p id="environment-status" role="status"><strong>環境情報：未取得</strong></p>
+<p>上の「WebViewの目印：あり／なし」を教えてください。今回は追加のボタン操作は不要です。</p>
+<p><small>「なし」だけでは表示方式は確定しません。この情報だけで通常のChromeと簡易画面を区別することもできません。</small></p>
+<details><summary>詳しい識別情報</summary><p><code id="environment-ua">未取得</code></p></details>
+<noscript><p>JavaScriptが無効なため環境情報を表示できません。比較リンクはそのまま使えます。</p></noscript>
+</section>
+
 <p>④を押して来た場合は、「④表示された」と教えてください。今と同じブラウザの枠のままで構いません。</p>
 <p>①や⑤を押して来た場合は、「同じ枠で開いた」か「通常のChrome画面へ切り替わった」かも確認してください。</p>
 <p><small>この表示だけでは、通常のChrome画面へ切り替わったとは判断できません。</small></p>
 <a class="button" href="direct-test.html">比較ページに戻る</a>
-<p><small>更新版 v2 · JavaScript・ゲーム・自動転送はありません。</small></p>
-</main></body>
+<p><small>更新版 v3 · JavaScriptは環境情報の表示だけに使います。リンク操作には介入せず、診断結果の保存・送信はありません。</small></p>
+</main>
+<script>
+(function () {
+  var status = document.getElementById("environment-status");
+  var raw = document.getElementById("environment-ua");
+  if (!status || !raw) return;
+  try {
+    var ua = navigator.userAgent || "";
+    raw.textContent = ua || "取得できませんでした";
+    if (!ua) {
+      status.textContent = "環境情報：取得できませんでした";
+      return;
+    }
+    status.textContent = /\bwv\b/i.test(ua)
+      ? "WebViewの目印：あり"
+      : "WebViewの目印：なし（表示方式は未確定）";
+  } catch (error) {
+    status.textContent = "環境情報：取得できませんでした";
+  }
+}());
+</script>
+</body>
 </html>
