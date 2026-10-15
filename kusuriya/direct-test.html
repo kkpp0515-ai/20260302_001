@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Xからのリンク比較｜更新版 v2</title>
+<title>Xからのリンク比較｜更新版 v3</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f5f3ec;color:#24362e;font:16px/1.8 system-ui,sans-serif}
@@ -17,15 +17,26 @@ h1{font-size:26px;line-height:1.4;margin:12px 0 16px}h2{font-size:20px;line-heig
 a{color:#196448}a:focus-visible,summary:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}
 small{font-size:14px}details{margin:24px 0}summary{cursor:pointer;padding:8px 0;font-weight:700}
 code{overflow-wrap:anywhere}.note{padding:12px 16px;background:#f5f3ec;border-radius:10px}
+
+.environment{margin:24px 0;padding:18px 16px;background:#edf3fc;border:2px solid #46668b;border-radius:14px}.environment h2{font-size:20px;margin-top:0}#environment-status{font-weight:700}#environment-ua{overflow-wrap:anywhere;white-space:pre-wrap}details{margin:16px 0}summary{padding:8px 0;cursor:pointer}
 </style>
 </head>
 <body>
 <main>
-<p class="revision">更新版 v2 · 2026-10-15</p>
+<p class="revision">更新版 v3 · 2026-10-15</p>
 <h1>Xからのリンク比較</h1>
 <p>投稿を作り直す必要はありません。いつもの投稿の<strong>カード画像</strong>から、このページを開いてください。</p>
+
+<section class="environment" aria-labelledby="environment-heading">
+<h2 id="environment-heading">今回の確認：表示環境</h2>
+<p id="environment-status" role="status"><strong>環境情報：未取得</strong></p>
+<p>上の「WebViewの目印：あり／なし」を教えてください。今回は追加のボタン操作は不要です。</p>
+<p><small>「なし」だけでは表示方式は確定しません。この情報だけで通常のChromeと簡易画面を区別することもできません。</small></p>
+<details><summary>詳しい識別情報</summary><p><code id="environment-ua">未取得</code></p></details>
+<noscript><p>JavaScriptが無効なため環境情報を表示できません。比較リンクはそのまま使えます。</p></noscript>
+</section>
 <section class="first" aria-labelledby="normal-heading">
-<h2 id="normal-heading">今回はまず④だけ押してください</h2>
+<h2 id="normal-heading">④ 通常のページ移動を比較</h2>
 <a class="button primary" href="https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html">④ 確認ページへ進む</a>
 <p><strong>「確認ページに到着しました」</strong>と表示されるかを確認します。今と同じブラウザの枠のままで構いません。</p>
 <p>結果は「④表示された」か「④変わらない」と教えてください。エラーが出た場合は、その文面も添えてください。</p>
@@ -48,10 +59,31 @@ code{overflow-wrap:anywhere}.note{padding:12px 16px;background:#f5f3ec;border-ra
 <summary>この比較について</summary>
 <p>④は通常のHTTPSリンク、③はLINEのHTTPSリンク、①②は <code>googlechrome://navigate?url=…</code>、⑤はChromeを指定するIntentです。①②⑤はAndroidの通常版Chromeを対象とし、Chrome以外の既定ブラウザへの切替は確認できません。</p>
 <p>Chrome向けの形式でも、通常のChrome画面へ切り替わる保証はありません。現在のタブ内で処理される場合があります。</p>
-<p>ボタンは通常のリンクです。JavaScript・自動転送・ポップアップ・操作記録は使っていません。</p>
+<p>ボタンは通常のリンクです。JavaScriptは環境情報の表示だけに使い、リンク操作には介入しません。診断結果の保存・送信、自動転送、ポップアップはありません。</p>
 <p><a href="https://github.com/chromium/chromium/blob/main/components/external_intents/android/java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java">Chromiumのリンク処理</a></p>
 </details>
-<p class="note"><small>同じ投稿のカードを開き直して使えます。更新内容が見えないときはブラウザのメニューから再読み込みしてください。</small><br><a href="direct-test.html?refresh=20261015-v2">このページを読み直す</a></p>
+<p class="note"><small>同じ投稿のカードを開き直して使えます。更新内容が見えないときはブラウザのメニューから再読み込みしてください。</small><br><a href="direct-test.html?refresh=20261015-v3">このページを読み直す</a></p>
 </main>
+
+<script>
+(function () {
+  var status = document.getElementById("environment-status");
+  var raw = document.getElementById("environment-ua");
+  if (!status || !raw) return;
+  try {
+    var ua = navigator.userAgent || "";
+    raw.textContent = ua || "取得できませんでした";
+    if (!ua) {
+      status.textContent = "環境情報：取得できませんでした";
+      return;
+    }
+    status.textContent = /\bwv\b/i.test(ua)
+      ? "WebViewの目印：あり"
+      : "WebViewの目印：なし（表示方式は未確定）";
+  } catch (error) {
+    status.textContent = "環境情報：取得できませんでした";
+  }
+}());
+</script>
 </body>
 </html>
