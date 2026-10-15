@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chrome専用リンクの起動テスト</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f3ec;color:#24362e;font:16px/1.8 system-ui,sans-serif}main{max-width:650px;margin:24px auto;padding:24px 20px;background:white;border-radius:18px}h1{font-size:26px}h2{font-size:19px}.button{display:block;margin:16px 0;padding:17px;border:1px solid #196448;border-radius:12px;font-weight:700;text-decoration:none;color:#196448}.primary{background:#196448;color:white}small{font-size:13px}a{color:#196448}details{margin:24px 0}a:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}code{overflow-wrap:anywhere}</style></head>
+<body><main>
+<h1>Chrome専用リンクの起動テスト</h1>
+<p>AndroidのXアプリ内で開き、まず①を押してください。外部起動できたかは、実際に開いたアプリで判断します。Android版の通常のChromeが必要です。</p>
+<p>今回はChromeを直接指定するテストです。Chrome以外の既定ブラウザで開けるかは、この試験では確認できません。</p>
+<h2>① 軽いページで起動を確認</h2>
+<a class="button primary" href="googlechrome://navigate?url=https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html">① Chrome専用リンクで確認ページを開く</a>
+<p><small>ゲームを読み込まないため、外部起動の成否を確認できます。Chromeに移ったか、X内のままか、エラーが出たかを記録してください。</small></p>
+<h2>② 同じ形式でゲームを開く</h2>
+<a class="button" href="googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">② Chrome専用リンクでG123を開く</a>
+<p><small>対象ゲームURLと計測パラメータは元の指定を維持しています。①が成功した場合に試してください。</small></p>
+<h2>③ LINEが開く経路と比較</h2>
+<a class="button" href="https://line.me/R/ti/p/@957negmk">③ LINEアカウントの直接リンクを開く</a>
+<p><small>ユーザー報告で成功したURLです。アカウント画面を開きます。友だち追加やメッセージ送信は行いません。</small></p>
+<details><summary>追加の切り分け</summary>
+<p>ここからは比較用です。リンクごとに、この試験ページに戻ってから押してください。</p>
+<a class="button" href="https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html">④ 普通のHTTPSで確認ページを開く</a>
+<a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;end">⑤ 従来のIntent形式で確認ページを開く</a>
+<p>④でも固まる場合、ゲームが原因とは限りません。⑤が失敗して①が成功すれば、URL形式による処理の違いが手掛かりになります。</p>
+</details>
+<h2>結果の伝え方</h2>
+<p>番号ごとに「開いたアプリ」「エラー文」「固まったか」を教えてください。できれば端末・Android版・X版・Chrome版も添えてください。</p>
+<details><summary>技術的な根拠と制約</summary>
+<p>①②は <code>googlechrome://navigate?url=HTTPSのURL</code> です。Android版Chromiumのソースに、スキーム登録とURL取り出し処理があります。X内での起動成功は未確認です。</p>
+<p>このページはJavaScript・自動転送・ポップアップ・イベント記録を使いません。前の試験ページとは独立しています。</p>
+<p><a href="https://chromium.googlesource.com/chromium/src/+/master/chrome/android/java/AndroidManifest.xml">ChromiumのAndroidManifest</a> ／
+<a href="https://github.com/chromium/chromium/blob/main/components/external_intents/android/java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java">Chromiumの専用URL処理</a></p>
+</details></main></body></html>
