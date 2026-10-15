@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="referrer" content="no-referrer">
+<title>Chromeでゲームを開く</title>
+<meta name="description" content="ゲームをChromeで開くための中継ページです。開かない場合はボタンを押してください。">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3ec;color:#24362e;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;line-height:1.8;min-height:100svh;display:grid;place-items:center;padding:24px 16px}
+main{background:#fff;width:min(100%,520px);padding:36px 24px;border:1px solid #e2e6dd;border-radius:24px;box-shadow:0 12px 44px #24362e0d}
+.tag{font-size:12px;letter-spacing:.16em;color:#527365;font-weight:700}h1{font-size:clamp(24px,6vw,32px);line-height:1.5;margin:12px 0 20px}p{margin:16px 0}.primary,button{font:inherit;cursor:pointer}
+.primary{display:block;text-align:center;background:#196448;color:white;text-decoration:none;border-radius:14px;padding:19px 12px;font-weight:700;font-size:19px;margin:24px 0 16px;min-height:64px}
+.primary:hover{background:#114d36}a{color:#196448}a:focus-visible,button:focus-visible,textarea:focus-visible{outline:3px solid #d58a1c;outline-offset:4px}
+.note{font-size:14px;background:#f5f7f3;padding:16px;border-radius:12px}.secondary{display:block;text-align:center;margin:16px 0}button{width:100%;border:1px solid #9aafa2;border-radius:12px;background:#fff;color:#24362e;padding:12px}textarea{width:100%;resize:vertical;min-height:112px;border:1px solid #9aafa2;border-radius:8px;padding:10px;font:13px/1.6 monospace}details{font-size:14px;margin-top:20px}summary{cursor:pointer}small{display:block;color:#536158;margin-top:24px;font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<span class="tag">GAME LAUNCHER</span>
+<h1 id="heading">ゲームをChromeで<br>開きます</h1>
+<p id="status" role="status" aria-live="polite">AndroidではChromeの自動起動を試します。開かない場合は下のボタンを押してください。</p>
+<a id="launch" class="primary" href="https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">Chromeでゲームを開く</a>
+<p class="note">Xアプリ内ブラウザの制限により、Chromeの自動起動は保証されません。ボタンでも開けない場合やChromeが未インストールの場合は、ゲームURLをコピーしてChromeのアドレスバーに貼り付けてください。</p>
+<a class="secondary" href="https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">このブラウザでゲームを開く</a>
+<button id="copy" type="button" hidden>ゲームURLをコピー</button>
+<details id="urlDetails"><summary>ゲームURLを表示・手動でコピー</summary>
+<p>下のURLを長押しして、すべて選択・コピーできます。</p>
+<textarea id="gameUrl" readonly aria-label="コピー用のゲームURL" spellcheck="false">https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</textarea>
+</details>
+<noscript><p class="note">JavaScriptが無効のため自動起動は行いません。上のリンクからゲームを開くか、URLをコピーしてChromeに貼り付けてください。</p></noscript>
+<small>ゲームへの移動を補助する中継ページです。Chromeで開くにはAndroid版Chromeが必要です。</small>
+</main>
+<script>
+(() => {
+  "use strict";
+  // Keep the exact original URL, including parameter order and trailing &.
+  const GAME_URL = "https://h5.g123.jp/game/kusuriya?platform=pr&utm_source=twitter&utm_campaign=kusuriya_ja_organic_pr_all&utm_adgroup=gameaccount&lang=ja&";
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const launch = document.getElementById("launch");
+  const status = document.getElementById("status");
+  const copy = document.getElementById("copy");
+  const urlField = document.getElementById("gameUrl");
+
+  copy.hidden = false;
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(GAME_URL);
+      status.textContent = "ゲームURLをコピーしました。Chromeのアドレスバーに貼り付けてください。";
+    } catch (_) {
+      document.getElementById("urlDetails").open = true;
+      urlField.focus();
+      urlField.select();
+      status.textContent = "URLを選択しました。長押しなどでコピーし、Chromeに貼り付けてください。";
+    }
+  });
+
+  if (!isAndroid) {
+    launch.textContent = "ゲームを開く";
+    document.getElementById("heading").textContent = "ゲームへ移動します";
+    status.textContent = "ゲームを開いています。移動しない場合は「ゲームを開く」を押してください。";
+    window.location.replace(GAME_URL);
+    return;
+  }
+
+  // Fall back to THIS page (with an auto-launch guard), so a blocked automatic
+  // launch never removes the manual retry button or causes a redirect loop.
+  const fallback = new URL(window.location.href);
+  fallback.hash = "manual";
+  const intent = "intent://" + GAME_URL.slice("https://".length)
+    + "#Intent;scheme=https;package=com.android.chrome;"
+    + "S.browser_fallback_url=" + encodeURIComponent(fallback.href) + ";end";
+  // A real anchor preserves the user gesture; no async handler for launching.
+  launch.href = intent;
+  launch.addEventListener("click", () => {
+    status.textContent = "Chromeの起動を試しています。開かない場合はURLをコピーしてChromeに貼り付けてください。";
+  });
+  // A fragment guard survives reload/back without modifying the game URL.
+  if (window.location.hash !== "#manual") {
+    history.replaceState(null, "", fallback.href);
+    try { window.location.assign(intent); }
+    catch (_) { status.textContent = "自動起動できませんでした。下のボタンを押してください。"; }
+  } else {
+    status.textContent = "Chromeが開いていない場合は、下のボタンを押してください。";
+  }
+})();
+</script>
+</body>
+</html>
+
