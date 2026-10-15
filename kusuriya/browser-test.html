@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G123 外部ブラウザ比較テスト</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3ec;color:#24362e;font:16px/1.8 system-ui,sans-serif}main{max-width:700px;margin:auto;padding:24px 16px}section{background:white;padding:20px;border:1px solid #dce3da;border-radius:16px;margin:16px 0}h1{font-size:26px}h2{font-size:20px}a{color:#196448}.launch,button{display:block;width:100%;padding:16px;margin:12px 0;border:1px solid #196448;border-radius:12px;background:white;color:#196448;font:inherit;text-decoration:none;cursor:pointer}.launch{font-weight:700}.primary{background:#196448;color:white}label{display:block;margin:12px 0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #9aafa2;border-radius:8px;font:inherit}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}small{font-size:13px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}
+</style>
+</head>
+<body><main>
+<h1>G123 外部ブラウザ比較テスト</h1>
+<p>AndroidのXアプリ内でこのページを開いてください。自動転送は行いません。中継ページ表示後の1タップで外部ブラウザへ移れるかを比較します。</p>
+<section>
+<h2>1. 各リンクを試す</h2>
+<p>毎回このページに戻ってから次のリンクを試してください。成功は、実際に切り替わったアプリを確認して判断します。</p>
+<div id="links"></div>
+<noscript>比較リンクの生成にはJavaScriptが必要です。</noscript>
+<p><small>B・CはAndroid向けです。Bは既定ブラウザで開く保証がありません。CはChromeを指定するので、既定ブラウザが別アプリでもChromeが対象になります。確認画面やアプリ選択が出れば「追加操作あり」と記録してください。</small></p>
+</section>
+<section>
+<h2>2. 実機結果を記録</h2>
+<p>既定ブラウザをChromeにした場合と、他のブラウザにした場合を比較してください。その後、通常のChromeからこのページを開き、B・Cを再試験します。</p>
+<form id="resultForm">
+<label>端末・Android版・X版・ブラウザ版<input id="device" placeholder="例：Pixel / Android … / X … / Chrome …"></label>
+<label>開始したアプリ<select id="origin"><option>Xアプリ内ブラウザ</option><option>通常のChrome</option><option>その他</option></select></label>
+<label>Androidの既定ブラウザ<input id="defaultBrowser" placeholder="Chrome / Firefox / Samsung Internet など"></label>
+<label>試したリンク<select id="method"><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+<label>開いたアプリ・結果<input id="opened" required placeholder="Chrome / Firefox / X内のまま / 無反応 など"></label>
+<label>追加操作<select id="extra"><option>なし</option><option>確認画面あり</option><option>アプリ選択あり</option><option>その他</option></select></label>
+<label>ゲーム表示・補足<textarea id="notes" rows="3" placeholder="ゲームが表示されたか、エラー内容など"></textarea></label>
+<button type="submit">結果をこのタブに保存</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+<button id="export" type="button">結果とイベント記録をJSONで保存</button>
+<p><small>記録はこのページのタブ内に保存します。外部への送信はありません。タブを閉じる前にJSONを保存してください。ダウンロード可否もアプリによって異なります。</small></p>
+<pre id="results"></pre>
+</section>
+<section>
+<h2>判定と制約</h2>
+<ul>
+<li>Bで既定ブラウザが追加操作なしに開けば、その端末構成では目的達成です。</li>
+<li>Cだけ成功した場合、確認できたのはChromeを指定した起動です。</li>
+<li>通常HTTPSや別ウィンドウ指定は、X内で開く場合があります。</li>
+<li>LINEのHTTPSリンクはApp Links等でアプリへ渡せます。今回のLINE起動に使われた仕組み自体は未確認です。GitHub Pagesに置くだけでは、任意のHTTPSを既定ブラウザへ渡す関連付けは作れません。</li>
+<li>Xのリンク処理とAndroid・各ブラウザの設定に左右されます。全端末での成功は保証できません。</li>
+<li>visibilityやpagehideは補助情報で、外部ブラウザ起動成功の証拠にはなりません。</li>
+</ul>
+<p>技術資料：<a href="https://developer.chrome.com/docs/android/intents">ChromeのAndroid Intent URI</a> ／ <a href="https://developer.android.com/training/app-links">Android App Links</a></p>
+<details><summary>イベント記録</summary><pre id="events"></pre></details>
+</section>
+</main>
+<script>
+(() => {
+"use strict";
+const GAME = "https://h5.g123.jp/game/kusuriya?platform=pr&utm_source=twitter&utm_campaign=kusuriya_ja_organic_pr_all&utm_adgroup=gameaccount&lang=ja&";
+const base = "intent://" + GAME.slice("https://".length);
+const suffix = "#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;";
+const methods = [
+["A", "通常HTTPS", GAME],
+["B", "外部ブラウザ起動を試す（指定なし）", base + suffix + "end"],
+["C", "Chrome起動を試す", base + suffix + "package=com.android.chrome;end"],
+["D", "HTTPSを別ウィンドウで開く", GAME]
+];
+const key = "g123-browser-comparison-v1";
+const ids = ["device","origin","defaultBrowser","method","opened","extra","notes"];
+let state = { results: [], events: [], draft: {} };
+try {
+const saved = JSON.parse(sessionStorage.getItem(key) || "null");
+if (saved && Array.isArray(saved.results) && Array.isArray(saved.events)) state = saved;
+} catch (_) {}
+function save() {
+try { sessionStorage.setItem(key, JSON.stringify(state)); }
+catch (_) { document.getElementById("status").textContent = "タブ内保存を利用できません。JSONを保存してください。"; }
+}
+function render() {
+document.getElementById("results").textContent = JSON.stringify(state.results, null, 2);
+document.getElementById("events").textContent = JSON.stringify(state.events, null, 2);
+}
+function record(event) {
+state.events.push({time: new Date().toISOString(), event});
+state.events = state.events.slice(-200);
+save(); render();
+}
+for (const id of ids) {
+const field = document.getElementById(id);
+if (state.draft && typeof state.draft[id] === "string") field.value = state.draft[id];
+field.addEventListener("input", () => {
+state.draft = Object.fromEntries(ids.map(i => [i, document.getElementById(i).value]));
+save();
+});
+}
+for (const [id, label, href] of methods) {
+const a = document.createElement("a");
+a.className = "launch" + (id === "B" ? " primary" : "");
+a.textContent = id + "：" + label;
+a.href = href;
+if (id === "D") { a.target = "_blank"; a.rel = "noopener"; }
+a.addEventListener("click", () => {
+document.getElementById("method").value = id;
+state.draft = Object.fromEntries(ids.map(i => [i, document.getElementById(i).value]));
+record("tap:" + id);
+});
+document.getElementById("links").append(a);
+}
+document.getElementById("resultForm").addEventListener("submit", event => {
+event.preventDefault();
+state.results.push({time: new Date().toISOString(), ...Object.fromEntries(ids.map(i => [i, document.getElementById(i).value]))});
+record("result saved");
+});
+document.addEventListener("visibilitychange", () => record("visibility:" + document.visibilityState));
+window.addEventListener("pagehide", () => record("pagehide"));
+window.addEventListener("pageshow", () => record("pageshow"));
+document.getElementById("export").addEventListener("click", () => {
+const data = {target: GAME, userAgent: navigator.userAgent, ...state};
+const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url; a.download = "g123-browser-results.json";
+document.body.append(a); a.click(); a.remove();
+setTimeout(() => URL.revokeObjectURL(url), 30000);
+});
+record("loaded");
+})();
+</script>
+</body>
+</html>
