@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linko公開URI形式の比較</title>
+<style>body{max-width:650px;margin:28px auto;padding:0 18px;color:#24362e;background:#f5f3ec;font:16px/1.8 system-ui,sans-serif}main{background:white;border-radius:16px;padding:24px}h1{font-size:25px}a{color:#196448}.button{display:block;padding:18px;margin:18px 0;border:1px solid #196448;border-radius:12px;text-decoration:none;font-weight:700}.primary{background:#196448;color:white}small{font-size:13px}code{overflow-wrap:anywhere}a:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}</style>
+</head><body><main>
+<h1>Linko公開URI形式の比較</h1>
+<p>Linkoの公式記事にあるAndroid向けURL形式を再現した検証ページです。Linkoの実サービスで生成したリンクではなく、中継ページの内部処理まで再現したものではありません。</p>
+<p>AndroidのX内で開き、まず①を押してください。「確認ページが表示されたか」に加え、実際に外部ブラウザへ切り替わったかを確認します。</p>
+<a class="button primary" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;end">① 最小Intentで軽い確認ページを開く</a>
+<a class="button" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;end">② 最小IntentでG123を開く</a>
+<p><small>①が外部ブラウザで開けた場合に②を試してください。開かない場合は、無反応か、表示されたエラー文を記録してください。</small></p>
+<details><summary>以前の形式と比較する</summary>
+<p>①にはscheme=httpsだけを指定しています。③には前回Bと同じaction・categoryを加えています。両方とも同じ軽い確認ページへ進みます。リンクごとに元の試験ページへ戻って試してください。</p>
+<a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end">③ action・category付きで確認ページを開く</a>
+</details>
+<p>自動転送やJavaScriptはありません。対象ゲームURLのパラメータと末尾の&amp;は維持しています。</p>
+<p>公開記事の形式：<code>intent://example.com/path#Intent;scheme=https;end</code></p>
+<p><a href="https://blog.linko.me/onlyfans-deep-link/">Linko公式：Android向けURIとXの動作条件</a></p>
+<p><small>同記事のX欄は、端末によって結果が異なり外部ブラウザで開ける場合がある、としています。本ページでの実機成功は未確認です。</small></p>
+</main></body></html>
