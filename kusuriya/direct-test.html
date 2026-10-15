@@ -34,12 +34,9 @@ code{overflow-wrap:anywhere}.note{padding:12px 16px;background:#f5f3ec;border-ra
 <a class="button primary" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;end">⑥ 通常Intentで確認ページを開く</a>
 <p><small>アプリを指定しない、HTTPSを開くIntentです。⑤のChrome指定や、①のChrome専用スキームとは別の比較です。</small></p>
 <p>⑥の結果を「通常のChromeへ移動」「同じ枠で確認ページを表示」「無反応」「エラー」のいずれかで教えてください。</p>
-<a class="button" href="intent://line.me/R/ti/p/@957negmk#Intent;scheme=https;end">⑦ 比較：通常IntentでLINEを開く</a>
-<p><small>⑥で通常のChromeへ移らない場合に、このページに戻ってから押してください。③と同じLINEアカウントを、⑥と同じIntent形式で開きます。</small></p>
-<p>⑦は「LINEが開いた」「無反応」「エラー」で確認します。LINEが開いても、友だち追加の確定やメッセージ送信は行いません。</p>
 <details>
 <summary>⑥で外部ブラウザへ移れた場合：ゲームで確認</summary>
-<a class="button" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;end">⑧ 通常IntentでG123を開く</a>
+<a class="button" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;end">⑦ 通常IntentでG123を開く</a>
 <p><small>⑥と同じ形式です。元のゲームURLと計測パラメータを維持しています。</small></p>
 </details>
 <p><small>Intentを処理できても、現在のブラウザ自身が起動先になる場合は同じタブ内で開くことがあります。自動転送や失敗時の転送は入れていません。</small></p>
@@ -47,7 +44,7 @@ code{overflow-wrap:anywhere}.note{padding:12px 16px;background:#f5f3ec;border-ra
 <section class="environment" aria-labelledby="environment-heading">
 <h2 id="environment-heading">表示環境（参考）</h2>
 <p id="environment-status" role="status"><strong>環境情報：未取得</strong></p>
-<p>表示環境を自動表示しています。今回の比較は上の⑥・⑦で行ってください。</p>
+<p>表示環境を自動表示しています。今回はまず上の⑥を試してください。</p>
 <p><small>「なし」だけでは表示方式は確定しません。この情報だけで通常のChromeと簡易画面を区別することもできません。</small></p>
 <details><summary>詳しい識別情報</summary><p><code id="environment-ua">未取得</code></p></details>
 <noscript><p>JavaScriptが無効なため環境情報を表示できません。比較リンクはそのまま使えます。</p></noscript>
@@ -74,7 +71,7 @@ code{overflow-wrap:anywhere}.note{padding:12px 16px;background:#f5f3ec;border-ra
 </details>
 <details>
 <summary>この比較について</summary>
-<p>⑥⑦⑧はアプリ指定のないIntentです。⑥⑧が必ず既定ブラウザの通常画面を開くとは限りません。④は通常のHTTPSリンク、③はLINEのHTTPSリンク、①②は <code>googlechrome://navigate?url=…</code>、⑤はChromeを指定するIntentです。①②⑤はAndroidの通常版Chromeを対象とし、Chrome以外の既定ブラウザへの切替は確認できません。</p>
+<p>⑥⑦はアプリ指定のないIntentです。⑥⑦が必ず既定ブラウザの通常画面を開くとは限りません。④は通常のHTTPSリンク、③はLINEのHTTPSリンク、①②は <code>googlechrome://navigate?url=…</code>、⑤はChromeを指定するIntentです。①②⑤はAndroidの通常版Chromeを対象とし、Chrome以外の既定ブラウザへの切替は確認できません。</p>
 <p>Chrome向けの形式でも、通常のChrome画面へ切り替わる保証はありません。現在のタブ内で処理される場合があります。</p>
 <p>ボタンは通常のリンクです。JavaScriptは環境情報の表示だけに使い、リンク操作には介入しません。診断結果の保存・送信、自動転送、ポップアップはありません。</p>
 <p><a href="https://developer.chrome.com/docs/android/intents">Chrome公式：Android Intentリンク</a> ／ <a href="https://github.com/chromium/chromium/blob/main/components/external_intents/android/java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java">Chromiumのリンク処理</a></p>
