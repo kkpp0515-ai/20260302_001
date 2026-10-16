@@ -5,7 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#d5ef23">
 <meta name="color-scheme" content="light">
-<title>ブラウザを選択 | G123</title>
+<title>Chrome直接起動の検証 | G123</title>
+<!-- Experimental X App Card entry. Native launch is not proven by the page's own link. -->
+<meta name="twitter:card" content="app">
+<meta name="twitter:site" content="@g123_jp">
+<meta name="twitter:title" content="Chrome直接起動の検証 | G123">
+<meta name="twitter:description" content="XからAndroidのGoogle ChromeへゲームURLを直接渡すための検証ページです。">
+<meta name="twitter:app:country" content="JP">
+<meta name="twitter:app:name:googleplay" content="Google Chrome">
+<meta name="twitter:app:id:googleplay" content="com.android.chrome">
+<meta name="twitter:app:url:googleplay" content="googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chrome直接起動の検証 | G123">
+<meta property="og:description" content="XからChromeへのアプリ起動経路を検証します。">
+
 <style>
 :root{color-scheme:light;--ink:#192b22;--muted:#617068;--lime:#d5ef23;--border:#dbe3dc}
 *{box-sizing:border-box}
@@ -33,14 +46,33 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
 .probe-notice{margin:0 0 16px;padding:10px;border-radius:8px;background:#edf3fc;font-size:13px;line-height:1.7}
 .revision{margin:16px 0 0;color:#738177;font-size:11px}
 [hidden]{display:none!important}
+
+.entry-test{margin:0 0 22px;padding:16px;border:1px solid #d4dfb0;border-radius:12px;background:#f7faeb;text-align:left}
+.entry-test h2{margin:0 0 12px;font-size:16px;line-height:1.5}
+.chrome-direct{display:flex;align-items:center;justify-content:center;min-height:54px;padding:14px 10px;border-radius:10px;background:var(--lime);color:var(--ink);text-align:center;text-decoration:none;font-size:15px;font-weight:700;line-height:1.5;touch-action:manipulation}
+.chrome-direct:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.entry-test p{margin:12px 0 0;color:var(--muted);font-size:12px;line-height:1.8}
+.deep-link{display:block;margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all;font:12px/1.8 ui-monospace,monospace}
+
 </style>
 </head>
 <body>
 <main class="card" aria-labelledby="page-title">
   <p class="brand" aria-label="G123">G123</p>
-  <h1 id="page-title">ブラウザを選択</h1>
+  <h1 id="page-title">ブラウザ起動の検証</h1>
   <p class="lead">お使いの端末にインストール済みの<br>ブラウザを選択してください。</p>
   <p class="probe-notice" id="probe-notice" role="status" hidden>確認ページへの起動をテストします。<br>ゲームには移動しません。</p>
+  <section class="entry-test" aria-labelledby="chrome-entry-title">
+    <h2 id="chrome-entry-title">Chrome専用リンクを比較</h2>
+    <a class="chrome-direct" id="chrome-direct" href="googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">Chrome専用リンクを試す</a>
+    <p>このボタンはページ内から押す比較用です。Xからの直接起動は、XがこのURLのアプリカード情報を読み取った場合に検証できます。</p>
+    <details><summary>X側に渡す起動リンクと判定</summary>
+      <code class="deep-link">googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</code>
+      <p>このURLをAndroidのアプリ起動リンクとしてXから渡す実験です。ページ内のボタンを押した結果だけでは、Xからの直接起動を確認したことにはなりません。</p>
+      <p>既存のWebサイトカードは、HTMLの変更だけでアプリカードへ切り替わるとは限りません。X側でこのURLをアプリカードとして読み取らせるか、アプリカードのAndroid起動リンクに上のURLを指定して比較します。Chromeのアプリ情報やストアへの導線が表示される可能性もあるため、本番向けの設定としては未検証です。</p>
+      <p>テスト設定で変わるのはページ内リンクです。Xが読むアプリカード情報にはゲームURLを設定しています。</p>
+    </details>
+  </section>
   <nav class="browsers" aria-label="起動するブラウザ">
       <a class="browser" data-browser-package="com.android.chrome" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.android.chrome;end">Chrome</a>
       <a class="browser" data-browser-package="com.brave.browser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">Brave</a>
@@ -66,7 +98,7 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
     <p class="test-note">オンにすると、上のブラウザのリンク先だけを確認ページに変えます。確認ページでも二度目の選択が出るかを比較してください。Chromeは、これまでの比較では同じ枠内に残っています。通常版の各ブラウザを対象にしています。</p>
     <noscript><p>確認ページへの切替とURLコピーはJavaScriptが有効な場合に利用できます。</p></noscript>
   </details>
-  <p class="revision">比較版 v9 · 2026-10-16</p>
+  <p class="revision">比較版 v10 · 2026-10-16</p>
 </main>
 <script>
     (function () {
@@ -108,6 +140,7 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
       link.href = "intent://" + destination.slice(8) +
         "#Intent;scheme=https;package=" + link.getAttribute("data-browser-package") + ";end";
     });
+    document.getElementById("chrome-direct").href = "googlechrome://navigate?url=" + destination;
     notice.hidden = !toggle.checked;
   }
   toggle.addEventListener("change", updateLinks);
