@@ -1,53 +1,81 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Braveへの切替テスト｜更新版 v8</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f3ec;color:#24362e;font:16px/1.8 system-ui,sans-serif}main{max-width:680px;margin:20px auto;padding:24px 20px;background:white;border-radius:18px}h1{font-size:26px;line-height:1.45}h2{font-size:21px;line-height:1.5}h3{font-size:19px;line-height:1.5}.revision{display:inline-block;padding:3px 12px;border-radius:999px;background:#e5eee8;font-size:14px;font-weight:700}.goal,.experiment,.environment{margin:22px 0;padding:18px 16px;border:1px solid #a9beb1;border-radius:14px}.goal{background:#edf3fc;border-color:#46668b}.experiment h2{margin-top:0}.button,button{display:block;width:100%;margin:16px 0;padding:16px;border:1px solid #196448;border-radius:12px;background:#196448;color:white;text-align:center;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}a{color:#196448}a:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d58a1c;outline-offset:3px}details{margin:18px 0}summary{cursor:pointer;padding:8px 0;font-weight:700}small{font-size:14px}code{overflow-wrap:anywhere;white-space:pre-wrap}label{display:block;font-weight:700;margin-top:16px}select,textarea{width:100%;padding:12px;border:1px solid #9cae9f;border-radius:8px;background:white;color:#24362e;font:inherit}textarea{resize:vertical}#copy-status{min-height:1.8em}.note{background:#f5f3ec;padding:12px 16px;border-radius:10px}</style></head><body><main>
-<p class="revision">更新版 v8 · 2026-10-16</p>
-<h1>Braveへの切替テスト</h1>
-<p>いつもの投稿の<strong>カード画像</strong>から開いてください。投稿し直しは不要です。</p>
-<section class="goal"><h2>今回の成功条件</h2><p><strong>⑫を1回押すだけで、通常のBraveへ移り、ゲームが開くこと。</strong></p><p>アプリ選択・起動確認・初回設定など追加の操作が必要な場合や、Xの枠が付いた簡易画面のまま開く場合は、1タップ成功には数えません。ゲームが表示されただけでは成功と判定しません。</p></section>
-<section class="experiment" aria-labelledby="heading-12"><h2 id="heading-12">⑫ Braveでゲームを開く</h2>
-<p>端末に入っている通常版のBraveを直接指定します。今回試す新しいボタンはこれ1つです。</p>
-<a class="button" id="brave-launch" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">⑫ Braveでゲームを開く</a>
-<p><small>検証用です。追加のインストールや設定変更は必要条件にしません。</small></p>
-<details><summary>仮説・起動リンク</summary><p>仮説：起動先をChrome自身から別アプリのBraveへ変えることで、現在のタブに読み込む処理とは別の経路で開ける。Braveの通常版パッケージcom.brave.browserを指定します。Chrome側が選択画面を出す可能性があるため、直接起動できるかは実機で確認します。</p><p>ゲームURLは元のクエリをそのまま渡します。自動転送、フォールバック転送、ストアへの誘導はありません。JavaScriptによるクリック処理もありません。</p><code>intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end</code><p><a href="https://github.com/brave/brave-core/blob/5aa99ccafc2d1f33356c601e8339bf4e8873f388/android/java/org/chromium/chrome/browser/BraveConstants.java#L24">Brave公式ソース：通常版のパッケージ名</a></p></details>
-<p class="note">結果は「⑫：通常Braveでゲームが直接開いた」「⑫：選択・確認画面が出た」「⑫：同じ枠のまま」「⑫：無反応／エラー」のように教えてください。</p>
-</section>
-<details><summary>前回までの比較と記録：①〜⑪</summary>
-<p class="note">報告済みの結果：⑧・⑨・⑪は同じ枠内、⑩は起動しませんでした。以下は前回のテストと端末内の記録を残したものです。</p>
-<section class="goal"><h2>今回の成功条件</h2><p><strong>Chromeの通常のアドレス欄・タブ切替ボタンがある画面へ移ること。</strong>確認ページが同じ簡易画面の中で開いた場合は「同じ枠」と記録します。</p><p>⑧ → 戻る → ⑨ → 戻る → ⑩ → 戻る → ⑪の順で試します。別画面が開いた場合も、Xのカードからこのページを開き直せます。</p><p><small>⑩だけはURLを渡さないため、通常Chromeが起動すれば「アプリ起動」の成功です。ゲームを開く検証は、その後に行います。</small></p></section>
-<section class="experiment" aria-labelledby="heading-8"><h2 id="heading-8">⑧ 新しいタスクを要求して開く</h2><p>仮説：今のタスクの再利用が原因なら、新しいタスクを要求すると通常Chromeへ移れる。</p><a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;launchFlags=0x18080000;end">⑧ 新しいタスクを要求して開く</a><details><summary>変更点と判定</summary><p>⑤を基準に、NEW_TASK・MULTIPLE_TASK・NEW_DOCUMENTを加えます。まず組合せの効果を確認し、成功した場合に必要な指定を絞ります。</p><code>intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;launchFlags=0x18080000;end</code></details></section>
-<section class="experiment" aria-labelledby="heading-9"><h2 id="heading-9">⑨ 通常のブラウザ画面も要求する</h2><p>仮説：⑧に「カスタムタブを使わない」指定を加えると、通常Chromeへ移れる。</p><a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;launchFlags=0x18080000;B.android.support.customtabs.extra.user_opt_out=true;end">⑨ 通常のブラウザ画面も要求する</a><details><summary>変更点と判定</summary><p>⑧との差はuser_opt_out=trueだけです。アプリ向けの指定をWebのIntentリンクに含める実験で、有効かは未確認です。</p><code>intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;launchFlags=0x18080000;B.android.support.customtabs.extra.user_opt_out=true;end</code></details></section>
-<section class="experiment" aria-labelledby="heading-10"><h2 id="heading-10">⑩ ブラウザアプリを起動する（URLなし）</h2><p>仮説：URLを開く処理ではなく、ブラウザアプリ自体を起動する経路なら通常画面へ出られる。</p><a class="button" href="intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;SEL;action=android.intent.action.MAIN;category=android.intent.category.APP_BROWSER;end">⑩ ブラウザアプリを起動する（URLなし）</a><details><summary>変更点と判定</summary><p>MAINとAPP_BROWSERのselectorを使います。Chrome側でselectorが取り除かれる可能性も含めて実機で確認します。これはブラウザの起動だけを調べるテストで、ゲームURLは渡しません。</p><code>intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;SEL;action=android.intent.action.MAIN;category=android.intent.category.APP_BROWSER;end</code></details></section>
-<section class="experiment" aria-labelledby="heading-11"><h2 id="heading-11">⑪ 新しいタブで確認ページを開く</h2><p>仮説：新しいタブを要求すると、現在のカスタムタブとは別の通常Chrome画面で開く。</p><a class="button" href="https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html" target="_blank" rel="noopener">⑪ 新しいタブで確認ページを開く</a><details><summary>変更点と判定</summary><p>④と同じHTTPSリンクにtarget=_blank、rel=noopenerを指定します。別のカスタムタブが開いた場合は「別の簡易画面」と記録してください。</p><code>https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html</code></details></section>
-<section id="results"><h2>結果を記録</h2><p>試した結果を選ぶと、この端末内に保存します。選択結果やメモをサーバーへ送信する処理はありません。</p>
-<label for="result-8">⑧ 新しいタスクを要求して開く</label><select id="result-8" data-result="8"><option value="未試行">未試行</option><option value="通常Chromeで確認ページ">通常Chromeで確認ページ</option><option value="同じ枠で確認ページ">同じ枠で確認ページ</option><option value="別の簡易画面で確認ページ">別の簡易画面で確認ページ</option><option value="無反応">無反応</option><option value="エラー">エラー</option></select>
-<label for="result-9">⑨ 通常のブラウザ画面も要求する</label><select id="result-9" data-result="9"><option value="未試行">未試行</option><option value="通常Chromeで確認ページ">通常Chromeで確認ページ</option><option value="同じ枠で確認ページ">同じ枠で確認ページ</option><option value="別の簡易画面で確認ページ">別の簡易画面で確認ページ</option><option value="無反応">無反応</option><option value="エラー">エラー</option></select>
-<label for="result-10">⑩ ブラウザアプリを起動する（URLなし）</label><select id="result-10" data-result="10"><option value="未試行">未試行</option><option value="通常Chromeが起動">通常Chromeが起動</option><option value="別のブラウザが起動">別のブラウザが起動</option><option value="同じ枠のまま">同じ枠のまま</option><option value="無反応">無反応</option><option value="エラー">エラー</option></select>
-<label for="result-11">⑪ 新しいタブで確認ページを開く</label><select id="result-11" data-result="11"><option value="未試行">未試行</option><option value="通常Chromeで確認ページ">通常Chromeで確認ページ</option><option value="同じ枠で確認ページ">同じ枠で確認ページ</option><option value="別の簡易画面で確認ページ">別の簡易画面で確認ページ</option><option value="無反応">無反応</option><option value="エラー">エラー</option></select>
-<label for="notes">エラー文・メモ（任意）</label><textarea id="notes" rows="3"></textarea>
-<label for="result-summary">共有する結果</label><textarea id="result-summary" rows="7" readonly></textarea>
-<button id="copy-results" type="button">結果をコピー</button><p id="copy-status" role="status"></p>
-<noscript><p>JavaScriptが無効です。比較リンクは使えますが、記録・コピー機能は使えません。結果を番号ごとにチャットへ書いてください。</p></noscript></section>
-<details class="environment"><summary>表示環境（参考）</summary><p id="environment-status" role="status">環境情報：未取得</p><p><small>「wv」の有無だけで通常Chromeとカスタムタブは区別できません。今回の成功判定は実際の画面で行います。</small></p><code id="environment-ua">未取得</code></details>
-<details><summary>以前の比較：①〜⑦</summary><p>比較基準として残しています。今回の新しい試験は⑧〜⑪です。</p><a class="button" href="googlechrome://navigate?url=https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html">① Chrome専用リンクで確認ページ</a>
-<a class="button" href="googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">② Chrome専用リンクでゲーム</a>
-<a class="button" href="https://line.me/R/ti/p/@957negmk">③ LINEのHTTPSリンク（以前の比較）</a>
-<a class="button" href="https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html">④ 通常HTTPSで確認ページ</a>
-<a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;package=com.android.chrome;end">⑤ Chromeを指定したIntent</a>
-<a class="button" href="intent://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html#Intent;scheme=https;end">⑥ アプリ指定なしのIntentで確認ページ</a>
-<a class="button" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;end">⑦ アプリ指定なしのIntentでゲーム</a></details>
-<details><summary>このラウンドについて</summary><p>⑧はタスク作成の指定、⑨は⑧に通常ブラウザ画面の指定を追加、⑩はブラウザ種別を指定したアプリ起動、⑪は新しいタブの指定です。それぞれ別の仮説を調べます。</p><p>どれも未検証の実験です。ソース上では同じタブで処理されたり、指定が除去されたりする可能性があります。成功した場合は指定を減らして再検証し、失敗した場合も「すべての方法が不可能」とは判定しません。</p><p>リンクは直接タップして使います。JavaScriptは表示環境の表示と結果の記録・コピーに使い、リンクのクリック処理には介入しません。自動転送や失敗時の転送はありません。</p></details>
-</details>
-<p class="note">同じカードを開き直し、必要ならブラウザのメニューから再読み込みしてください。<br><a href="direct-test.html?refresh=20261016-v8">このページを読み直す</a></p>
-</main><script>(function(){
-function showEnvironment(){var status=document.getElementById("environment-status"),raw=document.getElementById("environment-ua");if(!status||!raw)return;try{var ua=navigator.userAgent||"";raw.textContent=ua||"取得できませんでした";status.textContent=ua?(/\bwv\b/i.test(ua)?"WebViewの目印：あり":"WebViewの目印：なし（表示方式は未確定）"):"環境情報：取得できませんでした";}catch(e){status.textContent="環境情報：取得できませんでした";}}
-showEnvironment();
-var ids=["8","9","10","11"],key="g123-browser-v5-results",notes=document.getElementById("notes"),summary=document.getElementById("result-summary"),copyStatus=document.getElementById("copy-status");
-function values(){var result={notes:notes.value};ids.forEach(function(id){result[id]=document.getElementById("result-"+id).value;});return result;}
-function render(){var result=values(),rows=["通常Chrome切替テスト v5（カード経由）"];ids.forEach(function(id){rows.push((id==="8"?"⑧":id==="9"?"⑨":id==="10"?"⑩":"⑪")+"："+result[id]);});if(result.notes)rows.push("メモ："+result.notes);summary.value=rows.join("\n");}
-try{var saved=JSON.parse(localStorage.getItem(key)||"null");if(saved&&typeof saved==="object"){ids.forEach(function(id){var select=document.getElementById("result-"+id);if(typeof saved[id]==="string"&&Array.prototype.some.call(select.options,function(option){return option.value===saved[id];}))select.value=saved[id];});if(typeof saved.notes==="string")notes.value=saved.notes;}}catch(e){}
-function save(){render();try{localStorage.setItem(key,JSON.stringify(values()));}catch(e){}}
-ids.forEach(function(id){document.getElementById("result-"+id).addEventListener("change",save);});
-notes.addEventListener("input",save);
-function selectSummary(){summary.focus();summary.select();copyStatus.textContent="結果欄を選択しました。長押しなどでコピーしてください。";}
-document.getElementById("copy-results").addEventListener("click",function(){if(navigator.clipboard&&navigator.clipboard.writeText){try{navigator.clipboard.writeText(summary.value).then(function(){copyStatus.textContent="結果をコピーしました。";},selectSummary);}catch(e){selectSummary();}}else{selectSummary();}});
-render();
-}());</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#d5ef23">
+  <meta name="color-scheme" content="light">
+  <title>ブラウザでゲームを開く | G123</title>
+  <meta name="description" content="使用するブラウザを選択してゲームを開きます。">
+  <style>
+    :root{color-scheme:light;--ink:#192b22;--muted:#617068;--lime:#d5ef23;--border:#dbe3dc}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;min-height:100svh;padding:24px 16px;background:#f1f4ef;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-text-size-adjust:100%}
+    .card{width:100%;max-width:460px;margin:clamp(20px,6vh,64px) auto;padding:32px clamp(20px,6vw,32px) 24px;background:#fff;border:1px solid #e4eae2;border-radius:22px;box-shadow:0 8px 32px rgb(25 43 34 / 4%);text-align:center}
+    .brand{display:inline-block;margin:0 0 22px;padding:0 2px 3px;border-bottom:5px solid var(--lime);font-family:Arial,Helvetica,sans-serif;font-size:31px;font-weight:900;font-style:italic;letter-spacing:-2px;line-height:1}
+    h1{margin:0;font-size:22px;font-weight:750;line-height:1.5;letter-spacing:.01em}
+    .lead{margin:16px 0 26px;color:var(--muted);font-size:15px;line-height:1.9}
+    .actions{display:grid;gap:12px}
+    .button{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;padding:16px 12px;border:1px solid transparent;border-radius:12px;font:inherit;font-size:16px;font-weight:700;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .primary{background:var(--lime);color:var(--ink)}
+    .secondary{background:#fff;border-color:#bccabe;color:#344c3e}
+    .button:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+    .primary:active{background:#c6df16}
+    .secondary:active{background:#f1f4ef}
+    @media (hover:hover){.primary:hover{background:#cce51c}.secondary:hover{background:#f7f9f5}}
+    .status{min-height:22px;margin:14px 0 0;color:#526459;font-size:13px;line-height:1.7}
+    .manual{margin-top:16px;text-align:left}
+    .manual label{display:block;margin-bottom:8px;font-size:13px;font-weight:700}
+    .manual textarea{display:block;width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:#f7f9f5;color:var(--ink);font:13px/1.6 ui-monospace,monospace;overflow-wrap:anywhere;resize:vertical}
+    .manual textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+    [hidden]{display:none!important}
+    noscript p{font-size:13px;overflow-wrap:anywhere}
+    noscript a{color:#344c3e}
+  </style>
+</head>
+<body>
+  <main class="card" aria-labelledby="page-title">
+    <p class="brand" aria-label="G123">G123</p>
+    <h1 id="page-title">ブラウザでゲームを開く</h1>
+    <p class="lead">下のボタンから、使用するブラウザを<br>選択してください。</p>
+    <div class="actions">
+      <a class="button primary" id="browser-open" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">ご自身でブラウザを選択する</a>
+      <button class="button secondary" id="copy-url" type="button">ゲームのURLをコピー</button>
+    </div>
+    <p class="status" id="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <div class="manual" id="manual-copy" hidden>
+      <label for="game-url">ゲームのURL</label>
+      <textarea id="game-url" rows="4" readonly spellcheck="false">https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</textarea>
+    </div>
+    <noscript><p><a href="https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">ゲームのURL</a>を長押ししてコピーできます。</p></noscript>
+  </main>
+  <script>
+    (function () {
+      var button = document.getElementById("copy-url");
+      var status = document.getElementById("copy-status");
+      var manual = document.getElementById("manual-copy");
+      var field = document.getElementById("game-url");
+      function showManualCopy() {
+        manual.hidden = false;
+        field.focus();
+        field.select();
+        try { field.setSelectionRange(0, field.value.length); } catch (_) {}
+        status.textContent = "URLを長押ししてコピーしてください。";
+      }
+      button.addEventListener("click", function () {
+        status.textContent = "";
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            Promise.resolve(navigator.clipboard.writeText(field.value)).then(function () {
+              manual.hidden = true;
+              status.textContent = "URLをコピーしました。";
+            }, showManualCopy);
+            return;
+          }
+        } catch (_) {}
+        showManualCopy();
+      });
+    }());
+  </script>
+</body>
+</html>
