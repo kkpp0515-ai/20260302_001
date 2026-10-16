@@ -47,13 +47,8 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
 .revision{margin:16px 0 0;color:#738177;font-size:11px}
 [hidden]{display:none!important}
 
-.entry-test{margin:0 0 22px;padding:16px;border:1px solid #d4dfb0;border-radius:12px;background:#f7faeb;text-align:left}
-.entry-test h2{margin:0 0 12px;font-size:16px;line-height:1.5}
-.chrome-direct{display:flex;align-items:center;justify-content:center;min-height:54px;padding:14px 10px;border-radius:10px;background:var(--lime);color:var(--ink);text-align:center;text-decoration:none;font-size:15px;font-weight:700;line-height:1.5;touch-action:manipulation}
-.chrome-direct:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-.entry-test p{margin:12px 0 0;color:var(--muted);font-size:12px;line-height:1.8}
 .deep-link{display:block;margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all;font:12px/1.8 ui-monospace,monospace}
-
+.setup-title{margin:16px 0 8px;font-size:14px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -62,17 +57,6 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
   <h1 id="page-title">ブラウザ起動の検証</h1>
   <p class="lead">お使いの端末にインストール済みの<br>ブラウザを選択してください。</p>
   <p class="probe-notice" id="probe-notice" role="status" hidden>確認ページへの起動をテストします。<br>ゲームには移動しません。</p>
-  <section class="entry-test" aria-labelledby="chrome-entry-title">
-    <h2 id="chrome-entry-title">Chrome専用リンクを比較</h2>
-    <a class="chrome-direct" id="chrome-direct" href="googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">Chrome専用リンクを試す</a>
-    <p>このボタンはページ内から押す比較用です。Xからの直接起動は、XがこのURLのアプリカード情報を読み取った場合に検証できます。</p>
-    <details><summary>X側に渡す起動リンクと判定</summary>
-      <code class="deep-link">googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</code>
-      <p>このURLをAndroidのアプリ起動リンクとしてXから渡す実験です。ページ内のボタンを押した結果だけでは、Xからの直接起動を確認したことにはなりません。</p>
-      <p>既存のWebサイトカードは、HTMLの変更だけでアプリカードへ切り替わるとは限りません。X側でこのURLをアプリカードとして読み取らせるか、アプリカードのAndroid起動リンクに上のURLを指定して比較します。Chromeのアプリ情報やストアへの導線が表示される可能性もあるため、本番向けの設定としては未検証です。</p>
-      <p>テスト設定で変わるのはページ内リンクです。Xが読むアプリカード情報にはゲームURLを設定しています。</p>
-    </details>
-  </section>
   <nav class="browsers" aria-label="起動するブラウザ">
       <a class="browser" data-browser-package="com.android.chrome" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.android.chrome;end">Chrome</a>
       <a class="browser" data-browser-package="com.brave.browser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">Brave</a>
@@ -96,9 +80,14 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
     <summary>テスト設定</summary>
     <label class="check-label"><input type="checkbox" id="probe-mode"><span>転送のない確認ページで試す</span></label>
     <p class="test-note">オンにすると、上のブラウザのリンク先だけを確認ページに変えます。確認ページでも二度目の選択が出るかを比較してください。Chromeは、これまでの比較では同じ枠内に残っています。通常版の各ブラウザを対象にしています。</p>
+    <h2 class="setup-title">Xアプリカード用の設定（未検証）</h2>
+    <p class="test-note">ページ内のChrome専用リンクは、実機で無反応でした。Xからの直接起動は、X側のアプリカードまたはアプリボタンに設定して確認する必要があります。</p>
+    <p class="test-note">Androidアプリ：Google Chrome<br>パッケージ名：com.android.chrome<br>Android起動リンク：</p>
+    <code class="deep-link">googlechrome://navigate?url=https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</code>
+    <p class="test-note">既存のWebサイトカードを再読み込みするだけでは、この直接起動経路の検証にはなりません。XがHTML内のアプリカード設定を認識するかも未確認です。</p>
     <noscript><p>確認ページへの切替とURLコピーはJavaScriptが有効な場合に利用できます。</p></noscript>
   </details>
-  <p class="revision">比較版 v10 · 2026-10-16</p>
+  <p class="revision">比較版 v11 · 2026-10-16</p>
 </main>
 <script>
     (function () {
@@ -140,7 +129,6 @@ input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-co
       link.href = "intent://" + destination.slice(8) +
         "#Intent;scheme=https;package=" + link.getAttribute("data-browser-package") + ";end";
     });
-    document.getElementById("chrome-direct").href = "googlechrome://navigate?url=" + destination;
     notice.hidden = !toggle.checked;
   }
   toggle.addEventListener("change", updateLinks);
