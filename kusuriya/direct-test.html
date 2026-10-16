@@ -1,55 +1,74 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#d5ef23">
-  <meta name="color-scheme" content="light">
-  <title>ブラウザでゲームを開く | G123</title>
-  <meta name="description" content="使用するブラウザを選択してゲームを開きます。">
-  <style>
-    :root{color-scheme:light;--ink:#192b22;--muted:#617068;--lime:#d5ef23;--border:#dbe3dc}
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;min-height:100svh;padding:24px 16px;background:#f1f4ef;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-text-size-adjust:100%}
-    .card{width:100%;max-width:460px;margin:clamp(20px,6vh,64px) auto;padding:32px clamp(20px,6vw,32px) 24px;background:#fff;border:1px solid #e4eae2;border-radius:22px;box-shadow:0 8px 32px rgb(25 43 34 / 4%);text-align:center}
-    .brand{display:inline-block;margin:0 0 22px;padding:0 2px 3px;border-bottom:5px solid var(--lime);font-family:Arial,Helvetica,sans-serif;font-size:31px;font-weight:900;font-style:italic;letter-spacing:-2px;line-height:1}
-    h1{margin:0;font-size:22px;font-weight:750;line-height:1.5;letter-spacing:.01em}
-    .lead{margin:16px 0 26px;color:var(--muted);font-size:15px;line-height:1.9}
-    .actions{display:grid;gap:12px}
-    .button{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;padding:16px 12px;border:1px solid transparent;border-radius:12px;font:inherit;font-size:16px;font-weight:700;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-    .primary{background:var(--lime);color:var(--ink)}
-    .secondary{background:#fff;border-color:#bccabe;color:#344c3e}
-    .button:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
-    .primary:active{background:#c6df16}
-    .secondary:active{background:#f1f4ef}
-    @media (hover:hover){.primary:hover{background:#cce51c}.secondary:hover{background:#f7f9f5}}
-    .status{min-height:22px;margin:14px 0 0;color:#526459;font-size:13px;line-height:1.7}
-    .manual{margin-top:16px;text-align:left}
-    .manual label{display:block;margin-bottom:8px;font-size:13px;font-weight:700}
-    .manual textarea{display:block;width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:#f7f9f5;color:var(--ink);font:13px/1.6 ui-monospace,monospace;overflow-wrap:anywhere;resize:vertical}
-    .manual textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-    [hidden]{display:none!important}
-    noscript p{font-size:13px;overflow-wrap:anywhere}
-    noscript a{color:#344c3e}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d5ef23">
+<meta name="color-scheme" content="light">
+<title>ブラウザを選択 | G123</title>
+<style>
+:root{color-scheme:light;--ink:#192b22;--muted:#617068;--lime:#d5ef23;--border:#dbe3dc}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100svh;padding:24px 16px;background:#f1f4ef;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-text-size-adjust:100%}
+.card{width:100%;max-width:480px;margin:clamp(8px,3vh,32px) auto;padding:28px clamp(20px,5vw,30px) 22px;background:#fff;border:1px solid #e4eae2;border-radius:22px;box-shadow:0 8px 32px rgb(25 43 34 / 4%);text-align:center}
+.brand{display:inline-block;margin:0 0 18px;padding:0 2px 3px;border-bottom:5px solid var(--lime);font-family:Arial,Helvetica,sans-serif;font-size:29px;font-weight:900;font-style:italic;letter-spacing:-2px;line-height:1}
+h1{margin:0;font-size:23px;line-height:1.5}
+.lead{margin:12px 0 20px;color:var(--muted);font-size:14px;line-height:1.8}
+.browsers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.browser{display:flex;align-items:center;justify-content:center;min-height:57px;padding:12px 8px;border:1px solid #bccabe;border-radius:11px;background:#fff;color:var(--ink);font-size:14px;font-weight:700;line-height:1.4;text-decoration:none;overflow-wrap:anywhere;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.browser:active{background:var(--lime);border-color:var(--lime)}
+@media (hover:hover){.browser:hover{background:#f1f7ce;border-color:#b5cd3e}}
+.browser:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.help{margin:14px 0 20px;color:var(--muted);font-size:12px;line-height:1.7}
+.copy-button{display:block;width:100%;min-height:54px;padding:14px 12px;border:0;border-radius:11px;background:var(--lime);color:var(--ink);font:inherit;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.status{min-height:22px;margin:12px 0 0;color:#526459;font-size:13px;line-height:1.7}
+.manual{margin:12px 0;text-align:left}
+.manual label{display:block;margin-bottom:8px;font-size:13px;font-weight:700}
+.manual textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:#f7f9f5;color:var(--ink);font:13px/1.6 ui-monospace,monospace;resize:vertical}
+details{margin-top:14px;border-top:1px solid #e8ede6;padding-top:10px;text-align:left;font-size:13px;line-height:1.8}
+summary{padding:6px 0;cursor:pointer;font-weight:700}
+.check-label{display:flex;gap:9px;align-items:flex-start;padding:10px 0}
+input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:3px 0;accent-color:#566727}
+.test-note{margin:0;color:var(--muted);font-size:12px}
+.probe-notice{margin:0 0 16px;padding:10px;border-radius:8px;background:#edf3fc;font-size:13px;line-height:1.7}
+.revision{margin:16px 0 0;color:#738177;font-size:11px}
+[hidden]{display:none!important}
+</style>
 </head>
 <body>
-  <main class="card" aria-labelledby="page-title">
-    <p class="brand" aria-label="G123">G123</p>
-    <h1 id="page-title">ブラウザでゲームを開く</h1>
-    <p class="lead">下のボタンから、使用するブラウザを<br>選択してください。</p>
-    <div class="actions">
-      <a class="button primary" id="browser-open" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">ご自身でブラウザを選択する</a>
-      <button class="button secondary" id="copy-url" type="button">ゲームのURLをコピー</button>
-    </div>
-    <p class="status" id="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
-    <div class="manual" id="manual-copy" hidden>
-      <label for="game-url">ゲームのURL</label>
-      <textarea id="game-url" rows="4" readonly spellcheck="false">https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</textarea>
-    </div>
-    <noscript><p><a href="https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;">ゲームのURL</a>を長押ししてコピーできます。</p></noscript>
-  </main>
-  <script>
+<main class="card" aria-labelledby="page-title">
+  <p class="brand" aria-label="G123">G123</p>
+  <h1 id="page-title">ブラウザを選択</h1>
+  <p class="lead">お使いの端末にインストール済みの<br>ブラウザを選択してください。</p>
+  <p class="probe-notice" id="probe-notice" role="status" hidden>確認ページへの起動をテストします。<br>ゲームには移動しません。</p>
+  <nav class="browsers" aria-label="起動するブラウザ">
+      <a class="browser" data-browser-package="com.android.chrome" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.android.chrome;end">Chrome</a>
+      <a class="browser" data-browser-package="com.brave.browser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.brave.browser;end">Brave</a>
+      <a class="browser" data-browser-package="org.mozilla.firefox" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=org.mozilla.firefox;end">Firefox</a>
+      <a class="browser" data-browser-package="com.microsoft.emmx" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.microsoft.emmx;end">Microsoft Edge</a>
+      <a class="browser" data-browser-package="com.sec.android.app.sbrowser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.sec.android.app.sbrowser;end">Samsung Internet</a>
+      <a class="browser" data-browser-package="com.opera.browser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.opera.browser;end">Opera</a>
+      <a class="browser" data-browser-package="com.vivaldi.browser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.vivaldi.browser;end">Vivaldi</a>
+      <a class="browser" data-browser-package="com.duckduckgo.mobile.android" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.duckduckgo.mobile.android;end">DuckDuckGo</a>
+      <a class="browser" data-browser-package="com.mi.globalbrowser" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.mi.globalbrowser;end">Mi Browser</a>
+      <a class="browser" data-browser-package="com.opera.mini.native" href="intent://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;#Intent;scheme=https;package=com.opera.mini.native;end">Opera Mini</a>
+  </nav>
+  <p class="help">未インストールのブラウザも一覧に含まれます。<br>開く際に、端末側の選択・確認画面が出る場合があります。</p>
+  <button class="copy-button" id="copy-url" type="button">ゲームのURLをコピー</button>
+  <p class="status" id="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <div class="manual" id="manual-copy" hidden>
+    <label for="game-url">ゲームのURL</label>
+    <textarea id="game-url" rows="4" readonly spellcheck="false">https://h5.g123.jp/game/kusuriya?platform=pr&amp;utm_source=twitter&amp;utm_campaign=kusuriya_ja_organic_pr_all&amp;utm_adgroup=gameaccount&amp;lang=ja&amp;</textarea>
+  </div>
+  <details>
+    <summary>テスト設定</summary>
+    <label class="check-label"><input type="checkbox" id="probe-mode"><span>転送のない確認ページで試す</span></label>
+    <p class="test-note">オンにすると、上のブラウザのリンク先だけを確認ページに変えます。確認ページでも二度目の選択が出るかを比較してください。Chromeは、これまでの比較では同じ枠内に残っています。通常版の各ブラウザを対象にしています。</p>
+    <noscript><p>確認ページへの切替とURLコピーはJavaScriptが有効な場合に利用できます。</p></noscript>
+  </details>
+  <p class="revision">比較版 v9 · 2026-10-16</p>
+</main>
+<script>
     (function () {
       var button = document.getElementById("copy-url");
       var status = document.getElementById("copy-status");
@@ -76,6 +95,25 @@
         showManualCopy();
       });
     }());
-  </script>
+  
+(function () {
+  var game = "https://h5.g123.jp/game/kusuriya?platform=pr&utm_source=twitter&utm_campaign=kusuriya_ja_organic_pr_all&utm_adgroup=gameaccount&lang=ja&";
+  var probe = "https://kkpp0515-ai.github.io/20260302_001/kusuriya/launch-probe.html";
+  var toggle = document.getElementById("probe-mode");
+  var notice = document.getElementById("probe-notice");
+  var links = document.querySelectorAll("[data-browser-package]");
+  function updateLinks() {
+    var destination = toggle.checked ? probe : game;
+    Array.prototype.forEach.call(links, function (link) {
+      link.href = "intent://" + destination.slice(8) +
+        "#Intent;scheme=https;package=" + link.getAttribute("data-browser-package") + ";end";
+    });
+    notice.hidden = !toggle.checked;
+  }
+  toggle.addEventListener("change", updateLinks);
+  window.addEventListener("pageshow", updateLinks);
+  updateLinks();
+}());
+</script>
 </body>
 </html>
