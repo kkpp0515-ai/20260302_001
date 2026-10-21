@@ -5,6 +5,7 @@
   <title>画像 → PSD変換 | CTW Marketing Ai Tool</title>
   <link rel="stylesheet" href="../theme.css"><script src="../theme-toggle.js"></script>
   <style>
+    select,.size-fields input{font:inherit;width:100%;padding:10px;margin:6px 0 16px;background:var(--bg,#fff);color:inherit;border:2px solid var(--border,#333)}.size-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}select:disabled,input:disabled{opacity:.5}
     *{box-sizing:border-box}body{margin:0;padding:40px 24px;min-height:100vh;font-family:system-ui,sans-serif}main{max-width:900px;margin:0 auto}h1{font-size:clamp(26px,4vw,42px);margin:26px 0 12px}p{line-height:1.8}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em}.muted{opacity:.75}.panel{padding:28px;margin-top:28px}.drop{display:block;border:3px dashed var(--border,#333);padding:46px 20px;text-align:center;cursor:pointer;transition:background .15s}.drop:hover,.drop.over{background:var(--hover-bg,#ddd)}.drop strong{display:block;font-size:21px;margin-bottom:10px}.drop:focus-within{outline:3px solid #567dff;outline-offset:5px}input[type=file]{max-width:100%;margin-top:20px}#result{margin-top:24px}#preview{display:block;max-width:100%;max-height:430px;object-fit:contain;margin:0 auto;background-color:#fff;background-image:linear-gradient(45deg,#ddd 25%,transparent 25%),linear-gradient(-45deg,#ddd 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ddd 75%),linear-gradient(-45deg,transparent 75%,#ddd 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}#filename{overflow-wrap:anywhere;font-weight:700;margin-bottom:0}button{font:inherit;font-weight:800;padding:16px 26px;cursor:pointer;width:100%;margin-top:18px;border:3px solid var(--border,#222);background:#b9f36a;color:#17210a;box-shadow:4px 4px 0 var(--shadow,#222)}button:disabled{opacity:.45;cursor:wait}#status{min-height:1.8em;overflow-wrap:anywhere}#status.error{color:#cf354a}.details{display:flex;gap:12px;flex-wrap:wrap}.details span{border:1px solid currentColor;padding:5px 10px;font-size:13px}a{color:inherit}@media(max-width:600px){body{padding:20px 16px}.panel{padding:18px}.drop{padding:28px 12px}}
   </style>
 </head>
@@ -12,19 +13,44 @@
 <main>
   <a href="../">← ツール一覧</a>
   <p class="eyebrow">IMAGE TO PSD</p><h1>画像を、そのままPSDに。</h1>
-  <p class="muted">複数の画像をまとめて、画像ごとに1レイヤーのPSDとして保存します。元の縦横サイズと透明部分を維持します。</p>
+  <p class="muted">複数の画像をまとめて、画像ごとに1レイヤーのPSDとして保存します。出力する縦横サイズ（px）を指定できます。透明部分も維持します。</p>
   <section class="panel neo-box">
+    <fieldset id="size-options" style="margin:0 0 24px;padding:20px;border:2px solid var(--border,#333)">
+      <legend style="font-weight:800">出力画像サイズ（全画像に共通）</legend>
+      <label for="size-preset">サイズを選択</label>
+      <select id="size-preset">
+        <option value="original">元の画像サイズを維持</option>
+        <option value="1080x1080">1080 × 1080 px（正方形）</option>
+        <option value="1200x1200">1200 × 1200 px（正方形）</option>
+        <option value="1080x1920">1080 × 1920 px（縦長）</option>
+        <option value="1920x1080">1920 × 1080 px（横長）</option>
+        <option value="1200x628">1200 × 628 px（横長）</option>
+        <option value="custom">幅・高さを自由入力</option>
+      </select>
+      <div class="size-fields">
+        <label>幅（px）<input id="output-width" type="number" min="1" max="30000" step="1" value="1080" disabled></label>
+        <label>高さ（px）<input id="output-height" type="number" min="1" max="30000" step="1" value="1080" disabled></label>
+      </div>
+      <label for="fit">縦横比が異なる場合</label>
+      <select id="fit" disabled>
+        <option value="contain">全体を収める（縦横比を維持・透明余白）</option>
+        <option value="cover">画面いっぱいに配置（中央で切り抜き）</option>
+        <option value="stretch">指定サイズに引き伸ばす（縦横比を変更）</option>
+      </select>
+      <p class="muted" style="font-size:13px;margin-bottom:0">指定サイズはすべてのPSDに適用。拡大しても元画像以上の細部は増えません。</p>
+    </fieldset>
     <label class="drop" id="drop"><strong>ここに画像をまとめてドロップ</strong><span>またはファイルを選択</span><br><input id="file" type="file" multiple accept="image/png,image/jpeg,image/webp" aria-label="PSDに変換する画像"></label>
     <p class="muted">PNG / JPEG / WebP · 1枚ならPSD・複数枚ならZIP保存<br>一度に100枚まで・出力合計512MBまで · 1枚あたり最大2,500万画素（各辺30,000px以内）</p>
     <div id="result" hidden>
       <img id="preview" alt="選択した画像のプレビュー">
       <p id="filename"></p><p id="dimensions" class="muted"></p>
-      <ul id="file-list" aria-label="選択画像一覧" style="max-height:280px;overflow:auto;padding-left:24px;overflow-wrap:anywhere;line-height:1.8"></ul><progress id="progress" hidden style="width:100%" aria-label="変換の進捗"></progress><div class="details"><span>1画像 = 1PSD（1レイヤー）</span><span>RGB / 8bit</span><span>元のサイズ</span></div>
+      <ul id="file-list" aria-label="選択画像一覧" style="max-height:280px;overflow:auto;padding-left:24px;overflow-wrap:anywhere;line-height:1.8"></ul><progress id="progress" hidden style="width:100%" aria-label="変換の進捗"></progress><div class="details"><span>1画像 = 1PSD（1レイヤー）</span><span>RGB / 8bit</span><span>出力サイズを指定可能</span></div>
       <button id="download" disabled>PSDをダウンロード</button>
     </div>
     <p id="status" role="status" aria-live="polite"></p>
   </section>
   <p class="muted">画像は外部へ送信されません。文字・キャラクター・背景は、1枚の画像レイヤーにまとまります。ブラウザで読み込んだ色で出力され、元画像のカラープロファイルやEXIFは引き継ぎません。</p>
 </main>
-<script src="psd.js?v=20261021-2"></script><script src="zip.js?v=20261021-batch1"></script><script src="app.js?v=20261021-batch1"></script><script src="../sidebar.js?v=20261021-2"></script>
+<script src="psd.js?v=20261021-2"></script><script src="zip.js?v=20261021-batch1"></script><script src="sizing.js?v=20261021-size1"></script><script src="app.js?v=20261021-size1"></script><script src="../sidebar.js?v=20261021-2"></script>
 </body></html>
+
