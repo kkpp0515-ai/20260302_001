@@ -12,19 +12,19 @@
 <main>
   <a href="../">← ツール一覧</a>
   <p class="eyebrow">IMAGE TO PSD</p><h1>画像を、そのままPSDに。</h1>
-  <p class="muted">1枚の画像を、1レイヤーのPSDとして保存します。元の縦横サイズと透明部分を維持します。</p>
+  <p class="muted">複数の画像をまとめて、画像ごとに1レイヤーのPSDとして保存します。元の縦横サイズと透明部分を維持します。</p>
   <section class="panel neo-box">
-    <label class="drop" id="drop"><strong>ここに画像をドロップ</strong><span>またはファイルを選択</span><br><input id="file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="PSDに変換する画像"></label>
-    <p class="muted">PNG / JPEG / WebP · 1枚ずつ変換 · 最大2,500万画素（各辺30,000px以内）</p>
+    <label class="drop" id="drop"><strong>ここに画像をまとめてドロップ</strong><span>またはファイルを選択</span><br><input id="file" type="file" multiple accept="image/png,image/jpeg,image/webp" aria-label="PSDに変換する画像"></label>
+    <p class="muted">PNG / JPEG / WebP · 1枚ならPSD・複数枚ならZIP保存<br>一度に100枚まで・出力合計512MBまで · 1枚あたり最大2,500万画素（各辺30,000px以内）</p>
     <div id="result" hidden>
       <img id="preview" alt="選択した画像のプレビュー">
       <p id="filename"></p><p id="dimensions" class="muted"></p>
-      <div class="details"><span>1レイヤー</span><span>RGB / 8bit</span><span>元のサイズ</span></div>
+      <ul id="file-list" aria-label="選択画像一覧" style="max-height:280px;overflow:auto;padding-left:24px;overflow-wrap:anywhere;line-height:1.8"></ul><progress id="progress" hidden style="width:100%" aria-label="変換の進捗"></progress><div class="details"><span>1画像 = 1PSD（1レイヤー）</span><span>RGB / 8bit</span><span>元のサイズ</span></div>
       <button id="download" disabled>PSDをダウンロード</button>
     </div>
     <p id="status" role="status" aria-live="polite"></p>
   </section>
   <p class="muted">画像は外部へ送信されません。文字・キャラクター・背景は、1枚の画像レイヤーにまとまります。ブラウザで読み込んだ色で出力され、元画像のカラープロファイルやEXIFは引き継ぎません。</p>
 </main>
-<script src="psd.js?v=20261021-2"></script><script src="app.js?v=20261021-2"></script><script src="../sidebar.js?v=20261021-2"></script>
+<script src="psd.js?v=20261021-2"></script><script src="zip.js?v=20261021-batch1"></script><script src="app.js?v=20261021-batch1"></script><script src="../sidebar.js?v=20261021-2"></script>
 </body></html>
