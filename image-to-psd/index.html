@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>�摜 �� PSD�ϊ� | CTW Marketing Ai Tool</title>
+  <link rel="stylesheet" href="../theme.css"><script src="../theme-toggle.js"></script>
+  <style>
+    *{box-sizing:border-box}body{margin:0;padding:40px 24px;min-height:100vh;font-family:system-ui,sans-serif}main{max-width:900px;margin:0 auto}h1{font-size:clamp(26px,4vw,42px);margin:26px 0 12px}p{line-height:1.8}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em}.muted{opacity:.75}.panel{padding:28px;margin-top:28px}.drop{display:block;border:3px dashed var(--border,#333);padding:46px 20px;text-align:center;cursor:pointer;transition:background .15s}.drop:hover,.drop.over{background:var(--hover-bg,#ddd)}.drop strong{display:block;font-size:21px;margin-bottom:10px}.drop:focus-within{outline:3px solid #567dff;outline-offset:5px}input[type=file]{max-width:100%;margin-top:20px}#result{margin-top:24px}#preview{display:block;max-width:100%;max-height:430px;object-fit:contain;margin:0 auto;background-color:#fff;background-image:linear-gradient(45deg,#ddd 25%,transparent 25%),linear-gradient(-45deg,#ddd 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ddd 75%),linear-gradient(-45deg,transparent 75%,#ddd 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}#filename{overflow-wrap:anywhere;font-weight:700;margin-bottom:0}button{font:inherit;font-weight:800;padding:16px 26px;cursor:pointer;width:100%;margin-top:18px;border:3px solid var(--border,#222);background:#b9f36a;color:#17210a;box-shadow:4px 4px 0 var(--shadow,#222)}button:disabled{opacity:.45;cursor:wait}#status{min-height:1.8em;overflow-wrap:anywhere}#status.error{color:#cf354a}.details{display:flex;gap:12px;flex-wrap:wrap}.details span{border:1px solid currentColor;padding:5px 10px;font-size:13px}a{color:inherit}@media(max-width:600px){body{padding:20px 16px}.panel{padding:18px}.drop{padding:28px 12px}}
+  </style>
+</head>
+<body>
+<main>
+  <a href="../">�� �c�[���ꗗ</a>
+  <p class="eyebrow">IMAGE TO PSD</p><h1>�摜���A���̂܂�PSD�ɁB</h1>
+  <p class="muted">1���̉摜���A1���C���[��PSD�Ƃ��ĕۑ����܂��B���̏c���T�C�Y�Ɠ����������ێ����܂��B</p>
+  <section class="panel neo-box">
+    <label class="drop" id="drop"><strong>�����ɉ摜���h���b�v</strong><span>�܂��̓t�@�C����I��</span><br><input id="file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="PSD�ɕϊ�����摜"></label>
+    <p class="muted">PNG / JPEG / WebP �E 1�����ϊ� �E �ő�2,500����f�i�e��30,000px�ȓ��j</p>
+    <div id="result" hidden>
+      <img id="preview" alt="�I�������摜�̃v���r���[">
+      <p id="filename"></p><p id="dimensions" class="muted"></p>
+      <div class="details"><span>1���C���[</span><span>RGB / 8bit</span><span>���̃T�C�Y</span></div>
+      <button id="download" disabled>PSD���_�E�����[�h</button>
+    </div>
+    <p id="status" role="status" aria-live="polite"></p>
+  </section>
+  <p class="muted">�摜�͊O���֑��M����܂���B�����E�L�����N�^�[�E�w�i�́A1���̉摜���C���[�ɂ܂Ƃ܂�܂��B�u���E�U�œǂݍ��񂾐F�ŏo�͂���A���摜�̃J���[�v���t�@�C����EXIF�͈����p���܂���B</p>
+</main>
+<script src="psd.js"></script><script src="app.js"></script><script src="../sidebar.js"></script>
+</body></html>

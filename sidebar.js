@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </a>
         </div>
         <ul class="portal-sidebar-list">
+            <li><a href="${basePath}image-to-psd/index.html"><span class="portal-sidebar-icon">🗂️</span><span>画像 → PSD変換</span></a></li>
             <li>
                 <a href="${basePath}influencer-video-tool/index.html">
                     <span class="portal-sidebar-icon">🎙️</span>
