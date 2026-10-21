@@ -90,6 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <ul class="portal-sidebar-list">
             <li>
+                <a href="${basePath}influencer-video-tool/index.html">
+                    <span class="portal-sidebar-icon">🎙️</span>
+                    <span>インフルエンサー動画合成</span>
+                </a>
+            </li>
+            <li>
                 <a href="${basePath}square-resize-tool/index.html">
                     <span class="portal-sidebar-icon">↗️</span>
                     <span>1080 → 1200 一括変換</span>
