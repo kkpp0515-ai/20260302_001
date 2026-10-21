@@ -3,8 +3,8 @@
   // PSD v1, RGB/8, one unlocked layer and an RGBA merged image.
   function encodePSD(width, height, rgba) {
     const pixels = width * height;
-    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 30000 || height > 30000 || pixels > 25000000) throw new Error('�摜�͊e��30,000px�ȓ��E���v2,500����f�ȓ��ɂ��Ă��������B');
-    if (!rgba || rgba.length !== pixels * 4) throw new Error('�摜�f�[�^��ǂݎ��܂���ł����B');
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 30000 || height > 30000 || pixels > 25000000) throw new Error('画像は各辺30,000px以内・合計2,500万画素以内にしてください。');
+    if (!rgba || rgba.length !== pixels * 4) throw new Error('画像データを読み取れませんでした。');
     const layerInfoLength = 2 + 70 + 4 * (2 + pixels);
     const paddedLength = layerInfoLength + (layerInfoLength % 2);
     const buffer = new ArrayBuffer(26 + 4 + 4 + 4 + 4 + paddedLength + 4 + 2 + pixels * 4);
@@ -28,7 +28,7 @@
     if (layerInfoLength % 2) p++;
     u32(0); u16(0);
     for (let c = 0; c < 4; c++) for (let i = 0; i < pixels; i++) bytes[p++] = rgba[i * 4 + c];
-    if (p !== buffer.byteLength) throw new Error('PSD�̐����Ɏ��s���܂����B');
+    if (p !== buffer.byteLength) throw new Error('PSDの生成に失敗しました。');
     return buffer;
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = { encodePSD };
