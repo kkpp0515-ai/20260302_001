@@ -7,76 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inject CSS
     const style = document.createElement('style');
     style.textContent = `
-        .portal-sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 250px;
-            background: var(--bg);
-            border-right: 4px solid var(--border);
-            color: var(--text);
-            padding: 24px 0;
-            z-index: 99999;
-            overflow-y: auto;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            box-shadow: 6px 0 0 var(--shadow);
-            transition: transform 0.3s ease, background-color 0.3s, color 0.3s;
-        }
-        .portal-sidebar-header {
-            padding: 0 24px 20px;
-            border-bottom: 4px solid var(--border);
-            margin-bottom: 20px;
-        }
-        .portal-sidebar-header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--text);
-            text-transform: uppercase;
-        }
-        .portal-sidebar-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .portal-sidebar-list li {
-            margin: 0;
-        }
-        .portal-sidebar-list a {
-            display: flex;
-            align-items: center;
-            padding: 12px 24px;
-            color: var(--text);
-            text-decoration: none;
-            transition: all 0.2s;
-            gap: 12px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            border-bottom: 2px solid transparent;
-        }
-        .portal-sidebar-list a:hover {
-            background: var(--hover-bg);
-            border-bottom: 2px solid var(--border);
-        }
-        .portal-sidebar-icon {
-            font-size: 1.25rem;
-            width: 24px;
-            text-align: center;
-        }
-        /* Adjust body to prevent overlap */
-        body {
-            padding-left: 270px !important;
-        }
-        @media (max-width: 768px) {
-            .portal-sidebar {
-                transform: translateX(-100%);
-            }
-            body {
-                padding-left: 0 !important;
-            }
-        }
-    `;
+.portal-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--bg);border-right:1px solid var(--border);color:var(--text);padding:30px 0 22px;z-index:99999;overflow-y:auto;font-family:"Yu Gothic",Meiryo,sans-serif;transition:transform .2s}
+.portal-sidebar-header{padding:0 24px 24px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.portal-sidebar-header h2{font:19px/1.55 Georgia,serif;color:var(--gold);letter-spacing:.09em;margin:0}
+.portal-sidebar-header h2::before{content:'✧';display:block;font:28px Georgia;margin-bottom:10px}
+.portal-sidebar-header h2::after{content:'CREATIVE WORKSPACE';display:block;font:9px/2 sans-serif;letter-spacing:.18em;color:var(--muted);margin-top:7px}
+.portal-sidebar-list{list-style:none;padding:0 12px;margin:0}.portal-sidebar-list li{margin:3px 0}
+.portal-sidebar-list a{display:flex;align-items:center;padding:11px 12px;color:var(--muted);text-decoration:none;gap:11px;font-size:12px;font-weight:500;line-height:1.6;border:1px solid transparent;border-radius:3px;transition:background .2s,color .2s}
+.portal-sidebar-list a:hover,.portal-sidebar-list a[aria-current="page"]{background:var(--hover-bg);color:var(--gold);border-color:var(--border)}
+.portal-sidebar-icon{font-size:15px;width:23px;text-align:center;flex-shrink:0;opacity:.85}
+body{padding-left:270px!important}
+.portal-menu-toggle{display:none}
+@media(max-width:768px){.portal-sidebar{transform:translateX(-100%);width:270px;padding-top:66px;box-shadow:15px 0 60px #0005}.portal-sidebar.is-open{transform:translateX(0)}body{padding-left:0!important}.portal-menu-toggle{position:fixed;top:13px;left:14px;width:36px;height:36px;border:1px solid var(--border);border-radius:3px;background:var(--card-bg);color:var(--gold);z-index:100000;display:grid;place-items:center;font-size:19px;cursor:pointer}}
+`;
     document.head.appendChild(style);
 
     // Inject Sidebar DOM
@@ -183,5 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </li>
         </ul>
     `;
-    document.body.prepend(sidebar);
+    sidebar.id='portal-navigation';sidebar.setAttribute('role','navigation');sidebar.setAttribute('aria-label','ツール一覧');
+    const normalize=path=>{let p=path.endsWith('index.html')?path.slice(0,-10):path;return p.endsWith('/')?p.slice(0,-1):p;};
+    sidebar.querySelectorAll('a').forEach(a=>{if(normalize(new URL(a.href).pathname)===normalize(location.pathname))a.setAttribute('aria-current','page');});
+    const menu=document.createElement('button');menu.type='button';menu.className='portal-menu-toggle';menu.textContent='☰';menu.setAttribute('aria-label','ツールメニューを開く');menu.setAttribute('aria-controls',sidebar.id);menu.setAttribute('aria-expanded','false');
+    const close=()=>{sidebar.classList.remove('is-open');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','ツールメニューを開く');};
+    menu.onclick=()=>{const open=sidebar.classList.toggle('is-open');menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'ツールメニューを閉じる':'ツールメニューを開く');};
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+    document.addEventListener('click',e=>{if(!sidebar.contains(e.target)&&!menu.contains(e.target))close();});
+    document.body.prepend(sidebar,menu);
 });
