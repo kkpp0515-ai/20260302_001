@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Get the base path based on the script src
-    const currentScript = document.currentScript || document.querySelector('script[src$="sidebar.js"]');
+    const currentScript = document.currentScript || document.querySelector('script[src*="sidebar.js"]');
     const scriptSrc = currentScript ? currentScript.getAttribute('src') : '';
     const basePath = scriptSrc.startsWith('../') ? '../' : './';
 
