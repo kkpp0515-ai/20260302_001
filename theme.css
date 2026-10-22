@@ -1,6 +1,6 @@
 /* Forest & gold shared theme */
 :root,[data-theme="dark"]{
- color-scheme:dark;--bg:#0b191b;--text:#efece0;--muted:#a3b5af;--gold:#d8bd83;--border:#c5b17c30;--shadow:#00000026;--hover-bg:#203b36;--btn-bg:#142b2b;--btn-text:#efece0;--btn-hover-bg:#d8bd83;--btn-hover-text:#172b28;--accent:#d8bd83;--card-bg:#122526;--inactive:#29413d;--panel:#122526;--line:var(--border);
+ color-scheme:dark;--bg:#102b29;--text:#efece0;--muted:#a3b5af;--gold:#d8bd83;--border:#c5b17c30;--shadow:#00000026;--hover-bg:#26473e;--btn-bg:#142b2b;--btn-text:#efece0;--btn-hover-bg:#d8bd83;--btn-hover-text:#172b28;--accent:#d8bd83;--card-bg:#183632;--inactive:#29413d;--panel:#183632;--line:var(--border);
 }
 [data-theme="light"]{
  color-scheme:light;--bg:#f3f0e6;--text:#203731;--muted:#5e7267;--gold:#80632c;--border:#80632c40;--shadow:#223b2910;--hover-bg:#e5e9db;--btn-bg:#faf8f0;--btn-text:#203731;--btn-hover-bg:#294b40;--btn-hover-text:#faf8f0;--accent:#80632c;--card-bg:#faf8f0;--inactive:#dce2d4;--panel:#faf8f0;
