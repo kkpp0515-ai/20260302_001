@@ -32,6 +32,7 @@ body{padding-left:270px!important}
             </a>
         </div>
         <ul class="portal-sidebar-list">
+<li><a href="${basePath}video-resize-ffmpeg/index.html"><span class="portal-sidebar-icon">✂️</span><span>動画リサイズ FFmpeg版</span></a></li>
             <li><a href="${basePath}influencer-video-ffmpeg/index.html"><span class="portal-sidebar-icon">🎬</span><span>動画合成 FFmpeg版</span></a></li>
             <li><a href="${basePath}image-to-psd/index.html"><span class="portal-sidebar-icon">🗂️</span><span>画像 → PSD変換</span></a></li>
             <li>
