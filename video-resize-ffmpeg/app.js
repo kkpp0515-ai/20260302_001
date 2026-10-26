@@ -143,7 +143,7 @@ async function ensureEngine(){
  status('変換エンジンを準備中…（初回 約32MB）');
  const engine=new FFmpegWASM.FFmpeg();state.engine=engine;const urls=[];
  engine.on('log',({message})=>{state.logs.push(message);if(state.logs.length>100)state.logs.shift();const m=message.match(/time=(\d+):(\d+):(\d+(?:\.\d+)?)/);if(m){const f=bounded((+m[1]*3600+ +m[2]*60+ +m[3])/state.jobDuration,0,.99);$('progress').value=(state.jobIndex+f)/state.jobTotal;}});
- try{const get=async(name,type)=>{const r=await fetch('https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/'+name,{signal:state.controller.signal});if(!r.ok)throw Error('変換エンジンの取得に失敗しました。');const u=URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));urls.push(u);return u;};
+ try{const get=async(name,type)=>{const r=await fetch('vendor/'+name,{signal:state.controller.signal});if(!r.ok)throw Error('変換エンジンの取得に失敗しました。');const u=URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));urls.push(u);return u;};
  const coreURL=await get('ffmpeg-core.js','text/javascript'),wasmURL=await get('ffmpeg-core.wasm','application/wasm');checkAborted();await engine.load({coreURL,wasmURL});return engine;
  }catch(e){engine.terminate();if(state.engine===engine)state.engine=null;throw e;}finally{urls.forEach(u=>URL.revokeObjectURL(u));}
 }
