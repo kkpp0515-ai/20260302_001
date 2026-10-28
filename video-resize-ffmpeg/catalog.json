@@ -154,6 +154,46 @@
           "endcard": "assets/shiguang/shiguang_en_cta_obi_1080-1920.mp4"
         }
       }
+    },
+    {
+      "id": "camper",
+      "label": "camper / ちいさな森のごちそう屋さん",
+      "languages": [
+        {
+          "id": "ja",
+          "label": "日本語"
+        },
+        {
+          "id": "zh-TW",
+          "label": "繁体字"
+        },
+        {
+          "id": "ko",
+          "label": "韓国語"
+        },
+        {
+          "id": "en",
+          "label": "英語"
+        }
+      ],
+      "assets": {
+        "ja": {
+          "bands": {},
+          "endcard": "assets/camper/camper_cta_ja.mp4"
+        },
+        "zh-TW": {
+          "bands": {},
+          "endcard": "assets/camper/camper_cta_zh.mp4"
+        },
+        "ko": {
+          "bands": {},
+          "endcard": "assets/camper/camper_cta_ko.mp4"
+        },
+        "en": {
+          "bands": {},
+          "endcard": "assets/camper/camper_cta_en.mp4"
+        }
+      }
     }
   ]
 }
