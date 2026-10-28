@@ -51,6 +51,58 @@
           "endcard": "assets/scimagic/scimagic_en_rc006_1080-1920.mp4"
         }
       }
+    },
+    {
+      "id": "shiguang",
+      "label": "shiguang / 20年前に戻った俺、財閥になる。",
+      "languages": [
+        {
+          "id": "ja",
+          "label": "日本語"
+        },
+        {
+          "id": "zh-TW",
+          "label": "繁体字"
+        },
+        {
+          "id": "ko",
+          "label": "韓国語"
+        },
+        {
+          "id": "en",
+          "label": "英語"
+        }
+      ],
+      "assets": {
+        "ja": {
+          "bands": {
+            "1080x1080": "assets/shiguang/obi_ja_1080-1080.png",
+            "1920x1080": "assets/shiguang/obi_ja_1920-1080.png"
+          },
+          "endcard": "assets/shiguang/shiguang_cta_obi_1080-1920.mp4.mp4"
+        },
+        "zh-TW": {
+          "bands": {
+            "1080x1080": "assets/shiguang/obi_zh-TW_1080-1080.png",
+            "1920x1080": "assets/shiguang/obi_zh-TW_1920-1080.png"
+          },
+          "endcard": "assets/shiguang/shiguang_zh-TW_cta_obi_1080-1920.mp4"
+        },
+        "ko": {
+          "bands": {
+            "1080x1080": "assets/shiguang/obi_ko_1080-1080.png",
+            "1920x1080": "assets/shiguang/obi_ko_1920-1080.png"
+          },
+          "endcard": "assets/shiguang/shiguang_ko_cta_obi_1080-1920.mp4"
+        },
+        "en": {
+          "bands": {
+            "1080x1080": "assets/shiguang/obi_en_1080-1080.png",
+            "1920x1080": "assets/shiguang/obi_en_1920-1080.png"
+          },
+          "endcard": "assets/shiguang/shiguang_en_cta_obi_1080-1920.mp4"
+        }
+      }
     }
   ]
 }
