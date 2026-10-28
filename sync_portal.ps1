@@ -2,8 +2,11 @@ $portalFile = "index.html"
 $startTag = "<!-- TOOL_CARDS_START -->"
 $endTag = "<!-- TOOL_CARDS_END -->"
 
+# Legacy browser-recording tools are no longer published.
+$retiredTools = @("influencer-video-tool", "video_resize_tool", "video-overlay-tool", "video_editor_tool", "chromakey_compositor")
+
 # Scan directories for metadata.json
-$toolDirs = Get-ChildItem -Directory | Where-Object { Test-Path (Join-Path $_.FullName "metadata.json") }
+$toolDirs = Get-ChildItem -Directory | Where-Object { $_.Name -notin $retiredTools -and (Test-Path (Join-Path $_.FullName "metadata.json")) }
 
 $toolCards = ""
 

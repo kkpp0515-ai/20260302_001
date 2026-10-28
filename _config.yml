@@ -1,0 +1,8 @@
+# Retired MediaRecorder tools remain in Git history/source, but are not served by GitHub Pages.
+exclude:
+  - "influencer-video-tool"
+  - "video_resize_tool"
+  - "video-overlay-tool"
+  - "video_editor_tool"
+  - "chromakey_compositor"
+  - "video_editor_tool.zip"

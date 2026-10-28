@@ -35,12 +35,7 @@ body{padding-left:270px!important}
 <li><a href="${basePath}video-resize-ffmpeg/index.html"><span class="portal-sidebar-icon">✂️</span><span>動画リサイズ FFmpeg版</span></a></li>
             <li><a href="${basePath}influencer-video-ffmpeg/index.html"><span class="portal-sidebar-icon">🎬</span><span>動画合成 FFmpeg版</span></a></li>
             <li><a href="${basePath}image-to-psd/index.html"><span class="portal-sidebar-icon">🗂️</span><span>画像 → PSD変換</span></a></li>
-            <li>
-                <a href="${basePath}influencer-video-tool/index.html">
-                    <span class="portal-sidebar-icon">🎙️</span>
-                    <span>インフルエンサー動画合成</span>
-                </a>
-            </li>
+            
             <li>
                 <a href="${basePath}square-resize-tool/index.html">
                     <span class="portal-sidebar-icon">↗️</span>
@@ -53,18 +48,8 @@ body{padding-left:270px!important}
                     <span>Home / Portal</span>
                 </a>
             </li>
-            <li>
-                <a href="${basePath}video_resize_tool/index.html">
-                    <span class="portal-sidebar-icon">✂️</span>
-                    <span>動画リサイズ＆帯合成</span>
-                </a>
-            </li>
-            <li>
-                <a href="${basePath}video-overlay-tool/index.html">
-                    <span class="portal-sidebar-icon">🎞️</span>
-                    <span>動画オーバーレイ合成</span>
-                </a>
-            </li>
+            
+            
             <li>
                 <a href="${basePath}tif2jpg/index.html">
                     <span class="portal-sidebar-icon">📸</span>
@@ -89,12 +74,7 @@ body{padding-left:270px!important}
                     <span>週間企画数割り振り</span>
                 </a>
             </li>
-            <li>
-                <a href="${basePath}chromakey_compositor/ChromaKey Compositor.html">
-                    <span class="portal-sidebar-icon">🎨</span>
-                    <span>ChromaKey Compositor</span>
-                </a>
-            </li>
+            
             <li>
                 <a href="${basePath}pixivads/index.html">
                     <span class="portal-sidebar-icon">📝</span>
