@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const sizes={'1080x1080':{w:1080,h:1080,label:'正方形',ratio:'1:1'},'1920x1080':{w:1920,h:1080,label:'横長',ratio:'16:9'},'1080x1920':{w:1080,h:1920,label:'縦長',ratio:'9:16'}};
+function randomId(){return globalThis.crypto.randomUUID().replace(/-/g,'');}
 function jobs(languages,formats){return languages.flatMap(lang=>formats.map(size=>({lang,size})));}
 function safeName(value){return value.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/\.+$/,'').trim()||'video';}
 function filename(title,lang,base,size){return safeName(title+'_'+lang+'_'+base+'_'+size.replace('x','-'))+'.mp4';}
@@ -23,6 +24,6 @@ function buildCommand({size,main,placement,end,box,band,mainAudio,endAudio}){
  if(end){f.push(audio(1,endAudio,ed,'ea'));f.push('[ma][ea]concat=n=2:v=0:a=1[outa]');}else f.push('[ma]anull[outa]');
  args.push('-filter_complex_threads','1','-filter_complex',f.join(';'),'-map','[outv]','-map','[outa]','-t',String(d+ed),'-c:v','libx264','-preset','veryfast','-b:v','3200k','-maxrate','4800k','-bufsize','6400k','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart','output.mp4');return args;
 }
-const api={sizes,jobs,filename,fit,rect,placementFilter,buildCommand};
+const api={sizes,jobs,randomId,filename,fit,rect,placementFilter,buildCommand};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.ResizeModel=api;
 })(globalThis);

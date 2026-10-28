@@ -60,7 +60,7 @@ function draw(){
 async function loadEndPreview(lang){
  const key=state.title.id+':'+lang;if(state.endKey===key&&endVideo.readyState>=2)return;
  const info=await readMedia(endVideo,asset(lang).endcard);state.endKey=key;
- $('endNote').textContent='各言語の動画を末尾に追加（表示中：'+info.duration.toFixed(1)+'秒）';
+ $('endNote').textContent='各言語のフタ動画を末尾に追加（表示中：'+info.duration.toFixed(1)+'秒）';
 }
 async function refreshPreview(){
  const serial=++state.previewSerial;pause();state.band=null;$('assetStatus').textContent='素材を読み込み中…';draw();
@@ -70,7 +70,7 @@ async function refreshPreview(){
   state.band=band;
   if(state.phase==='end')await loadEndPreview(state.lang);
   if(serial!==state.previewSerial)return;
-  $('assetStatus').textContent=(band?'帯 obi02':'帯なし')+' / エンドカード rc006';syncAdjustments();draw();syncControls();
+  $('assetStatus').textContent=(band?'帯あり':'帯なし')+' / '+($('includeEnd').checked?'フタ動画あり':'フタ動画なし');syncAdjustments();draw();syncControls();
  }catch(e){if(serial===state.previewSerial){$('assetStatus').textContent='素材の読み込みに失敗';status(e.message,true);}}
 }
 function syncAdjustments(){const l=layout(state.size);$('zoom').value=l.zoom;$('zoomValue').value=Math.round(l.zoom*100)+'%';$('offsetX').value=Math.round(l.dx);$('offsetY').value=Math.round(l.dy);}
@@ -93,7 +93,7 @@ function renderTitle(){
   const text=document.createElement('span'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=lang.label;small.textContent=lang.id.toUpperCase();text.append(strong,small);label.append(check,text);$('languages').append(label);
   const opt=document.createElement('option');opt.value=lang.id;opt.textContent=lang.label;$('previewLanguage').append(opt);
  }
- state.lang=title.languages[0].id;$('catalogInfo').textContent='4言語の帯8枚・エンドカード4本をセット済み';state.endKey=null;state.layouts={};syncControls();refreshPreview();
+ state.lang=title.languages[0].id;const bandCount=title.languages.reduce((n,l)=>n+Object.keys(title.assets[l.id].bands).length,0),endCount=title.languages.filter(l=>title.assets[l.id].endcard).length;$('catalogInfo').textContent=title.languages.length+'言語 / 帯'+bandCount+'枚 / フタ動画'+endCount+'本';$('assetSummary').textContent=title.label+'：帯'+bandCount+'枚・フタ動画'+endCount+'本';$('assetLanguageCount').textContent=title.languages.length;state.endKey=null;state.layouts={};syncControls();refreshPreview();
 }
 function renderFormats(){
  for(const [id,s] of Object.entries(M.sizes)){
@@ -111,7 +111,7 @@ async function loadSource(file){
  $('videoInfo').textContent='動画を読み込み中…';
  try{const info=await readMedia(source,state.sourceURL);if(token!==state.sourceSerial)return;state.main=info;state.file=file;state.layouts={};state.phase='main';setPhaseButtons();
  $('uploadLabel').textContent=file.name;$('videoInfo').textContent=info.w+' × '+info.h+' · '+info.duration.toFixed(2)+'秒 · '+(file.size/1024/1024).toFixed(1)+' MB';
- $('baseName').value=file.name.replace(/\.[^.]+$/,'').replace(/^scimagic_(ja|en|ko|zh-TW)_/,'').replace(/_(1080-1080|1920-1080|1080-1920)$/,'');
+ $('baseName').value='';
  status('準備完了。構図を確認して生成してください。');syncAdjustments();syncControls();await refreshPreview();
  }catch(e){if(token===state.sourceSerial){$('videoInfo').textContent='読み込み失敗';status(e.message,true);syncControls();}}
 }
@@ -130,7 +130,7 @@ $('title').onchange=()=>{state.title=state.catalog.titles.find(t=>t.id===$('titl
 $('languages').onchange=syncControls;$('formats').onchange=syncControls;
 $('selectAll').onclick=()=>{document.querySelectorAll('#languages input').forEach(e=>e.checked=true);syncControls();};
 $('includeBand').onchange=()=>{state.layouts={};refreshPreview();};
-$('includeEnd').onchange=()=>{if(!$('includeEnd').checked&&state.phase==='end')setPhase('main');syncControls();};
+$('includeEnd').onchange=()=>{if(!$('includeEnd').checked&&state.phase==='end')setPhase('main');else refreshPreview();syncControls();};
 for(const button of document.querySelectorAll('[data-fit]'))button.onclick=()=>{state.layouts[state.size]={mode:button.dataset.fit,zoom:1,dx:0,dy:0};syncAdjustments();draw();};
 $('zoom').oninput=e=>{layout(state.size).zoom=+e.target.value;syncAdjustments();draw();};
 for(const [id,key] of [['offsetX','dx'],['offsetY','dy']])$(id).oninput=e=>{layout(state.size)[key]=bounded(Number(e.target.value)||0,-8000,8000);draw();};
@@ -166,7 +166,8 @@ function addResult(item,bytes){
 async function generate(){
  if(state.busy||!state.main)return;
  const jobs=M.jobs(selected('languages'),selected('formats'));if(!jobs.length)return status('言語とサイズを1つ以上選択してください。',true);
- const snapshot={title:state.title.id,base:$('baseName').value||'creative',includeEnd:$('includeEnd').checked,main:{...state.main},layouts:JSON.parse(JSON.stringify(state.layouts))};
+ $('baseName').value=M.randomId();
+ const snapshot={title:state.title.id,base:$('baseName').value,includeEnd:$('includeEnd').checked,main:{...state.main},layouts:JSON.parse(JSON.stringify(state.layouts))};
  jobs.forEach(job=>job.name=M.filename(snapshot.title,job.lang,snapshot.base,job.size));
  state.busy=true;state.aborted=false;state.controller=new AbortController();pause();syncControls();$('progress').hidden=false;$('progress').value=0;
  const items=jobs.map(queueRow);state.jobTotal=items.length;let engine,current=null,failed=false;
@@ -201,6 +202,6 @@ $('clearResults').onclick=()=>{if(state.busy)return;state.results.forEach(r=>URL
 window.addEventListener('beforeunload',e=>{if(state.busy){e.preventDefault();e.returnValue='';}});
 (async()=>{
  renderFormats();
- try{const response=await fetch('catalog.json?v=20261026-2');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
+ try{const response=await fetch('catalog.json?v=20261028-shiguang');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
  catch(e){status(e.message,true);$('catalogInfo').textContent='読み込みに失敗しました。再読み込みしてください。';}
 })();
