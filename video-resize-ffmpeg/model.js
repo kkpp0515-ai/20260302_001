@@ -21,7 +21,7 @@ function buildCommand({size,main,placement,end,box,band,mainAudio,endAudio}){
  const audio=(i,present,dur,label)=>present?'['+i+':a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,asetpts=PTS-STARTPTS,apad,atrim=duration='+dur+'['+label+']':'anullsrc=r=48000:cl=stereo,atrim=duration='+dur+'['+label+']';
  f.push(audio(0,mainAudio,d,'ma'));
  if(end){f.push(audio(1,endAudio,ed,'ea'));f.push('[ma][ea]concat=n=2:v=0:a=1[outa]');}else f.push('[ma]anull[outa]');
- args.push('-filter_complex_threads','1','-filter_complex',f.join(';'),'-map','[outv]','-map','[outa]','-t',String(d+ed),'-c:v','libx264','-preset','ultrafast','-crf','21','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart','output.mp4');return args;
+ args.push('-filter_complex_threads','1','-filter_complex',f.join(';'),'-map','[outv]','-map','[outa]','-t',String(d+ed),'-c:v','libx264','-preset','veryfast','-b:v','3200k','-maxrate','4800k','-bufsize','6400k','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart','output.mp4');return args;
 }
 const api={sizes,jobs,filename,fit,rect,placementFilter,buildCommand};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.ResizeModel=api;
