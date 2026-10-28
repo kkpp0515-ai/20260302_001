@@ -5,7 +5,7 @@ const images=new Map(),blobs=new Map(),endInfos=new Map();
 const selected=id=>[...$(id).querySelectorAll('input:checked')].map(e=>e.value);
 const langs=()=>state.title?.languages||[];
 const langName=id=>langs().find(l=>l.id===id)?.label||id;
-const asset=lang=>state.title.assets[lang];
+const asset=lang=>{const a=state.title.assets[lang];return {...a,bands:a.bandVariants?.[$('bandVariant').value]||a.bands};};
 const mediaInfo=v=>({w:v.videoWidth,h:v.videoHeight,duration:v.duration});
 const bounded=(n,min,max)=>Math.min(max,Math.max(min,n));
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
@@ -87,6 +87,7 @@ function syncControls(){
 }
 function renderTitle(){
  const title=state.title;
+ $('bandVariantField').hidden=!title.bandVariants?.length;$('bandVariant').replaceChildren();for(const v of title.bandVariants||[]){const o=document.createElement('option');o.value=v.id;o.textContent=v.label;$('bandVariant').append(o);}$('bandVariant').value=title.defaultBandVariant||'';
  $('languages').replaceChildren();$('previewLanguage').replaceChildren();
  for(const lang of title.languages){
   const label=document.createElement('label');label.className='choice';const check=document.createElement('input');check.type='checkbox';check.value=lang.id;check.checked=true;
@@ -129,6 +130,7 @@ $('previewLanguage').onchange=e=>{state.lang=e.target.value;refreshPreview();};
 $('title').onchange=()=>{state.title=state.catalog.titles.find(t=>t.id===$('title').value);renderTitle();};
 $('languages').onchange=syncControls;$('formats').onchange=syncControls;
 $('selectAll').onclick=()=>{document.querySelectorAll('#languages input').forEach(e=>e.checked=true);syncControls();};
+$('bandVariant').onchange=()=>{state.layouts={};refreshPreview();};
 $('includeBand').onchange=()=>{state.layouts={};refreshPreview();};
 $('includeEnd').onchange=()=>{if(!$('includeEnd').checked&&state.phase==='end')setPhase('main');else refreshPreview();syncControls();};
 for(const button of document.querySelectorAll('[data-fit]'))button.onclick=()=>{state.layouts[state.size]={mode:button.dataset.fit,zoom:1,dx:0,dy:0};syncAdjustments();draw();};
@@ -202,6 +204,6 @@ $('clearResults').onclick=()=>{if(state.busy)return;state.results.forEach(r=>URL
 window.addEventListener('beforeunload',e=>{if(state.busy){e.preventDefault();e.returnValue='';}});
 (async()=>{
  renderFormats();
- try{const response=await fetch('catalog.json?v=20261028-shiguang');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
+ try{const response=await fetch('catalog.json?v=20261028-obi03');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
  catch(e){status(e.message,true);$('catalogInfo').textContent='読み込みに失敗しました。再読み込みしてください。';}
 })();

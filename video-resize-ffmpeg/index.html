@@ -7,6 +7,7 @@
 <form id="setup" class="setup" onsubmit="return false">
 <section class="panel step"><div class="step-heading"><span class="step-no">01</span><h2>タイトルと元動画</h2></div>
 <label for="title">タイトル</label><select id="title" disabled><option>読み込み中…</option></select><p id="catalogInfo" class="hint">登録素材を読み込んでいます。</p>
+<div id="bandVariantField" hidden><label for="bandVariant">帯の種類</label><select id="bandVariant"></select></div>
 <label class="upload" id="dropzone" for="videoInput"><span class="upload-icon">↥</span><strong id="uploadLabel">動画をドロップ、または選択</strong><span>MP4 / MOV / WebM</span><input id="videoInput" type="file" accept="video/*"></label><div id="videoInfo" class="hint">元動画を1本選んでください。</div>
 <label for="baseName">動画ID（自動生成）</label><input type="text" id="baseName" value="" readonly placeholder="生成時に重複しにくいIDを自動生成"><p class="hint">保存名：タイトルID_言語_ランダムID_サイズ.mp4</p></section>
 <section class="panel step"><div class="step-heading"><span class="step-no">02</span><h2>出力する言語</h2><button id="selectAll" type="button" class="text-button">すべて選択</button></div><fieldset id="languages" class="choice-grid" aria-label="出力言語"></fieldset><p class="hint">チェックした言語の帯・フタ動画を使います。</p></section>
@@ -27,4 +28,4 @@
 <section class="asset-strip"><div><strong>登録素材</strong><p id="assetSummary">選択したタイトルの素材を使用します。</p></div><span class="asset-count"><span id="assetLanguageCount">4</span><small>言語</small></span></section>
 </div></div></main><footer><span>CTW CREATIVE WORKSPACE</span><a href="../">ツール一覧へ戻る ↗</a></footer></div>
 <video id="sourceVideo" preload="auto" playsinline hidden></video><video id="endVideo" preload="auto" playsinline hidden></video>
-<script src="../influencer-video-ffmpeg/vendor/ffmpeg.js"></script><script src="model.js?v=20261028-shiguang"></script><script src="app.js?v=20261028-shiguang"></script><script src="../sidebar.js?v=20261028-retired"></script></body></html>
+<script src="../influencer-video-ffmpeg/vendor/ffmpeg.js"></script><script src="model.js?v=20261028-obi03"></script><script src="app.js?v=20261028-obi03"></script><script src="../sidebar.js?v=20261028-retired"></script></body></html>

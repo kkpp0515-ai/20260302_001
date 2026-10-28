@@ -24,33 +24,84 @@
       "assets": {
         "ja": {
           "bands": {
-            "1080x1080": "assets/scimagic/scimagic_ja_obi02_1080-1080.png",
-            "1920x1080": "assets/scimagic/scimagic_ja_obi02_1920-1080.png"
+            "1080x1080": "assets/scimagic/scimagic_ja_obi03_1080-1080.png",
+            "1920x1080": "assets/scimagic/scimagic_ja_obi03_1920-1080.png"
           },
-          "endcard": "assets/scimagic/scimagic_ja_rc006_1080-1920.mp4"
+          "endcard": "assets/scimagic/scimagic_ja_rc006_1080-1920.mp4",
+          "bandVariants": {
+            "obi02": {
+              "1080x1080": "assets/scimagic/scimagic_ja_obi02_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_ja_obi02_1920-1080.png"
+            },
+            "obi03": {
+              "1080x1080": "assets/scimagic/scimagic_ja_obi03_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_ja_obi03_1920-1080.png"
+            }
+          }
         },
         "zh-TW": {
           "bands": {
-            "1080x1080": "assets/scimagic/scimagic_zh-TW_obi02_1080-1080.png",
-            "1920x1080": "assets/scimagic/scimagic_zh-TW_obi02_1920-1080.png"
+            "1080x1080": "assets/scimagic/scimagic_zh-TW_obi03_1080-1080.png",
+            "1920x1080": "assets/scimagic/scimagic_zh-TW_obi03_1920-1080.png"
           },
-          "endcard": "assets/scimagic/scimagic_zh-TW_rc006_1080-1920.mp4"
+          "endcard": "assets/scimagic/scimagic_zh-TW_rc006_1080-1920.mp4",
+          "bandVariants": {
+            "obi02": {
+              "1080x1080": "assets/scimagic/scimagic_zh-TW_obi02_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_zh-TW_obi02_1920-1080.png"
+            },
+            "obi03": {
+              "1080x1080": "assets/scimagic/scimagic_zh-TW_obi03_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_zh-TW_obi03_1920-1080.png"
+            }
+          }
         },
         "ko": {
           "bands": {
-            "1080x1080": "assets/scimagic/scimagic_ko_obi02_1080-1080.png",
-            "1920x1080": "assets/scimagic/scimagic_ko_obi02_1920-1080.png"
+            "1080x1080": "assets/scimagic/scimagic_ko_obi03_1080-1080.png",
+            "1920x1080": "assets/scimagic/scimagic_ko_obi03_1920-1080.png"
           },
-          "endcard": "assets/scimagic/scimagic_ko_rc006_1080-1920.mp4"
+          "endcard": "assets/scimagic/scimagic_ko_rc006_1080-1920.mp4",
+          "bandVariants": {
+            "obi02": {
+              "1080x1080": "assets/scimagic/scimagic_ko_obi02_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_ko_obi02_1920-1080.png"
+            },
+            "obi03": {
+              "1080x1080": "assets/scimagic/scimagic_ko_obi03_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_ko_obi03_1920-1080.png"
+            }
+          }
         },
         "en": {
           "bands": {
-            "1080x1080": "assets/scimagic/scimagic_en_obi02_1080-1080.png",
-            "1920x1080": "assets/scimagic/scimagic_en_obi02_1920-1080.png"
+            "1080x1080": "assets/scimagic/scimagic_en_obi03_1080-1080.png",
+            "1920x1080": "assets/scimagic/scimagic_en_obi03_1920-1080.png"
           },
-          "endcard": "assets/scimagic/scimagic_en_rc006_1080-1920.mp4"
+          "endcard": "assets/scimagic/scimagic_en_rc006_1080-1920.mp4",
+          "bandVariants": {
+            "obi02": {
+              "1080x1080": "assets/scimagic/scimagic_en_obi02_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_en_obi02_1920-1080.png"
+            },
+            "obi03": {
+              "1080x1080": "assets/scimagic/scimagic_en_obi03_1080-1080.png",
+              "1920x1080": "assets/scimagic/scimagic_en_obi03_1920-1080.png"
+            }
+          }
         }
-      }
+      },
+      "bandVariants": [
+        {
+          "id": "obi03",
+          "label": "obi03（デフォルト）"
+        },
+        {
+          "id": "obi02",
+          "label": "obi02"
+        }
+      ],
+      "defaultBandVariant": "obi03"
     },
     {
       "id": "shiguang",
