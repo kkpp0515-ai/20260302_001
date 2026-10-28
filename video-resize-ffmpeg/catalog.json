@@ -178,19 +178,31 @@
       ],
       "assets": {
         "ja": {
-          "bands": {},
+          "bands": {
+            "1080x1080": "assets/camper/camper_ja_obi_1080-1080.png",
+            "1920x1080": "assets/camper/camper_ja_obi_1920-1080.png"
+          },
           "endcard": "assets/camper/camper_cta_ja.mp4"
         },
         "zh-TW": {
-          "bands": {},
+          "bands": {
+            "1080x1080": "assets/camper/camper_zh-TW_obi_1080-1080.png",
+            "1920x1080": "assets/camper/camper_zh-TW_obi_1920-1080.png"
+          },
           "endcard": "assets/camper/camper_cta_zh.mp4"
         },
         "ko": {
-          "bands": {},
+          "bands": {
+            "1080x1080": "assets/camper/camper_ko_obi_1080-1080.png",
+            "1920x1080": "assets/camper/camper_ko_obi_1920-1080.png"
+          },
           "endcard": "assets/camper/camper_cta_ko.mp4"
         },
         "en": {
-          "bands": {},
+          "bands": {
+            "1080x1080": "assets/camper/camper_en_obi_1080-1080.png",
+            "1920x1080": "assets/camper/camper_en_obi_1920-1080.png"
+          },
           "endcard": "assets/camper/camper_cta_en.mp4"
         }
       }
