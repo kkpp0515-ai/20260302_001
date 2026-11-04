@@ -58,19 +58,21 @@ $('creator-select').onchange=()=>{
   const value=$('creator-select').value;if(value==='')return;const record=sheetRecords[Number(value)];if(!record)return;
   try{showResult(record,record);$('selected-person').textContent=`選択中：${record.creator} / ${record.agency} / ${record.language} / ID ${record.id}`;message(record.creator+' のURL・QRを作成しました。');}catch(e){hideResult();message(e.message);}
 };
-let bannerImagePromise=null;
-function loadBanner(){if(!bannerImagePromise)bannerImagePromise=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(Error('帯テンプレートを読み込めませんでした。再読み込みしてください。'));img.src='scimagic-frame.png';});return bannerImagePromise;}
+const bannerTemplates={witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'}};
+const bannerImagePromises={};
+function loadBanner(template){if(!bannerImagePromises[template])bannerImagePromises[template]=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>{delete bannerImagePromises[template];reject(Error('帯テンプレートを読み込めませんでした。再度帯を選択してください。'));};img.src=bannerTemplates[template].file;});return bannerImagePromises[template];}
 async function renderBanner(){
   if(!current||current.record.title!=='scimagic')return;
-  const selected=current,kind=$('banner-kind').value,model=models[kind];$('banner-section').hidden=false;$('banner-download').disabled=true;$('banner-status').textContent='帯を作成中…';
-  try{const img=await loadBanner();if(current!==selected||$('banner-kind').value!==kind)return;
+  const selected=current,kind=$('banner-kind').value,template=$('banner-template').value,model=models[kind];$('banner-section').hidden=false;$('banner-download').disabled=true;$('banner-status').textContent='帯を作成中…';
+  try{const img=await loadBanner(template);if(current!==selected||$('banner-kind').value!==kind||$('banner-template').value!==template)return;
     const canvas=$('banner-preview');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
     const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);
     ctx.fillStyle='#fff';ctx.fillRect(1340,555,285,281);ctx.imageSmoothingEnabled=false;ctx.drawImage(paint(model,280),1342,555);
-    $('banner-status').textContent=(selected.record.creator||selected.record.creator_key)+' / '+(kind==='normal'?'通常URL':'ディープリンク')+' のQRを配置しました。';$('banner-download').disabled=false;
+    $('banner-status').textContent=(selected.record.creator||selected.record.creator_key)+' / '+(kind==='normal'?'通常URL':'ディープリンク')+' / '+bannerTemplates[template].label+'の帯にQRを配置しました。';$('banner-download').disabled=false;
   }catch(e){if(current===selected)$('banner-status').textContent=e.message;}
 }
 $('banner-kind').onchange=renderBanner;
-$('banner-download').onclick=()=>{if(!current||$('banner-download').disabled)return;const selected=current,kind=$('banner-kind').value;$('banner-preview').toBlob(blob=>{if(!blob){message('帯のPNGを作成できませんでした。');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=selected.adgroup.replace(/[^A-Za-z0-9_-]/g,'_')+'_'+kind+'_frame.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');};
+$('banner-template').onchange=renderBanner;
+$('banner-download').onclick=()=>{if(!current||$('banner-download').disabled)return;const selected=current,kind=$('banner-kind').value,template=$('banner-template').value;$('banner-preview').toBlob(blob=>{if(!blob){message('帯のPNGを作成できませんでした。');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=selected.adgroup.replace(/[^A-Za-z0-9_-]/g,'_')+'_'+kind+'_'+template+'_frame.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');};
 
 refreshSheet();
