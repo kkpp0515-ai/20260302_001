@@ -45,12 +45,14 @@ function renderPeople(){
   }
   select.selectedIndex=-1;$('selected-person').textContent=select.options.length+'件から選択してください。';hideResult();
 }
-$('sheet-file').onchange=async e=>{
-  const serial=++loadSerial,file=e.target.files[0];sheetRecords=[];$('sheet-picker').hidden=true;hideResult();message('');if(!file)return;
-  $('sheet-status').textContent='読み込み中…';
-  try{if(file.size>30*1024*1024)throw Error('30MB以下のExcelファイルを選択してください。');const data=await CreatorSheet.read(await file.arrayBuffer());if(serial!==loadSerial)return;sheetRecords=data.records;$('creator-search').value='';renderPeople();$('sheet-picker').hidden=false;$('sheet-status').textContent=`${file.name}：${sheetRecords.length}件を読み込みました。`+(data.skipped?` URL未設定・無効の${data.skipped}行は除外しました。`:'');}
+async function refreshSheet(){
+  const serial=++loadSerial;sheetRecords=[];$('sheet-picker').hidden=true;hideResult();message('');$('sheet-refresh').disabled=true;
+  $('sheet-status').textContent='スプレッドシートを読み込み中…';
+  try{const data=await CreatorLiveSheet.read();if(serial!==loadSerial)return;sheetRecords=data.records;$('creator-search').value='';renderPeople();$('sheet-picker').hidden=false;$('sheet-status').textContent=`${sheetRecords.length}件を取得しました（取得時刻：${new Date().toLocaleString('ja-JP')}）。`+(data.skipped?` URL未設定・無効の${data.skipped}行は除外しました。`:'');}
   catch(e){if(serial===loadSerial)$('sheet-status').textContent=e.message;}
-};
+  finally{if(serial===loadSerial)$('sheet-refresh').disabled=false;}
+}
+$('sheet-refresh').onclick=refreshSheet;
 $('creator-search').oninput=renderPeople;
 $('creator-select').onchange=()=>{
   const value=$('creator-select').value;if(value==='')return;const record=sheetRecords[Number(value)];if(!record)return;
@@ -70,3 +72,5 @@ async function renderBanner(){
 }
 $('banner-kind').onchange=renderBanner;
 $('banner-download').onclick=()=>{if(!current||$('banner-download').disabled)return;const selected=current,kind=$('banner-kind').value;$('banner-preview').toBlob(blob=>{if(!blob){message('帯のPNGを作成できませんでした。');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=selected.adgroup.replace(/[^A-Za-z0-9_-]/g,'_')+'_'+kind+'_frame.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');};
+
+refreshSheet();
