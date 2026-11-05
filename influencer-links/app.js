@@ -60,16 +60,132 @@ $('creator-select').onchange=()=>{
 };
 const bannerTemplates={witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'}};
 const bannerImagePromises={};
-function loadBanner(template){if(!bannerImagePromises[template])bannerImagePromises[template]=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>{delete bannerImagePromises[template];reject(Error('帯テンプレートを読み込めませんでした。再度帯を選択してください。'));};img.src=bannerTemplates[template].file;});return bannerImagePromises[template];}
+
+const customBanners = new Map();
+const design = $('banner-template');
+const builtinOptions = Array.from(design.options);
+const placeholder = new Option('帯画像を追加してください', '');
+design.append(placeholder);
+const bannerFile = $('banner-file');
+let dbPromise;
+function bannerDB() {
+  if (!dbPromise) dbPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open('creator-links-custom-banners', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('images', {keyPath:'id'});
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  }).catch(error => { dbPromise = null; throw error; });
+  return dbPromise;
+}
+async function storedBanners(mode, action) {
+  const db = await bannerDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('images', mode);
+    const request = action(tx.objectStore('images'));
+    tx.oncomplete = () => resolve(request.result);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+function addOption(record) {
+  customBanners.set(record.id, record);
+  design.add(new Option(record.name, record.id));
+}
+const restoreBanners = storedBanners('readonly', store => store.getAll()).then(records => {
+  records.forEach(addOption);
+  renderBanner();
+}).catch(() => { $('upload-status').textContent = 'ブラウザの帯画像保存領域を開けませんでした。'; });
+bannerFile.onchange = async () => {
+  const file = bannerFile.files[0];
+  if (!file) return;
+  bannerFile.disabled = true;
+  const url = URL.createObjectURL(file);
+  try {
+    if (!['image/png','image/jpeg','image/webp'].includes(file.type)) throw Error('PNG・JPEG・WebPの画像を選んでください。');
+    const img = new Image();
+    img.src = url;
+    await img.decode().catch(() => { throw Error('画像を読み込めませんでした。'); });
+    const size = Math.round(Math.min(img.width,img.height) * 0.3);
+    const record = { id:'custom-'+crypto.randomUUID(), name:file.name, file, size:Math.max(1,size), x:img.width-size, y:img.height-size };
+    await restoreBanners;
+    await storedBanners('readwrite', store => store.add(record));
+    addOption(record);
+    design.value = record.id;
+    $('upload-status').textContent = file.name+' を追加しました。';
+    renderBanner();
+  } catch (error) { $('upload-status').textContent = '追加できませんでした。'+error.message; }
+  finally { URL.revokeObjectURL(url); bannerFile.disabled = false; bannerFile.value = ''; }
+};
+$('custom-remove').onclick = async () => {
+  const record = customBanners.get(design.value);
+  if (!record || !confirm(record.name+' をこのブラウザの帯一覧から削除しますか？')) return;
+  try {
+    await storedBanners('readwrite', store => store.delete(record.id));
+    customBanners.delete(record.id);
+    design.querySelector('[value="'+record.id+'"]').remove();
+    if (bannerImagePromises[record.id]) delete bannerImagePromises[record.id];
+    $('upload-status').textContent = record.name+' を削除しました。';
+    renderBanner();
+  } catch { $('upload-status').textContent = '削除できませんでした。'; }
+};
+function savePlacement(record) {
+  storedBanners('readwrite', store => store.put(record)).catch(() => {
+    $('upload-status').textContent = 'QR位置を保存できませんでした。';
+  });
+  renderBanner();
+}
+$('custom-size').onchange = () => {
+  const record = customBanners.get(design.value);
+  const size = $('custom-size').valueAsNumber;
+  if (!record) return;
+  if ($('custom-size').validity.valid && Number.isInteger(size)) {
+    record.size = size;
+    savePlacement(record);
+  } else renderBanner();
+};
+$('banner-preview').onclick = event => {
+  const record = customBanners.get(design.value);
+  if (!record || $('banner-download').disabled) return;
+  const canvas = event.currentTarget, rect = canvas.getBoundingClientRect();
+  record.size = $('custom-size').valueAsNumber;
+  record.x = Math.round((event.clientX-rect.left)*canvas.width/rect.width-record.size/2);
+  record.y = Math.round((event.clientY-rect.top)*canvas.height/rect.height-record.size/2);
+  savePlacement(record);
+};
+
+function loadBanner(template){if(!bannerImagePromises[template])bannerImagePromises[template]=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>{delete bannerImagePromises[template];reject(Error('帯テンプレートを読み込めませんでした。再度帯を選択してください。'));};const record=customBanners.get(template);
+    if(record){
+      const url=URL.createObjectURL(record.file);
+      img.addEventListener('load',()=>URL.revokeObjectURL(url),{once:true});
+      img.addEventListener('error',()=>URL.revokeObjectURL(url),{once:true});
+      img.src=url;
+    }else img.src=bannerTemplates[template].file;});return bannerImagePromises[template];}
 async function renderBanner(){
-  if(!current||current.record.title!=='scimagic')return;
+  if(!current)return;
+  const sciMagic=current.record.title==='scimagic';
+  for(const option of builtinOptions) option.disabled=option.hidden=!sciMagic;
+  placeholder.disabled=placeholder.hidden=sciMagic;
+  if(!design.value || design.selectedOptions[0]?.disabled) design.value=sciMagic?builtinOptions[0].value:(customBanners.keys().next().value||'');
+  const custom=customBanners.get(design.value);
+  $('custom-controls').hidden=!custom;
   const selected=current,kind=$('banner-kind').value,template=$('banner-template').value,model=models[kind];$('banner-section').hidden=false;$('banner-download').disabled=true;$('banner-status').textContent='帯を作成中…';
+  if(!template){$('banner-preview').style.display='none';$('banner-status').textContent='使用する帯画像を追加してください。';return;}
+  $('banner-preview').style.display='block';
   try{const img=await loadBanner(template);if(current!==selected||$('banner-kind').value!==kind||$('banner-template').value!==template)return;
     const canvas=$('banner-preview');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
     const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);
+    if(custom){
+      const minSize=model.getModuleCount()+8, maxSize=Math.min(canvas.width,canvas.height);
+      if(maxSize<minSize)throw Error('このQRを配置するには画像が小さすぎます。');
+      const size=Math.min(maxSize,Math.max(minSize,custom.size));
+      const x=Math.max(0,Math.min(canvas.width-size,custom.x)), y=Math.max(0,Math.min(canvas.height-size,custom.y));
+      Object.assign($('custom-size'),{min:minSize,max:maxSize,value:size});
+      ctx.drawImage(paint(model,size),x,y);
+    }else{
     ctx.fillStyle='#fff';ctx.fillRect(1340,555,285,281);ctx.imageSmoothingEnabled=false;ctx.drawImage(paint(model,280),1342,555);
-    $('banner-status').textContent=(selected.record.creator||selected.record.creator_key)+' / '+(kind==='normal'?'通常URL':'ディープリンク')+' / '+bannerTemplates[template].label+'の帯にQRを配置しました。';$('banner-download').disabled=false;
-  }catch(e){if(current===selected)$('banner-status').textContent=e.message;}
+    }
+    $('banner-download').textContent='QR入り配信帯をPNG保存（'+canvas.width+' × '+canvas.height+'）';
+    $('banner-status').textContent=(selected.record.creator||selected.record.creator_key)+' / '+(kind==='normal'?'通常URL':'ディープリンク')+' / '+(custom?custom.name:bannerTemplates[template].label)+'の帯にQRを配置しました。';$('banner-download').disabled=false;
+  }catch(e){if(current===selected && design.value===template && $('banner-kind').value===kind)$('banner-status').textContent=e.message;}
 }
 $('banner-kind').onchange=renderBanner;
 $('banner-template').onchange=renderBanner;
