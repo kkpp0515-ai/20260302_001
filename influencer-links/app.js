@@ -11,10 +11,13 @@ function matrix(text){
   return qr._oQRCode;
 }
 function paint(model,size){
-  const count=model.getModuleCount(),quiet=4,cell=Math.max(1,Math.floor(size/(count+quiet*2))),actual=(count+quiet*2)*cell;
+  const count=model.getModuleCount(),quiet=4,cell=size/(count+quiet*2);
   const canvas=document.createElement('canvas');canvas.width=canvas.height=size;const ctx=canvas.getContext('2d');
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);ctx.fillStyle='#000';const offset=Math.floor((size-actual)/2)+quiet*cell;
-  for(let y=0;y<count;y++)for(let x=0;x<count;x++)if(model.isDark(y,x))ctx.fillRect(offset+x*cell,offset+y*cell,cell,cell);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);ctx.fillStyle='#000';
+  for(let y=0;y<count;y++)for(let x=0;x<count;x++)if(model.isDark(y,x)){
+    const left=Math.round((x+quiet)*cell),top=Math.round((y+quiet)*cell);
+    ctx.fillRect(left,top,Math.round((x+quiet+1)*cell)-left,Math.round((y+quiet+1)*cell)-top);
+  }
   return canvas;
 }
 function showQR(){for(const kind of ['normal','deep']){const canvas=paint(models[kind],Number($('qr-size').value));canvas.setAttribute('role','img');canvas.setAttribute('aria-label',kind==='normal'?'通常URLのQRコード':'ディープリンクのQRコード');$(kind+'-qr').replaceChildren(canvas);}renderBanner();}
@@ -58,7 +61,7 @@ $('creator-select').onchange=()=>{
   const value=$('creator-select').value;if(value==='')return;const record=sheetRecords[Number(value)];if(!record)return;
   try{showResult(record,record);$('selected-person').textContent=`選択中：${record.creator} / ${record.agency} / ${record.language} / ID ${record.id}`;message(record.creator+' のURL・QRを作成しました。');}catch(e){hideResult();message(e.message);}
 };
-const bannerTemplates={witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'}};
+const bannerTemplates={witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'},'witch-zh-TW':{file:'scimagic-frame-witch-zh-TW.png',label:'魔女（繁体字）',qr:{x:1551,y:641,size:304}}};
 const bannerImagePromises={};
 
 const customBanners = new Map();
@@ -181,7 +184,10 @@ async function renderBanner(){
       Object.assign($('custom-size'),{min:minSize,max:maxSize,value:size});
       ctx.drawImage(paint(model,size),x,y);
     }else{
-    ctx.fillStyle='#fff';ctx.fillRect(1340,555,285,281);ctx.imageSmoothingEnabled=false;ctx.drawImage(paint(model,280),1342,555);
+    const placement=bannerTemplates[template].qr;
+    ctx.imageSmoothingEnabled=false;
+    if(placement){ctx.drawImage(paint(model,placement.size),placement.x,placement.y);}
+    else{ctx.fillStyle='#fff';ctx.fillRect(1340,555,285,281);ctx.drawImage(paint(model,280),1342,555);}
     }
     $('banner-download').textContent='QR入り配信帯をPNG保存（'+canvas.width+' × '+canvas.height+'）';
     $('banner-status').textContent=(selected.record.creator||selected.record.creator_key)+' / '+(kind==='normal'?'通常URL':'ディープリンク')+' / '+(custom?custom.name:bannerTemplates[template].label)+'の帯にQRを配置しました。';$('banner-download').disabled=false;
@@ -192,3 +198,4 @@ $('banner-template').onchange=renderBanner;
 $('banner-download').onclick=()=>{if(!current||$('banner-download').disabled)return;const selected=current,kind=$('banner-kind').value,template=$('banner-template').value;$('banner-preview').toBlob(blob=>{if(!blob){message('帯のPNGを作成できませんでした。');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=selected.adgroup.replace(/[^A-Za-z0-9_-]/g,'_')+'_'+kind+'_'+template+'_frame.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');};
 
 refreshSheet();
+
