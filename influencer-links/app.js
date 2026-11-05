@@ -61,7 +61,7 @@ $('creator-select').onchange=()=>{
   const value=$('creator-select').value;if(value==='')return;const record=sheetRecords[Number(value)];if(!record)return;
   try{showResult(record,record);$('selected-person').textContent=`選択中：${record.creator} / ${record.agency} / ${record.language} / ID ${record.id}`;message(record.creator+' のURL・QRを作成しました。');}catch(e){hideResult();message(e.message);}
 };
-const bannerTemplates={witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'},'witch-zh-TW':{file:'scimagic-frame-witch-zh-TW.png',label:'魔女（繁体字）',qr:{x:1551,y:641,size:304}}};
+const bannerTemplates={'witch-apple-ja':{file:'scimagic-frame-witch-apple-ja.png',label:'魔女（縦型・りんご・日本語）',qr:{x:169,y:905,size:640}},witch:{file:'scimagic-frame-witch.png',label:'魔女'},original:{file:'scimagic-frame.png',label:'紫髪'},'witch-zh-TW':{file:'scimagic-frame-witch-zh-TW.png',label:'魔女（繁体字）',qr:{x:1551,y:641,size:304}}};
 const bannerImagePromises={};
 
 const customBanners = new Map();
