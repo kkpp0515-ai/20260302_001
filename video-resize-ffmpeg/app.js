@@ -1,6 +1,8 @@
 'use strict';
 const $=id=>document.getElementById(id),M=ResizeModel,canvas=$('preview'),ctx=canvas.getContext('2d'),source=$('sourceVideo'),endVideo=$('endVideo');
 const state={catalog:null,title:null,file:null,main:null,sourceURL:null,lang:'ja',size:'1080x1080',phase:'main',layouts:{},busy:false,aborted:false,playing:false,engine:null,logs:[],jobIndex:0,jobTotal:1,jobDuration:1,previewSerial:0,sourceSerial:0,band:null,endKey:null,results:[],controller:null};
+let includeEndPreference=true;
+const hasEndcards=()=>state.title?.languages.every(l=>!!state.title.assets[l.id].endcard);
 const images=new Map(),blobs=new Map(),endInfos=new Map();
 const selected=id=>[...$(id).querySelectorAll('input:checked')].map(e=>e.value);
 const langs=()=>state.title?.languages||[];
@@ -82,11 +84,15 @@ function syncControls(){
  $('generate').disabled=state.busy||!state.main||!n||!state.title;
  $('cancel').hidden=!state.busy;$('cancel').disabled=false;
  $('play').disabled=state.busy||currentMedia().readyState<2;$('seek').disabled=$('play').disabled;
+ $('includeEnd').disabled=state.busy||!hasEndcards();
  $('showEnd').disabled=state.busy||!$('includeEnd').checked;
  $('downloadAll').disabled=state.busy;$('clearResults').disabled=state.busy;
 }
 function renderTitle(){
  const title=state.title;
+ $('includeEnd').checked=hasEndcards()&&includeEndPreference;
+ $('endNote').textContent=hasEndcards()?'各言語の付加動画を末尾に追加':'このタイトルには付加動画が登録されていません';
+ if(!$('includeEnd').checked){state.phase='main';setPhaseButtons();}
  $('bandVariantField').hidden=!title.bandVariants?.length;$('bandVariant').replaceChildren();for(const v of title.bandVariants||[]){const o=document.createElement('option');o.value=v.id;o.textContent=v.label;$('bandVariant').append(o);}$('bandVariant').value=title.defaultBandVariant||'';
  $('languages').replaceChildren();$('previewLanguage').replaceChildren();
  for(const lang of title.languages){
@@ -132,7 +138,7 @@ $('languages').onchange=syncControls;$('formats').onchange=syncControls;
 $('selectAll').onclick=()=>{document.querySelectorAll('#languages input').forEach(e=>e.checked=true);syncControls();};
 $('bandVariant').onchange=()=>{state.layouts={};refreshPreview();};
 $('includeBand').onchange=()=>{state.layouts={};refreshPreview();};
-$('includeEnd').onchange=()=>{if(!$('includeEnd').checked&&state.phase==='end')setPhase('main');else refreshPreview();syncControls();};
+$('includeEnd').onchange=()=>{includeEndPreference=$('includeEnd').checked;if(!$('includeEnd').checked&&state.phase==='end')setPhase('main');else refreshPreview();syncControls();};
 for(const button of document.querySelectorAll('[data-fit]'))button.onclick=()=>{state.layouts[state.size]={mode:button.dataset.fit,zoom:1,dx:0,dy:0};syncAdjustments();draw();};
 $('zoom').oninput=e=>{layout(state.size).zoom=+e.target.value;syncAdjustments();draw();};
 for(const [id,key] of [['offsetX','dx'],['offsetY','dy']])$(id).oninput=e=>{layout(state.size)[key]=bounded(Number(e.target.value)||0,-8000,8000);draw();};
@@ -204,6 +210,6 @@ $('clearResults').onclick=()=>{if(state.busy)return;state.results.forEach(r=>URL
 window.addEventListener('beforeunload',e=>{if(state.busy){e.preventDefault();e.returnValue='';}});
 (async()=>{
  renderFormats();
- try{const response=await fetch('catalog.json?v=20261028-camper-bands');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
+ try{const response=await fetch('catalog.json?v=20261106-island-endcards');if(!response.ok)throw Error('タイトル設定を取得できません。');state.catalog=await response.json();$('title').replaceChildren();for(const t of state.catalog.titles){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;$('title').append(o);}state.title=state.catalog.titles[0];if(!state.title)throw Error('登録タイトルがありません。');renderTitle();}
  catch(e){status(e.message,true);$('catalogInfo').textContent='読み込みに失敗しました。再読み込みしてください。';}
 })();
