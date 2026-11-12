@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>余白 — 自分のためのタスクボード</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><a class="brand" href="#" aria-label="余白"><span class="mark">▧</span>余白<span class="brand-en">YOHAKU</span></a><span class="private">● PERSONAL SPACE</span><div class="header-right"><span id="save-status" role="status">保存済み</span><button id="export">バックアップ</button><button id="import">復元</button><input id="file" type="file" accept="application/json" hidden></div></header>
+<main>
+<section class="heading"><div><div class="eyebrow">MAKE ROOM FOR YOUR THOUGHTS</div><h1>頭の中を、ここに。</h1><p>ひとまず置いて、つなげて、ひとつずつ。</p></div><button class="primary" id="add">＋ メモを置く <kbd>N</kbd></button></section>
+<section class="board-shell">
+<nav class="toolbar"><div class="tabs"><button class="tab active" data-filter="all">すべて <span id="total">0</span></button><button class="tab" data-filter="open">未完了</button><button class="tab" data-filter="done">完了</button></div><div class="tools"><label class="search">⌕ <input id="search" placeholder="メモを探す" aria-label="メモを検索"></label><button id="undo" title="元に戻す (Ctrl+Z)">↶</button><button id="help" title="使い方">？</button></div></nav>
+<div id="viewport" tabindex="0" aria-label="タスクボード。空白をダブルクリックしてメモを追加"><div id="world"><svg id="lines" width="4000" height="3000"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a9b7ad"/></marker></defs><g id="edges"></g></svg><div id="cards"></div></div><div id="empty" hidden>まだ何もありません。<br><small>ダブルクリックして、最初のメモを。</small></div></div>
+<footer><span id="hint">空白をダブルクリックで追加 · カードの端からドラッグで接続</span><div><button id="zoom-out" aria-label="縮小">−</button><span id="zoom-label">100%</span><button id="zoom-in" aria-label="拡大">＋</button><button id="reset" title="表示位置を戻す">⌂</button></div></footer>
+</section><div class="bottom-note">考えがまとまっていなくても、大丈夫。</div>
+</main>
+<aside id="panel" hidden aria-label="メモの詳細"><div class="panel-top"><span>NOTE DETAILS</span><button id="close" aria-label="詳細を閉じる">✕</button></div><label class="complete"><input id="done" type="checkbox"> 完了にする</label><textarea id="title" rows="2" placeholder="タイトルなし" aria-label="タイトル"></textarea><div id="colors" aria-label="カードの色"></div><div class="divider"></div><label class="memo-label" for="memo">メモ</label><textarea id="memo" placeholder="考えたこと、やること、あとで読みたいリンク。&#10;自由に書いておこう。"></textarea><div id="connections"></div><div class="panel-bottom"><span>入力は自動で保存されます</span><button id="delete" class="danger">削除</button></div></aside>
+<div id="toast" role="status"></div>
+<dialog id="guide"><h2>思いついたら、すぐ置く。</h2><p>空白をダブルクリック / N：メモを追加</p><p>カードをクリック：メモを開く</p><p>カードをドラッグ：自由に移動</p><p>右端の丸から別のカードへドラッグ：つなぐ</p><p>空白をドラッグ：ボードを移動</p><p>Delete：選択中のメモを削除 / Ctrl+Z：元に戻す</p><p>Esc：詳細を閉じる / 接続をキャンセル</p><small>同じブラウザ・同じURLに自動保存。大切なメモは「バックアップ」でファイルにも残せます。</small><button class="primary" id="guide-close">わかった</button></dialog>
+<script src="app.js"></script>
+</body></html>

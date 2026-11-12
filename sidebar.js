@@ -32,6 +32,7 @@ body{padding-left:270px!important}
             </a>
         </div>
         <ul class="portal-sidebar-list">
+<li><a href="${basePath}task-board/"><span class="portal-sidebar-icon">▧</span><span>余白 — タスクボード</span></a></li>
 <li><a href="${basePath}youtube-creator-finder/index.html"><span class="portal-sidebar-icon">▶</span><span>YouTube Creator Finder</span></a></li>
 <li><a href="${basePath}influencer-links/index.html"><span class="portal-sidebar-icon">↗</span><span>配信者URL・QR作成</span></a></li>
 <li><a href="${basePath}png-to-jpeg/index.html"><span class="portal-sidebar-icon">🖼️</span><span>PNG → JPEG・300KB</span></a></li>
