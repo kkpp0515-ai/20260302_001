@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102b29">
+<title>LINE友だち紹介テスト | CTW Creative Workspace</title>
+<link rel="stylesheet" href="../theme.css?v=forest-2">
+<script src="../theme-toggle.js?v=forest-2"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:42px 26px 70px 270px;background:var(--bg,#102b29);color:var(--text,#f2eee5);font-family:"Yu Gothic",Meiryo,sans-serif}
+main{max-width:790px;margin:0 auto}
+.back{color:var(--gold,#d8bd83);text-decoration:none;font-size:12px;letter-spacing:.05em}
+.kicker{color:var(--gold,#d8bd83);font:11px Georgia,serif;letter-spacing:.22em;margin-top:42px}
+h1{font:500 clamp(26px,5vw,39px)/1.5 "Yu Mincho",serif;margin:8px 0 13px}
+.lead{color:var(--muted,#acb9b5);font-size:13px;line-height:2}
+.panel{border:1px solid var(--border,#52635b);background:var(--card-bg,#1b3230);border-radius:8px;margin-top:22px;padding:26px}
+.label{font-size:12px;color:var(--muted,#acb9b5);letter-spacing:.06em}
+.count{font:500 64px/1.2 Georgia,serif;color:var(--gold,#d8bd83);margin:6px 0}
+.count small{font:15px sans-serif;margin-left:6px}
+strong{font-weight:600}
+.url{width:100%;border:1px solid var(--border,#52635b);background:var(--bg,#102b29);color:var(--text,#f2eee5);border-radius:5px;padding:14px;font-size:12px;overflow-wrap:anywhere}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{font:600 13px/1.5 "Yu Gothic",sans-serif;cursor:pointer;min-height:45px;border-radius:4px;padding:11px 18px}
+.primary{border:1px solid #06c755;background:#06c755;color:#092c16;flex:1}
+.secondary{border:1px solid var(--border,#52635b);background:var(--card-bg,#1b3230);color:var(--text,#f2eee5)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:12px;line-height:1.9;color:var(--muted,#acb9b5)}
+#status{margin-top:22px;white-space:pre-wrap;font-size:13px;line-height:1.9}
+#status.error{color:#f9a7a7}
+#app[hidden]{display:none!important}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--border,#52635b);padding:5px 10px;border-radius:50px;margin-top:6px}
+@media(max-width:768px){body{padding:70px 18px 40px}.panel{padding:21px}.row{flex-direction:column}.primary,.secondary{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../index.html">← CTW Creative Workspace</a>
+<p class="kicker">LINE REFERRAL EXPERIMENT</p>
+<h1>友だち紹介テスト</h1>
+<p class="lead">LINEで登録すると、あなただけの紹介リンクが発行されます。友だちがリンクから初回登録すると、紹介人数に反映されます。</p>
+<div id="status" role="status" aria-live="polite">LINEログインを確認しています…</div>
+<div id="app" hidden>
+<section class="panel" aria-labelledby="heading-count">
+<div class="label" id="heading-count">あなたの紹介人数</div>
+<div class="count"><span id="referral-count">0</span><small>人</small></div>
+<div class="badge" id="registration-status">LINE登録済み</div>
+<p class="note">同じLINEアカウントの再登録・自分自身の紹介はカウントしません。</p>
+</section>
+<section class="panel" aria-labelledby="heading-share">
+<h2 id="heading-share" style="font-size:18px;margin:0 0 14px">専用紹介リンク</h2>
+<div class="url" id="share-url">URLを準備しています…</div>
+<div class="row">
+<button class="primary" id="share-button" type="button">LINEで友だちに紹介</button>
+<button class="secondary" id="copy-button" type="button">URLをコピー</button>
+<button class="secondary" id="refresh-button" type="button">人数を更新</button>
+</div>
+<p class="note">シェア画面で相手を選択して送信してください。送信しただけではカウントされず、友だちが紹介リンクからLINEログインしたときに加算されます。</p>
+</section>
+</div>
+</main>
+<script>
+(function(){
+"use strict";
+const LIFF_ID = "2012656044-bbp3RD9N";
+const API_BASE = "https://referral-test-api.kkpp0515.workers.dev";
+const ENDPOINT = "https://kkpp0515-ai.github.io/20260302_001/referral-test/";
+const statusEl=document.getElementById("status");
+const app=document.getElementById("app");
+const countEl=document.getElementById("referral-count");
+const urlEl=document.getElementById("share-url");
+let currentIdToken="",currentShareUrl="",registered=false;
+
+function status(text,error){
+  statusEl.textContent=text;
+  statusEl.classList.toggle("error",!!error);
+}
+function getReferralFromUrl(){
+  const direct=new URLSearchParams(location.search).get("ref");
+  const normalized=/^[A-Za-z0-9_-]{16,24}$/;
+  return direct && normalized.test(direct) ? direct : null;
+}
+function referralLink(code){
+  const absolute=new URL(ENDPOINT);
+  absolute.searchParams.set("ref",code);
+  return absolute.toString();
+}
+async function apiRegister(ref){
+  const response=await fetch(API_BASE+"/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({idToken:currentIdToken,ref:ref||null})
+  });
+  const data=await response.json().catch(()=>({error:"APIの応答を読み取れませんでした"}));
+  if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+  return data;
+}
+async function updateUI(data){
+  countEl.textContent=String(data.referralCount);
+  document.getElementById("registration-status").textContent=
+    data.justRegistered ? "初回登録が完了しました" :
+    "登録済み（重複登録なし）";
+  const target=referralLink(data.referralCode);
+  try {
+    currentShareUrl=await liff.permanentLink.createUrlBy(target);
+  } catch {
+    currentShareUrl="https://liff.line.me/"+LIFF_ID+"/?ref="+encodeURIComponent(data.referralCode);
+  }
+  urlEl.textContent=currentShareUrl;
+  app.hidden=false;
+  registered=true;
+  status(data.justRegistered ? "LINEでの登録が完了しました。" : "登録情報を読み込みました。");
+}
+async function start(){
+  if(typeof liff==="undefined"){status("LIFF SDKを読み込めませんでした。ページを再読み込みしてください。",true);return;}
+  try {
+    // LINEの追加クエリはliff.init()が復元してから取得する
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){
+      status("LINEログイン画面に移動します…");
+      liff.login({redirectUri:location.href});
+      return;
+    }
+    const ref=getReferralFromUrl();
+    currentIdToken=liff.getIDToken();
+    if(!currentIdToken)throw new Error("LINE IDトークンを取得できませんでした。openid設定をご確認ください。");
+    status("登録情報を照合しています…");
+    await updateUI(await apiRegister(ref));
+  } catch(error){
+    status("登録を完了できませんでした。\n"+(error&&error.message?error.message:String(error))+
+      "\n\nCloudflare WorkerとD1の設定、LINE Loginチャネルの公開状態をご確認ください。",true);
+  }
+}
+document.getElementById("share-button").addEventListener("click",async function(){
+  if(!registered)return;
+  try{
+    if(liff.isApiAvailable("shareTargetPicker")){
+      const result=await liff.shareTargetPicker([{
+        type:"text",
+        text:"LINE友だち紹介テストに参加してみて！\n"+currentShareUrl
+      }],{isMultiple:true});
+      status(result ? "LINEのシェアを送信しました。友だちの初回登録で人数が増えます。" : "シェアはキャンセルされました。");
+    }else{
+      await copyURL();
+      status("この環境ではLINEのシェア画面を開けないため、紹介URLをコピーしました。LINEのトークに貼り付けてください。");
+    }
+  }catch(e){status("シェアできませんでした："+(e.message||String(e)),true);}
+});
+async function copyURL(){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    await navigator.clipboard.writeText(currentShareUrl);
+  }else{
+    const ta=document.createElement("textarea");
+    ta.value=currentShareUrl;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+  }
+}
+document.getElementById("copy-button").addEventListener("click",async function(){
+  try{await copyURL();status("紹介URLをコピーしました。");}
+  catch(e){status("コピーできませんでした。URLを選択してコピーしてください。",true);}
+});
+document.getElementById("refresh-button").addEventListener("click",async function(){
+  if(!currentIdToken)return;
+  try{
+    status("紹介人数を更新しています…");
+    await updateUI(await apiRegister(null));
+  }catch(e){status("更新できませんでした："+(e.message||String(e)),true);}
+});
+start();
+})();
+</script>
+<script src="../sidebar.js?v=20261117-referral-test"></script>
+</body>
+</html>
