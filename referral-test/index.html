@@ -26,24 +26,22 @@ button:disabled{cursor:wait;opacity:.55}
 .page{max-width:980px;margin:0 auto;padding:0 14px 138px}
 .eyebrow{display:flex;gap:8px;align-items:center;padding:18px 2px 10px;color:#777982;font-size:10px;font-weight:900;letter-spacing:.16em}
 .eyebrow::before{content:"";width:23px;height:4px;border-radius:3px;background:var(--lime);box-shadow:8px 0 0 #2d2e33}
-.hero{position:relative;isolation:isolate;min-height:284px;overflow:hidden;border-radius:15px;background:radial-gradient(circle at 86% 16%,#7a76fc73 0 17%,transparent 45%),linear-gradient(118deg,#202336 0%,#302753 51%,#0b5065 100%);color:#fff;box-shadow:0 14px 25px rgba(28,32,57,.16)}
+.hero{position:relative;isolation:isolate;min-height:375px;overflow:hidden;border-radius:15px;background:radial-gradient(circle at 86% 16%,#7a76fc73 0 17%,transparent 45%),linear-gradient(118deg,#202336 0%,#302753 51%,#0b5065 100%);color:#fff;box-shadow:0 14px 25px rgba(28,32,57,.16)}
 .hero::before{content:"";position:absolute;width:350px;height:350px;right:-160px;top:-95px;border:1px solid #ffffff49;border-radius:50%;box-shadow:0 0 0 44px #ffffff08,0 0 0 90px #ffffff08;transform:rotate(-15deg)}
 .hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 47px,#ffffff05 48px 49px);pointer-events:none;z-index:-1}
 .hero-content{position:relative;padding:24px 21px 24px;z-index:2;max-width:420px}
 .hero-kicker{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;color:#333648;background:var(--lime);border-radius:4px;font-size:10px;font-weight:900;letter-spacing:.09em;box-shadow:3px 3px 0 #0004}
 .hero h1{font-size:clamp(26px,6.4vw,40px);line-height:1.25;letter-spacing:-.045em;margin:17px 0 9px;font-weight:950;text-shadow:0 3px 8px #0e142b99}
 .hero h1 em{font-style:normal;color:#fff189;filter:drop-shadow(0 2px 0 #8a5021)}
-.hero-sub{font-size:12px;color:#e7eafa;line-height:1.75;max-width:245px;margin:0}
-.gift-scene{position:absolute;right:-31px;bottom:8px;width:180px;height:200px;transform:rotate(9deg);z-index:1;pointer-events:none}
-.gift-glow{position:absolute;inset:15px;background:#e2d5ff88;filter:blur(45px);border-radius:50%}
-.gift-box{position:absolute;right:26px;bottom:22px;width:118px;height:95px;border-radius:11px;background:linear-gradient(145deg,#fff7bb 0%,#eec54f 47%,#b87523 100%);box-shadow:inset -9px -11px 0 #86532130,0 16px 0 #120e245c,0 20px 36px #070c27a9;transform:skewY(-4deg)}
-.gift-box::after{content:"";position:absolute;left:42px;top:0;bottom:0;width:25px;background:linear-gradient(90deg,#fffcdf,#fff8a0 50%,#d9a63e);box-shadow:inset 0 0 4px #9d61252a}
-.gift-lid{position:absolute;z-index:2;right:19px;bottom:105px;width:132px;height:24px;border-radius:5px;background:linear-gradient(#fff5ad,#cc942c);box-shadow:0 5px 0 #945c26}
-.gift-lid::after{content:"";position:absolute;top:0;bottom:-4px;left:48px;width:27px;background:#fff9c4}
-.gift-ribbon{position:absolute;z-index:3;right:82px;bottom:130px;width:46px;height:42px;border:10px solid #ffe582;border-radius:60% 10% 60% 10%;transform:rotate(38deg);box-shadow:0 1px 0 #a36428}
-.gift-ribbon::after{content:"";position:absolute;left:24px;top:-35px;width:39px;height:38px;border:9px solid #fff4b0;border-radius:10% 60% 10% 60%;transform:rotate(-52deg)}
-.sparkle{position:absolute;color:#fffac2;font-size:27px;font-weight:900;text-shadow:0 0 12px #fff2a8}
-.sparkle.one{right:10px;top:22px}.sparkle.two{right:136px;top:65px;font-size:19px}.sparkle.three{right:14px;bottom:16px;font-size:15px}
+.hero-sub{font-size:12px;color:#e7eafa;line-height:1.75;max-width:190px;margin:0}
+.gift-card-art{position:absolute;right:17px;bottom:24px;width:143px;height:94px;z-index:1;transform:rotate(-8deg);pointer-events:none;filter:drop-shadow(0 15px 13px #0a0b2d8a)}
+.gift-card-art::before{content:"";position:absolute;inset:9px -5px -8px 6px;border-radius:11px;background:#695125;transform:rotate(4deg)}
+.gift-card-face{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;width:100%;height:100%;border-radius:11px;padding:12px 13px;overflow:hidden;color:#5d4017;background:linear-gradient(120deg,#fff8cf 0%,#e9c66b 56%,#c18e3c 100%);border:2px solid #fff0ab;box-shadow:inset 0 0 0 1px #a47a3e70}
+.gift-card-face::before{content:"";position:absolute;right:-32px;top:-35px;width:104px;height:104px;border:16px solid #fffbd860;border-radius:50%}
+.gift-card-face::after{content:"✦";position:absolute;right:13px;bottom:15px;color:#fff4b9;font-size:24px;line-height:1;text-shadow:0 2px 1px #86602760}
+.gift-card-face span{z-index:1;font-size:12px;letter-spacing:.12em;font-weight:950}
+.gift-card-face strong{z-index:1;font-size:18px;font-weight:950;letter-spacing:.03em}
+.gift-card-face small{z-index:1;font-size:7px;font-weight:900;letter-spacing:.13em}
 .hero-foot{position:absolute;bottom:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--lime),#66f5cd,#8cb9ff)}
 .preview-notice{display:flex;align-items:flex-start;gap:8px;margin-top:11px;border:1px solid #f2d993;border-radius:9px;background:#fffcf1;padding:10px 12px;color:#6e5b2f;font-size:11px;line-height:1.7}
 .preview-notice svg{width:16px;height:16px;flex:none;margin-top:2px}
@@ -94,8 +92,8 @@ button:disabled{cursor:wait;opacity:.55}
 .sticky-action .action-button{max-width:520px;margin:0 auto}
 .sticky-label{text-align:center;font-size:10px;color:#898b94;margin-top:5px;font-weight:650}
 .desktop-note{display:none}
-@media(min-width:650px){.site-head{padding:0 max(22px,calc((100vw - 950px)/2))}.page{padding:0 28px 140px}.hero{min-height:322px}.hero-content{padding:34px 38px}.gift-scene{right:60px;bottom:26px;transform:rotate(9deg) scale(1.25)}.hero-sub{max-width:330px}.layout{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;align-items:start}.layout .section-head{margin-top:27px}.steps{gap:16px}.step{padding:20px 12px}.sticky-action{display:none}.desktop-note{display:block;color:#aaa;font-size:10px;margin-top:8px}}
-@media(max-width:370px){.hero h1{font-size:25px}.hero-sub{max-width:210px}.gift-scene{right:-55px;transform:rotate(9deg) scale(.85)}.hero-content{padding-left:17px}.step{padding:13px 5px}.count-num strong{font-size:61px}}
+@media(min-width:650px){.site-head{padding:0 max(22px,calc((100vw - 950px)/2))}.page{padding:0 28px 140px}.hero{min-height:322px}.hero-content{padding:34px 38px}.gift-card-art{right:78px;bottom:62px;transform:rotate(-8deg) scale(1.45)}.hero-sub{max-width:330px}.layout{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;align-items:start}.layout .section-head{margin-top:27px}.steps{gap:16px}.step{padding:20px 12px}.sticky-action{display:none}.desktop-note{display:block;color:#aaa;font-size:10px;margin-top:8px}}
+@media(max-width:370px){.hero h1{font-size:25px}.hero-sub{max-width:170px}.gift-card-art{right:12px;bottom:20px;transform:rotate(-8deg) scale(.88);transform-origin:right bottom}.hero-content{padding-left:17px}.step{padding:13px 5px}.count-num strong{font-size:61px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.action-button{transition:none}}
 </style>
 </head>
@@ -120,7 +118,7 @@ button:disabled{cursor:wait;opacity:.55}
       <h1 id="campaign-title">友だちを紹介して<br><em>Amazonギフトカード</em><br>をゲット！</h1>
       <p class="hero-sub">あなた専用のリンクを送ろう。友だちの登録人数がここでわかる！</p>
     </div>
-    <div class="gift-scene" aria-hidden="true"><div class="gift-glow"></div><div class="gift-box"></div><div class="gift-lid"></div><div class="gift-ribbon"></div><span class="sparkle one">✦</span><span class="sparkle two">✧</span><span class="sparkle three">✦</span></div>
+    <div class="gift-card-art" aria-hidden="true"><div class="gift-card-face"><span>GIFT CARD</span><strong>THANK YOU</strong><small>FRIEND REWARD</small></div></div>
     <div class="hero-foot"></div>
   </section>
   <div class="preview-notice"><svg class="icon" viewBox="0 0 24 24"><use href="#i-alert"/></svg><span><strong>現在は動作テスト中です。</strong> Amazonギフトカードの配布条件は未設定で、現時点では特典の付与はありません。</span></div>
