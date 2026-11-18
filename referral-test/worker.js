@@ -3,7 +3,8 @@
 // D1 binding: DB
 // Plain variable: LINE_LOGIN_CHANNEL_ID (see LINE Login channel basic settings)
 // Secret: REFERRAL_HASH_SECRET (random value with >= 32 bytes of entropy)
-const ALLOWED_ORIGIN = "https://kkpp0515-ai.github.io";
+const ALLOWED_ORIGINS = new Set(["https://kkpp0515-ai.github.io", "https://g123.jp"]);
+const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.has(origin);
 const MAX_BODY_BYTES = 6000;
 const CODE_RE = /^[A-Za-z0-9_-]{16,24}$/;
 
@@ -14,7 +15,7 @@ function headers(origin) {
     "X-Content-Type-Options":"nosniff",
     "Vary":"Origin"
   };
-  if (origin === ALLOWED_ORIGIN) {
+  if (isAllowedOrigin(origin)) {
     h["Access-Control-Allow-Origin"]=origin;
     h["Access-Control-Allow-Methods"]="POST, OPTIONS";
     h["Access-Control-Allow-Headers"]="Content-Type";
@@ -137,12 +138,12 @@ export default {
       return json({error:"Not Found"},404,origin);
     if(request.method==="OPTIONS")
       return new Response(null,{
-        status:origin===ALLOWED_ORIGIN?204:403,
+        status:isAllowedOrigin(origin)?204:403,
         headers:headers(origin)
       });
     if(request.method!=="POST")
       return json({error:"Method Not Allowed"},405,origin);
-    if(origin!==ALLOWED_ORIGIN)
+    if(!isAllowedOrigin(origin))
       return json({error:"Forbidden"},403,origin);
     return handleRegister(request,env,origin);
   }
