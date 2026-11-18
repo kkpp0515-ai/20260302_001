@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2c2d32">
+<meta name="description" content="LINEの友だち紹介キャンペーン。自分専用の紹介リンクをLINEでシェアして、紹介人数をチェック。">
+<title>友だち紹介キャンペーン | LINE</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+:root{color-scheme:light;--ink:#25272d;--muted:#747780;--line:#eaebed;--lime:#d6ff39;--green:#06c755;--card:#fff;--base:#f5f6f8;--shadow:0 10px 35px rgba(24,27,38,.055)}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--base);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;font-size:14px;line-height:1.55}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible{outline:3px solid #468dff;outline-offset:3px}
+button:disabled{cursor:wait;opacity:.55}
+.icon{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.site-head{background:#2d2e33;color:#fff;min-height:64px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.head-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-emblem{display:grid;place-items:center;width:34px;height:34px;background:var(--lime);color:#292b31;border-radius:10px;font-size:21px;font-weight:950;transform:rotate(-8deg);box-shadow:0 0 0 3px #ffffff11}
+.brand-name{font-size:15px;font-weight:900;letter-spacing:.025em;line-height:1.2}
+.brand-name small{display:block;color:#b9bac0;font-size:9px;letter-spacing:.15em;font-weight:650;margin-top:4px}
+.head-tag{border:1px solid #6b6c73;border-radius:50px;padding:6px 10px;color:#eeeef1;font-size:10px;font-weight:800;letter-spacing:.07em;white-space:nowrap}
+.head-tag span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);vertical-align:1px;margin-right:5px}
+.page{max-width:980px;margin:0 auto;padding:0 14px 138px}
+.eyebrow{display:flex;gap:8px;align-items:center;padding:18px 2px 10px;color:#777982;font-size:10px;font-weight:900;letter-spacing:.16em}
+.eyebrow::before{content:"";width:23px;height:4px;border-radius:3px;background:var(--lime);box-shadow:8px 0 0 #2d2e33}
+.hero{position:relative;isolation:isolate;min-height:375px;overflow:hidden;border-radius:15px;background:radial-gradient(circle at 86% 16%,#7a76fc73 0 17%,transparent 45%),linear-gradient(118deg,#202336 0%,#302753 51%,#0b5065 100%);color:#fff;box-shadow:0 14px 25px rgba(28,32,57,.16)}
+.hero::before{content:"";position:absolute;width:350px;height:350px;right:-160px;top:-95px;border:1px solid #ffffff49;border-radius:50%;box-shadow:0 0 0 44px #ffffff08,0 0 0 90px #ffffff08;transform:rotate(-15deg)}
+.hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 47px,#ffffff05 48px 49px);pointer-events:none;z-index:-1}
+.hero-content{position:relative;padding:24px 21px 24px;z-index:2;max-width:420px}
+.hero-kicker{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;color:#333648;background:var(--lime);border-radius:4px;font-size:10px;font-weight:900;letter-spacing:.09em;box-shadow:3px 3px 0 #0004}
+.hero h1{font-size:clamp(26px,6.4vw,40px);line-height:1.25;letter-spacing:-.045em;margin:17px 0 9px;font-weight:950;text-shadow:0 3px 8px #0e142b99}
+.hero h1 em{font-style:normal;color:#fff189;filter:drop-shadow(0 2px 0 #8a5021)}
+.hero-sub{font-size:12px;color:#e7eafa;line-height:1.75;max-width:190px;margin:0}
+.gift-card-art{position:absolute;right:17px;bottom:24px;width:143px;height:94px;z-index:1;transform:rotate(-8deg);pointer-events:none;filter:drop-shadow(0 15px 13px #0a0b2d8a)}
+.gift-card-art::before{content:"";position:absolute;inset:9px -5px -8px 6px;border-radius:11px;background:#695125;transform:rotate(4deg)}
+.gift-card-face{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;width:100%;height:100%;border-radius:11px;padding:12px 13px;overflow:hidden;color:#5d4017;background:linear-gradient(120deg,#fff8cf 0%,#e9c66b 56%,#c18e3c 100%);border:2px solid #fff0ab;box-shadow:inset 0 0 0 1px #a47a3e70}
+.gift-card-face::before{content:"";position:absolute;right:-32px;top:-35px;width:104px;height:104px;border:16px solid #fffbd860;border-radius:50%}
+.gift-card-face::after{content:"✦";position:absolute;right:13px;bottom:15px;color:#fff4b9;font-size:24px;line-height:1;text-shadow:0 2px 1px #86602760}
+.gift-card-face span{z-index:1;font-size:12px;letter-spacing:.12em;font-weight:950}
+.gift-card-face strong{z-index:1;font-size:18px;font-weight:950;letter-spacing:.03em}
+.gift-card-face small{z-index:1;font-size:7px;font-weight:900;letter-spacing:.13em}
+.hero-foot{position:absolute;bottom:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--lime),#66f5cd,#8cb9ff)}
+.preview-notice{display:flex;align-items:flex-start;gap:8px;margin-top:11px;border:1px solid #f2d993;border-radius:9px;background:#fffcf1;padding:10px 12px;color:#6e5b2f;font-size:11px;line-height:1.7}
+.preview-notice svg{width:16px;height:16px;flex:none;margin-top:2px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:27px 0 12px}
+.section-head h2{font-size:19px;line-height:1.2;margin:0;font-weight:900;letter-spacing:-.03em}
+.section-head h2::after{content:"";display:block;width:42px;height:4px;background:var(--lime);border-radius:3px;margin-top:7px;transform:skewX(-22deg)}
+.section-aside{color:#8b8d96;font-size:11px;font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}
+.count-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:23px 19px}
+.count-label{font-size:12px;color:#62646c;font-weight:800}
+.count-num{display:flex;align-items:baseline;gap:7px;line-height:1;margin:8px 0 9px}
+.count-num strong{font-size:69px;letter-spacing:-.075em;font-weight:950;font-variant-numeric:tabular-nums}
+.count-num span{font-size:19px;font-weight:850}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:50px;background:#edfff3;color:#07823a;font-size:10px;font-weight:800}
+.status-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green)}
+.count-deco{display:grid;place-items:center;width:83px;height:83px;border-radius:23px;background:linear-gradient(140deg,#edffb5,#d7f9eb);color:#315d46;transform:rotate(6deg);box-shadow:0 8px 0 #d5e5d8}
+.count-deco svg{width:45px;height:45px;stroke-width:1.8}
+.small-note{font-size:11px;color:#8a8d93;line-height:1.8;margin:10px 2px 0}
+.share-card{padding:19px}
+.share-card p{margin:0 0 14px;font-size:12px;color:#747780;line-height:1.8}
+.action-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:11px;min-height:56px;padding:12px 16px;font-size:15px;font-weight:900;box-shadow:0 5px 0 #05a846;transition:transform .12s,box-shadow .12s;background:var(--green);color:#fff}
+.action-button:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #05a846}
+.action-button svg{width:23px;height:23px}
+.link-actions{display:flex;gap:10px;align-items:stretch;margin-top:18px}
+.link-field{background:#f6f7f8;min-width:0;flex:1;min-height:44px;border:1px solid #e7e9ed;border-radius:9px;padding:10px 12px;color:#6b6d75;font-size:11px;line-height:1.55;overflow-wrap:anywhere;user-select:all}
+.mini-button{display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #d9dbe0;background:#fff;color:#303238;border-radius:9px;min-width:89px;padding:9px 12px;font-size:12px;font-weight:850}
+.mini-button:hover{background:#f4f5f7}
+.mini-button svg{width:16px;height:16px}
+.refresh-button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:#71747d;padding:7px 2px;margin:8px 0 0 auto;font-size:11px;font-weight:700}
+.refresh-button svg{width:15px;height:15px}
+.friendship-action{margin-top:12px;padding:14px 15px;border:1px solid #bde7c9;border-radius:12px;background:#f2fff6}
+.friendship-action strong{display:block;font-size:13px;margin-bottom:5px}
+.friendship-action p{font-size:11px;color:#496653;margin:0 0 10px;line-height:1.7}
+.friendship-action button{min-height:42px;width:100%;border:0;border-radius:9px;background:var(--green);color:white;font-size:13px;font-weight:850}
+[hidden]{display:none!important}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.step{min-width:0;text-align:center;padding:18px 9px 14px;position:relative}
+.step-number{display:inline-flex;align-items:center;justify-content:center;background:#2e3036;color:var(--lime);width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:900}
+.step-icon{display:grid;place-items:center;width:51px;height:51px;margin:11px auto 12px;background:#f3f5fa;border-radius:15px;color:#424650}
+.step-icon svg{width:26px;height:26px}
+.step strong{display:block;font-size:12px;line-height:1.4;font-weight:900}
+.step p{font-size:10px;line-height:1.6;color:#878990;margin:5px 0 0}
+.bottom-notes{font-size:11px;line-height:1.85;color:#9b9da4;padding:20px 4px 0}
+.bottom-notes p{margin:0 0 7px}
+#status{margin:16px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.7;display:flex;gap:9px;align-items:flex-start;border-radius:10px;padding:12px 13px;border:1px solid #e5e7ec;background:white;color:#555963}
+#status::before{content:"";display:block;flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:#a0a5ae}
+#status.success{border-color:#bdeccf;color:#166e3c;background:#f1fff5}
+#status.success::before{background:var(--green)}
+#status.error{color:#bd353c;border-color:#f0b3b5;background:#fff4f4}
+#status.error::before{background:#ef6570}
+#app[hidden],.sticky-action[hidden]{display:none!important}
+.sticky-action{position:fixed;z-index:20;bottom:0;left:0;right:0;padding:11px 14px calc(11px + env(safe-area-inset-bottom,0px));background:#ffffffed;border-top:1px solid #e2e3e7;backdrop-filter:blur(14px);box-shadow:0 -9px 25px #24283112}
+.sticky-action .action-button{max-width:520px;margin:0 auto}
+.sticky-label{text-align:center;font-size:10px;color:#898b94;margin-top:5px;font-weight:650}
+.desktop-note{display:none}
+@media(min-width:650px){.site-head{padding:0 max(22px,calc((100vw - 950px)/2))}.page{padding:0 28px 140px}.hero{min-height:322px}.hero-content{padding:34px 38px}.gift-card-art{right:78px;bottom:62px;transform:rotate(-8deg) scale(1.45)}.hero-sub{max-width:330px}.layout{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;align-items:start}.layout .section-head{margin-top:27px}.steps{gap:16px}.step{padding:20px 12px}.sticky-action{display:none}.desktop-note{display:block;color:#aaa;font-size:10px;margin-top:8px}}
+@media(max-width:370px){.hero h1{font-size:25px}.hero-sub{max-width:170px}.gift-card-art{right:12px;bottom:20px;transform:rotate(-8deg) scale(.88);transform-origin:right bottom}.hero-content{padding-left:17px}.step{padding:13px 5px}.count-num strong{font-size:61px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.action-button{transition:none}}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <symbol id="i-people" viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v4h4M4 13a8 8 0 0 0 14.9 4M20 20v-4h-4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m10.3 3.9-8.5 15a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3l-8.5-15a2 2 0 0 0-3.4 0z"/><path d="M12 9v5M12 18h.01"/></symbol>
+</svg>
+<header class="site-head">
+  <div class="head-brand"><div class="brand-emblem" aria-hidden="true">F</div><div class="brand-name">FRIEND REWARDS<small>LINE FRIEND REFERRAL</small></div></div>
+  <div class="head-tag"><span></span>TEST CAMPAIGN</div>
+</header>
+<main class="page">
+  <div class="eyebrow">SPECIAL CAMPAIGN</div>
+  <section class="hero" aria-labelledby="campaign-title">
+    <div class="hero-content">
+      <div class="hero-kicker">LINE 友だち紹介</div>
+      <h1 id="campaign-title">友だちを紹介して<br><em>Amazonギフトカード</em><br>をゲット！</h1>
+      <p class="hero-sub">あなた専用のリンクを送ろう。公式アカウントの友だち追加人数がここでわかる！</p>
+    </div>
+    <div class="gift-card-art" aria-hidden="true"><div class="gift-card-face"><span>GIFT CARD</span><strong>THANK YOU</strong><small>FRIEND REWARD</small></div></div>
+    <div class="hero-foot"></div>
+  </section>
+  <div class="preview-notice"><svg class="icon" viewBox="0 0 24 24"><use href="#i-alert"/></svg><span><strong>現在は動作テスト中です。</strong> Amazonギフトカードの配布条件は未設定で、現時点では特典の付与はありません。</span></div>
+  <div id="status" role="status" aria-live="polite">LINEログインを確認しています…</div>
+  <div class="friendship-action" id="friendship-action" hidden>
+    <strong>紹介成立には公式アカウントの友だち追加が必要です</strong>
+    <p>まずLINE公式アカウントを友だち追加してください。追加後はこのページに戻ると確認できます。</p>
+    <button id="add-friend-button" type="button">LINE公式アカウントを友だち追加</button>
+  </div>
+  <div id="app" hidden>
+    <div class="layout">
+      <div>
+        <div class="section-head"><h2>あなたの紹介状況</h2><span class="section-aside">MY REFERRALS</span></div>
+        <section class="card count-card" aria-labelledby="count-label">
+          <div><div class="count-label" id="count-label">紹介が成立した友だち</div><div class="count-num"><strong id="referral-count">0</strong><span>人</span></div><span class="status-pill" id="registration-status">確認中</span></div>
+          <div class="count-deco" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-people"/></svg></div>
+        </section>
+        <p class="small-note">紹介リンクから初めてLINEログインし、公式アカウントを友だち追加した場合に加算されます。自分自身・同じアカウントの重複登録は対象外です。</p>
+      </div>
+      <div>
+        <div class="section-head"><h2>友だちに紹介する</h2><span class="section-aside">SHARE & INVITE</span></div>
+        <section class="card share-card" aria-labelledby="share-heading">
+          <p id="share-heading">LINEで送りたい相手を選ぶだけ！ 下のボタンから、あなた専用の紹介リンクを送信できます。</p>
+          <button class="action-button" id="share-button" type="button"><svg class="icon" viewBox="0 0 24 24"><use href="#i-send"/></svg>LINEで友だちに紹介する</button>
+          <div class="link-actions"><div class="link-field" id="share-url" aria-label="あなた専用の紹介URL">URLを準備しています…</div><button class="mini-button" id="copy-button" type="button"><svg class="icon" viewBox="0 0 24 24"><use href="#i-copy"/></svg>コピー</button></div>
+          <button class="refresh-button" id="refresh-button" type="button"><svg class="icon" viewBox="0 0 24 24"><use href="#i-refresh"/></svg>紹介人数を更新</button>
+          <div class="desktop-note">※ LINEシェアが利用できない場合は、紹介URLをコピーしてトークに貼り付けてください。</div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="section-head"><h2>紹介の流れ</h2><span class="section-aside">3 EASY STEPS</span></div>
+  <section class="steps" aria-label="紹介の3ステップ">
+    <div class="card step"><span class="step-number">1</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-send"/></svg></div><strong>リンクを送る</strong><p>LINEで友だちに<br>専用リンクをシェア</p></div>
+    <div class="card step"><span class="step-number">2</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-people"/></svg></div><strong>公式アカウントを追加</strong><p>リンクからLINEログイン後に<br>友だち追加</p></div>
+    <div class="card step"><span class="step-number">3</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check"/></svg></div><strong>人数に反映</strong><p>友だち追加が確認されたら<br>紹介成立</p></div>
+  </section>
+  <footer class="bottom-notes"><p>※ 「送信」だけでは紹介成立になりません。相手の初回LINEログインと、公式アカウントの友だち追加が必要です。</p><p>※ テスト版では、招待前から公式アカウントと友だちだった人の除外は未対応です。</p><p>※ 本ページは紹介機能のテスト公開です。正式な報酬条件・期間・受取方法は未設定です。</p></footer>
+</main>
+<div class="sticky-action" id="sticky-action" hidden><button class="action-button" id="sticky-share-button" type="button"><svg class="icon" viewBox="0 0 24 24"><use href="#i-send"/></svg>LINEで友だちに紹介する</button><div class="sticky-label">リンクをシェアして友だちを招待</div></div>
+<script>
+(function(){
+"use strict";
+const LIFF_ID="2012656044-bbp3RD9N";
+const API_BASE="https://referral-test-api.kkpp0515.workers.dev";
+// Canonical G123 route; keep in sync with the LIFF Endpoint URL.
+const ENDPOINT="https://g123.jp/friend-invite";
+const statusEl=document.getElementById("status");
+const app=document.getElementById("app");
+const sticky=document.getElementById("sticky-action");
+const countEl=document.getElementById("referral-count");
+const urlEl=document.getElementById("share-url");
+const friendshipAction=document.getElementById("friendship-action");
+const shareButtons=[document.getElementById("share-button"),document.getElementById("sticky-share-button")];
+let currentIdToken="",currentAccessToken="",currentShareUrl="",registered=false;
+function status(message,kind){
+  statusEl.textContent=message;
+  statusEl.classList.remove("success","error");
+  if(kind)statusEl.classList.add(kind);
+}
+function getReferralFromUrl(){
+  const ref=new URLSearchParams(location.search).get("ref");
+  return ref&&/^[A-Za-z0-9_-]{16,24}$/.test(ref)?ref:null;
+}
+function referralLink(code){
+  const url=new URL(ENDPOINT);
+  url.searchParams.set("ref",code);
+  return url.toString();
+}
+async function apiRegister(ref){
+  const response=await fetch(API_BASE+"/register",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({idToken:currentIdToken,accessToken:currentAccessToken,ref:ref||null})
+  });
+  const data=await response.json().catch(()=>({error:"APIの応答を読み取れませんでした"}));
+  if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+  return data;
+}
+async function updateUI(data){
+  countEl.textContent=String(data.referralCount);
+  document.getElementById("registration-status").textContent=data.isFriend?"公式アカウント追加済み":"公式アカウント未追加";
+  friendshipAction.hidden=!!data.isFriend;
+  const target=referralLink(data.referralCode);
+  try{currentShareUrl=await liff.permanentLink.createUrlBy(target);}
+  catch{currentShareUrl="https://liff.line.me/"+LIFF_ID+"/?ref="+encodeURIComponent(data.referralCode);}
+  urlEl.textContent=currentShareUrl;
+  registered=true;
+  app.hidden=false;
+  sticky.hidden=false;
+  if(data.isFriend){
+    status("公式アカウントの友だち追加を確認しました。紹介リンクをシェアできます。","success");
+  }else{
+    status("LINEログイン済みです。公式アカウントを友だち追加すると紹介が成立します。","success");
+  }
+}
+async function start(){
+  if(typeof liff==="undefined"){status("LINE画面を読み込めませんでした。ページを再読み込みしてください。","error");return;}
+  try{
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){
+      status("LINEログイン画面に移動します…");
+      liff.login({redirectUri:location.href});return;
+    }
+    const ref=getReferralFromUrl();
+    currentIdToken=liff.getIDToken();
+    currentAccessToken=liff.getAccessToken();
+    if(!currentIdToken)throw new Error("LINE IDトークンを取得できませんでした。LINE Loginのopenid設定を確認してください。");
+    if(!currentAccessToken)throw new Error("LINEアクセストークンを取得できませんでした。LIFFのprofile設定を確認してください。");
+    status("登録情報を読み込んでいます…");
+    await updateUI(await apiRegister(ref));
+  }catch(error){
+    status("登録情報の読み込みに失敗しました。\n"+(error&&error.message?error.message:String(error))+"\nページを再読み込みしても直らない場合は、管理者にお問い合わせください。","error");
+  }
+}
+async function copyURL(){
+  if(!registered)throw new Error("紹介リンクがまだ準備できていません");
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(currentShareUrl);return;}
+  const ta=document.createElement("textarea");
+  ta.value=currentShareUrl;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();
+  const copied=document.execCommand("copy");ta.remove();
+  if(!copied)throw new Error("コピーできませんでした");
+}
+async function share(){
+  if(!registered)return;
+  shareButtons.forEach(button=>button.disabled=true);
+  try{
+    if(liff.isApiAvailable("shareTargetPicker")){
+      const result=await liff.shareTargetPicker([{type:"text",text:"友だち紹介キャンペーンに参加してみて！\n"+currentShareUrl}],{isMultiple:true});
+      status(result?"LINEでシェアしました！ 相手が初回ログインと公式アカウントの友だち追加を終えると人数が増えます。":"シェアをキャンセルしました。","success");
+    }else{
+      await copyURL();status("紹介URLをコピーしました。LINEトークに貼り付けて送ってください。","success");
+    }
+  }catch(error){status("シェアできませんでした："+(error.message||String(error)),"error");}
+  finally{shareButtons.forEach(button=>button.disabled=false);}
+}
+shareButtons.forEach(button=>button.addEventListener("click",share));
+document.getElementById("copy-button").addEventListener("click",async function(){
+  try{await copyURL();status("紹介URLをコピーしました。","success");}
+  catch{status("コピーできませんでした。URLを長押ししてコピーしてください。","error");}
+});
+document.getElementById("refresh-button").addEventListener("click",async function(){
+  if(!currentIdToken)return;
+  this.disabled=true;
+  try{status("紹介人数を更新しています…");await updateUI(await apiRegister(null));}
+  catch(error){status("更新できませんでした："+(error.message||String(error)),"error");}
+  finally{this.disabled=false;}
+});
+document.getElementById("add-friend-button").addEventListener("click",async function(){
+  this.disabled=true;
+  try{
+    if(typeof liff.requestFriendship!=="function"||!liff.isInClient()){
+      const ref=getReferralFromUrl();
+      const url="https://liff.line.me/"+LIFF_ID+(ref?"/?ref="+encodeURIComponent(ref):"");
+      status("LINEアプリ内で開いてください。LINEへ移動します…");
+      location.assign(url);return;
+    }
+    await liff.requestFriendship();
+    status("友だち状態を確認しています…");
+    await updateUI(await apiRegister(null));
+  }catch(error){
+    status("友だち追加を確認できませんでした："+(error.message||String(error))+"\nLINEログインチャネルへの公式アカウント連携とLIFFのFull設定を確認してください。","error");
+  }finally{this.disabled=false;}
+});
+start();
+})();
+</script>
+</body>
+</html>
