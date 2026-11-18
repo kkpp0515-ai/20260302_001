@@ -72,6 +72,11 @@ button:disabled{cursor:wait;opacity:.55}
 .mini-button svg{width:16px;height:16px}
 .refresh-button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:#71747d;padding:7px 2px;margin:8px 0 0 auto;font-size:11px;font-weight:700}
 .refresh-button svg{width:15px;height:15px}
+.friendship-action{margin-top:12px;padding:14px 15px;border:1px solid #bde7c9;border-radius:12px;background:#f2fff6}
+.friendship-action strong{display:block;font-size:13px;margin-bottom:5px}
+.friendship-action p{font-size:11px;color:#496653;margin:0 0 10px;line-height:1.7}
+.friendship-action button{min-height:42px;width:100%;border:0;border-radius:9px;background:var(--green);color:white;font-size:13px;font-weight:850}
+[hidden]{display:none!important}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .step{min-width:0;text-align:center;padding:18px 9px 14px;position:relative}
 .step-number{display:inline-flex;align-items:center;justify-content:center;background:#2e3036;color:var(--lime);width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:900}
@@ -116,22 +121,27 @@ button:disabled{cursor:wait;opacity:.55}
     <div class="hero-content">
       <div class="hero-kicker">LINE 友だち紹介</div>
       <h1 id="campaign-title">友だちを紹介して<br><em>Amazonギフトカード</em><br>をゲット！</h1>
-      <p class="hero-sub">あなた専用のリンクを送ろう。友だちの登録人数がここでわかる！</p>
+      <p class="hero-sub">あなた専用のリンクを送ろう。公式アカウントの友だち追加人数がここでわかる！</p>
     </div>
     <div class="gift-card-art" aria-hidden="true"><div class="gift-card-face"><span>GIFT CARD</span><strong>THANK YOU</strong><small>FRIEND REWARD</small></div></div>
     <div class="hero-foot"></div>
   </section>
   <div class="preview-notice"><svg class="icon" viewBox="0 0 24 24"><use href="#i-alert"/></svg><span><strong>現在は動作テスト中です。</strong> Amazonギフトカードの配布条件は未設定で、現時点では特典の付与はありません。</span></div>
   <div id="status" role="status" aria-live="polite">LINEログインを確認しています…</div>
+  <div class="friendship-action" id="friendship-action" hidden>
+    <strong>紹介成立には公式アカウントの友だち追加が必要です</strong>
+    <p>まずLINE公式アカウントを友だち追加してください。追加後はこのページに戻ると確認できます。</p>
+    <button id="add-friend-button" type="button">LINE公式アカウントを友だち追加</button>
+  </div>
   <div id="app" hidden>
     <div class="layout">
       <div>
         <div class="section-head"><h2>あなたの紹介状況</h2><span class="section-aside">MY REFERRALS</span></div>
         <section class="card count-card" aria-labelledby="count-label">
-          <div><div class="count-label" id="count-label">紹介が成立した友だち</div><div class="count-num"><strong id="referral-count">0</strong><span>人</span></div><span class="status-pill" id="registration-status">LINE登録済み</span></div>
+          <div><div class="count-label" id="count-label">紹介が成立した友だち</div><div class="count-num"><strong id="referral-count">0</strong><span>人</span></div><span class="status-pill" id="registration-status">確認中</span></div>
           <div class="count-deco" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-people"/></svg></div>
         </section>
-        <p class="small-note">友だちが専用リンクから初めてLINE登録した場合に加算されます。自分自身・同じアカウントの重複登録は対象外です。</p>
+        <p class="small-note">紹介リンクから初めてLINEログインし、公式アカウントを友だち追加した場合に加算されます。自分自身・同じアカウントの重複登録は対象外です。</p>
       </div>
       <div>
         <div class="section-head"><h2>友だちに紹介する</h2><span class="section-aside">SHARE & INVITE</span></div>
@@ -148,10 +158,10 @@ button:disabled{cursor:wait;opacity:.55}
   <div class="section-head"><h2>紹介の流れ</h2><span class="section-aside">3 EASY STEPS</span></div>
   <section class="steps" aria-label="紹介の3ステップ">
     <div class="card step"><span class="step-number">1</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-send"/></svg></div><strong>リンクを送る</strong><p>LINEで友だちに<br>専用リンクをシェア</p></div>
-    <div class="card step"><span class="step-number">2</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-people"/></svg></div><strong>友だちが登録</strong><p>リンクから<br>初回LINE登録</p></div>
-    <div class="card step"><span class="step-number">3</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check"/></svg></div><strong>人数に反映</strong><p>紹介成立人数を<br>この画面で確認</p></div>
+    <div class="card step"><span class="step-number">2</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-people"/></svg></div><strong>公式アカウントを追加</strong><p>リンクからLINEログイン後に<br>友だち追加</p></div>
+    <div class="card step"><span class="step-number">3</span><div class="step-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check"/></svg></div><strong>人数に反映</strong><p>友だち追加が確認されたら<br>紹介成立</p></div>
   </section>
-  <footer class="bottom-notes"><p>※ 「送信」だけでは紹介成立になりません。相手の初回登録が必要です。</p><p>※ 本ページは紹介機能のテスト公開です。正式な報酬条件・期間・受取方法は未設定です。</p></footer>
+  <footer class="bottom-notes"><p>※ 「送信」だけでは紹介成立になりません。相手の初回LINEログインと、公式アカウントの友だち追加が必要です。</p><p>※ テスト版では、招待前から公式アカウントと友だちだった人の除外は未対応です。</p><p>※ 本ページは紹介機能のテスト公開です。正式な報酬条件・期間・受取方法は未設定です。</p></footer>
 </main>
 <div class="sticky-action" id="sticky-action" hidden><button class="action-button" id="sticky-share-button" type="button"><svg class="icon" viewBox="0 0 24 24"><use href="#i-send"/></svg>LINEで友だちに紹介する</button><div class="sticky-label">リンクをシェアして友だちを招待</div></div>
 <script>
@@ -159,14 +169,16 @@ button:disabled{cursor:wait;opacity:.55}
 "use strict";
 const LIFF_ID="2012656044-bbp3RD9N";
 const API_BASE="https://referral-test-api.kkpp0515.workers.dev";
+// Canonical G123 route; keep in sync with the LIFF Endpoint URL.
 const ENDPOINT="https://kkpp0515-ai.github.io/20260302_001/referral-test/";
 const statusEl=document.getElementById("status");
 const app=document.getElementById("app");
 const sticky=document.getElementById("sticky-action");
 const countEl=document.getElementById("referral-count");
 const urlEl=document.getElementById("share-url");
+const friendshipAction=document.getElementById("friendship-action");
 const shareButtons=[document.getElementById("share-button"),document.getElementById("sticky-share-button")];
-let currentIdToken="",currentShareUrl="",registered=false;
+let currentIdToken="",currentAccessToken="",currentShareUrl="",registered=false;
 function status(message,kind){
   statusEl.textContent=message;
   statusEl.classList.remove("success","error");
@@ -184,7 +196,7 @@ function referralLink(code){
 async function apiRegister(ref){
   const response=await fetch(API_BASE+"/register",{
     method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({idToken:currentIdToken,ref:ref||null})
+    body:JSON.stringify({idToken:currentIdToken,accessToken:currentAccessToken,ref:ref||null})
   });
   const data=await response.json().catch(()=>({error:"APIの応答を読み取れませんでした"}));
   if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
@@ -192,7 +204,8 @@ async function apiRegister(ref){
 }
 async function updateUI(data){
   countEl.textContent=String(data.referralCount);
-  document.getElementById("registration-status").textContent=data.justRegistered?"初回登録が完了":"LINE登録済み";
+  document.getElementById("registration-status").textContent=data.isFriend?"公式アカウント追加済み":"公式アカウント未追加";
+  friendshipAction.hidden=!!data.isFriend;
   const target=referralLink(data.referralCode);
   try{currentShareUrl=await liff.permanentLink.createUrlBy(target);}
   catch{currentShareUrl="https://liff.line.me/"+LIFF_ID+"/?ref="+encodeURIComponent(data.referralCode);}
@@ -200,7 +213,11 @@ async function updateUI(data){
   registered=true;
   app.hidden=false;
   sticky.hidden=false;
-  status(data.justRegistered?"LINE登録が完了しました！ 紹介リンクをシェアできます。":"ログイン済みです。紹介リンクをシェアできます。","success");
+  if(data.isFriend){
+    status("公式アカウントの友だち追加を確認しました。紹介リンクをシェアできます。","success");
+  }else{
+    status("LINEログイン済みです。公式アカウントを友だち追加すると紹介が成立します。","success");
+  }
 }
 async function start(){
   if(typeof liff==="undefined"){status("LINE画面を読み込めませんでした。ページを再読み込みしてください。","error");return;}
@@ -212,7 +229,9 @@ async function start(){
     }
     const ref=getReferralFromUrl();
     currentIdToken=liff.getIDToken();
+    currentAccessToken=liff.getAccessToken();
     if(!currentIdToken)throw new Error("LINE IDトークンを取得できませんでした。LINE Loginのopenid設定を確認してください。");
+    if(!currentAccessToken)throw new Error("LINEアクセストークンを取得できませんでした。LIFFのprofile設定を確認してください。");
     status("登録情報を読み込んでいます…");
     await updateUI(await apiRegister(ref));
   }catch(error){
@@ -234,7 +253,7 @@ async function share(){
   try{
     if(liff.isApiAvailable("shareTargetPicker")){
       const result=await liff.shareTargetPicker([{type:"text",text:"友だち紹介キャンペーンに参加してみて！\n"+currentShareUrl}],{isMultiple:true});
-      status(result?"LINEでシェアしました！ 相手が初めて登録すると紹介人数が増えます。":"シェアをキャンセルしました。","success");
+      status(result?"LINEでシェアしました！ 相手が初回ログインと公式アカウントの友だち追加を終えると人数が増えます。":"シェアをキャンセルしました。","success");
     }else{
       await copyURL();status("紹介URLをコピーしました。LINEトークに貼り付けて送ってください。","success");
     }
@@ -252,6 +271,22 @@ document.getElementById("refresh-button").addEventListener("click",async functio
   try{status("紹介人数を更新しています…");await updateUI(await apiRegister(null));}
   catch(error){status("更新できませんでした："+(error.message||String(error)),"error");}
   finally{this.disabled=false;}
+});
+document.getElementById("add-friend-button").addEventListener("click",async function(){
+  this.disabled=true;
+  try{
+    if(typeof liff.requestFriendship!=="function"||!liff.isInClient()){
+      const ref=getReferralFromUrl();
+      const url="https://liff.line.me/"+LIFF_ID+(ref?"/?ref="+encodeURIComponent(ref):"");
+      status("LINEアプリ内で開いてください。LINEへ移動します…");
+      location.assign(url);return;
+    }
+    await liff.requestFriendship();
+    status("友だち状態を確認しています…");
+    await updateUI(await apiRegister(null));
+  }catch(error){
+    status("友だち追加を確認できませんでした："+(error.message||String(error))+"\nLINEログインチャネルへの公式アカウント連携とLIFFのFull設定を確認してください。","error");
+  }finally{this.disabled=false;}
 });
 start();
 })();
