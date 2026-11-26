@@ -10,10 +10,11 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;line-height:1.6}
-.wrap{max-width:1500px;margin:0 auto;padding:36px 24px 60px}
-h1{font-size:2rem;margin:0 0 6px}
-.lead{color:var(--muted);font-size:.85rem;margin:0 0 22px}
+.wrap{max-width:1500px;margin:0 auto;padding:16px 24px 40px}
+h1{font-size:1.5rem;margin:0 0 2px}
+.lead{color:var(--muted);font-size:.78rem;margin:0 0 12px}
 .grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+.side{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow-y:auto}
 .panel{padding:18px;display:flex;flex-direction:column;gap:14px}
 .panel h2{font-size:.8rem;letter-spacing:.12em;color:var(--gold);margin:0;font-family:inherit;font-weight:600}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -35,14 +36,14 @@ hr{border:0;border-top:1px solid var(--border);margin:2px 0;width:100%}
 .layer button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 4px}
 .layer button:hover{color:var(--gold)}
 .empty{color:var(--muted);font-size:.78rem;padding:8px 2px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .tab{padding:9px 16px;border:1px solid var(--border);background:var(--btn-bg);color:var(--text);border-radius:3px;cursor:pointer;font:inherit;font-size:.85rem;font-weight:600}
 .tab small{color:var(--muted);font-weight:400;margin-left:6px}
 .tab.on{background:var(--gold);color:var(--bg);border-color:var(--gold)}
 .tab.on small{color:inherit;opacity:.75}
-.stage{padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:420px;border:1px solid var(--border);border-radius:5px;background:repeating-conic-gradient(var(--hover-bg) 0% 25%,var(--bg) 0% 50%) 0 0/20px 20px}
+.stage{padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:calc(100vh - 200px);min-height:300px;border:1px solid var(--border);border-radius:5px;background:repeating-conic-gradient(var(--hover-bg) 0% 25%,var(--bg) 0% 50%) 0 0/20px 20px}
 .cv-wrap{position:relative;line-height:0;max-width:100%;box-shadow:0 8px 30px var(--shadow)}
-canvas{max-width:100%;height:auto;display:block;touch-action:none;cursor:default}
+canvas{width:auto;height:auto;max-width:100%;max-height:calc(100vh - 270px);display:block;touch-action:none;cursor:default}
 .hint{font-size:.74rem;color:var(--muted);text-align:center;line-height:1.7}
 .info{font-size:.78rem;color:var(--muted)}
 .chk{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer}
@@ -50,7 +51,7 @@ canvas{max-width:100%;height:auto;display:block;touch-action:none;cursor:default
 .drop{outline:2px dashed var(--gold);outline-offset:-6px}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);padding:9px 18px;border-radius:4px;font-size:.85rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:100001}
 #toast.show{opacity:1}
-@media(max-width:980px){.grid{grid-template-columns:1fr}}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.side{position:static;max-height:none}.stage{height:auto}canvas{max-height:70vh}}
 </style>
 </head>
 <body>
@@ -60,7 +61,7 @@ canvas{max-width:100%;height:auto;display:block;touch-action:none;cursor:default
 
   <div class="grid">
     <!-- 左パネル -->
-    <div class="neo-box panel" style="transform:none">
+    <div class="neo-box panel side" style="transform:none">
       <h2>00 タイトル</h2>
       <div class="row"><label>タイトル</label><select id="title" class="neo-input" style="flex:1"><option value="">（未選択）</option></select></div>
       <div class="row"><label>表記</label><select id="variant" class="neo-input" style="flex:1"></select></div>
@@ -197,7 +198,7 @@ function addImage(file,role){
   });
 }
 function addText(){
-  const l={id:uid++,type:'text',role:'text',copyright:!layers.some(x=>x.copyright),name:'コピーライト',text:'© 権利者名 / G123',font:'"Yu Gothic",Meiryo,sans-serif',color:'#333333',weight:'400',align:'center',vis:true};
+  const l={id:uid++,type:'text',role:'text',copyright:!layers.some(x=>x.copyright),name:'コピーライト',text:'© 権利者名 / G123',font:'"Yu Gothic",Meiryo,sans-serif',color:'#333333',weight:'400',align:'center',strokeColor:'#ffffff',strokeW:0,vis:true};
   initT(l);layers.push(l);selId=l.id;refresh();
 }
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{addRole=b.dataset.add;$('#file').value='';$('#file').click();});
@@ -225,6 +226,8 @@ function drawLayer(c,l,tr){
     setFont(c,l,tr.s);c.fillStyle=l.color;c.textBaseline='middle';c.textAlign=l.align;
     const lines=textLines(l),d=dims(l,tr);
     const ax=l.align==='left'?tr.x-d.w/2:l.align==='right'?tr.x+d.w/2:tr.x;
+    const sw=(l.strokeW||0)/100*tr.s*2;
+    if(sw>0){c.save();c.lineJoin='round';c.miterLimit=2;c.strokeStyle=l.strokeColor||'#ffffff';c.lineWidth=sw;lines.forEach((s,i)=>c.strokeText(s,ax,tr.y-d.h/2+tr.s*1.4*(i+.5)));c.restore();}
     lines.forEach((s,i)=>c.fillText(s,ax,tr.y-d.h/2+tr.s*1.4*(i+.5)));
   }
 }
@@ -501,7 +504,8 @@ function renderProps(){
       <option value='"Yu Mincho","Hiragino Mincho ProN",serif'>游明朝</option>
       <option value='Arial,Helvetica,sans-serif'>Arial</option></select></div>
     <div class="row"><label>色</label><input type="color" id="pColor"><label>太さ</label><select id="pWeight" class="neo-input"><option value="400">標準</option><option value="700">太字</option></select>
-    <label>揃え</label><select id="pAlign" class="neo-input"><option value="left">左</option><option value="center">中央</option><option value="right">右</option></select></div>`;
+    <label>揃え</label><select id="pAlign" class="neo-input"><option value="left">左</option><option value="center">中央</option><option value="right">右</option></select></div>
+    <div class="row"><label>縁取り</label><input type="color" id="pStrokeC"><input type="range" id="pStrokeW" min="0" max="30" step="1"><span class="info" id="pStrokeV"></span></div>`;
   }
   h+=`<div class="row"><label>${isT?'文字サイズ':'拡大率%'}</label><input type="range" id="pScale" min="${isT?4:2}" max="${isT?200:300}" step="${isT?1:0.5}"><input type="number" id="pScaleN" class="neo-input" step="${isT?1:0.5}"></div>
   <div class="row"><label>X</label><input type="number" id="pX" class="neo-input" step="1"><label>Y</label><input type="number" id="pY" class="neo-input" step="1"><span class="info">中心座標(px)</span></div>
@@ -518,6 +522,9 @@ function renderProps(){
     $('#pColor').value=l.color;$('#pColor').oninput=e=>{l.color=e.target.value;render();};
     $('#pWeight').value=l.weight;$('#pWeight').onchange=e=>{l.weight=e.target.value;render();};
     $('#pAlign').value=l.align;$('#pAlign').onchange=e=>{l.align=e.target.value;render();};
+    $('#pStrokeC').value=l.strokeColor||'#ffffff';$('#pStrokeC').oninput=e=>{l.strokeColor=e.target.value;render();};
+    $('#pStrokeW').value=l.strokeW||0;$('#pStrokeV').textContent=(l.strokeW||0)?l.strokeW+'%':'なし';
+    $('#pStrokeW').oninput=e=>{l.strokeW=+e.target.value;$('#pStrokeV').textContent=l.strokeW?l.strokeW+'%':'なし';render();};
   }
   // 画像は「元画像に対する%」。1.0 = 等倍
   const toDisp=s=>isT?s:s*100, fromDisp=v=>isT?v:v/100;
