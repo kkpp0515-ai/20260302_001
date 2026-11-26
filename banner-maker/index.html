@@ -66,6 +66,7 @@ canvas{width:auto;height:auto;max-width:100%;max-height:calc(100vh - 270px);disp
       <div class="row"><label>タイトル</label><select id="title" class="neo-input" style="flex:1"><option value="">（未選択）</option></select></div>
       <div class="row"><label>表記</label><select id="variant" class="neo-input" style="flex:1"></select></div>
       <div class="row"><label>ロゴ</label><select id="logoSel" class="neo-input" style="flex:1"></select></div>
+      <label class="chk"><input type="checkbox" id="link" checked>ロゴとコピーライトを連動して動かす</label>
       <div class="info" id="titleNote"></div>
       <div class="btns">
         <button class="neo-btn btn sm" id="saveCopy" title="この端末のブラウザに保存されます">編集内容をデフォルトに保存</button>
@@ -142,6 +143,11 @@ let selId=null,uid=1,addRole='character';
 let drag=null,snapLines=[];
 
 const getSel=()=>layers.find(l=>l.id===selId)||null;
+function moveMate(l,dx,dy){
+  if(!$('#link').checked||!(dx||dy))return;
+  const mate=l.preset?layers.find(x=>x.copyright):l.copyright?layers.find(x=>x.preset):null;
+  if(!mate)return;mate._moved=true;const t=mate.t[cur.k];t.x+=dx;t.y+=dy;
+}
 const marginPx=(sz)=>Math.round(Math.min(sz.w,sz.h)*($('#margin').value/100));
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800);};
 
@@ -191,7 +197,7 @@ function addImage(file,role){
       const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,c.width,c.height);
       const l={id:uid++,type:'image',role,name:file.name||'',img,alpha:{w:c.width,h:c.height,d:cx.getImageData(0,0,c.width,c.height).data},vis:true};
       if(l.name==='image.png'||!l.name)l.name={character:'キャラクター',logo:'ロゴ',image:'画像'}[role];
-      initT(l);layers.push(l);selId=l.id;res(l);
+      initT(l);if(role==='character')layers.unshift(l);else layers.push(l);selId=l.id;res(l);
     };
     img.onerror=()=>{toast('画像を読み込めませんでした: '+file.name);res(null);};
     img.src=url;
@@ -302,9 +308,11 @@ cv.addEventListener('pointermove',e=>{
   const l=layers.find(x=>x.id===drag.id);if(!l)return;
   const tr=l.t[cur.k];
   if(drag.mode==='move'){
+    const bx=tr.x,by=tr.y;
     tr.x=p.x-drag.ox;tr.y=p.y-drag.oy;
     snapLines=[];
     if($('#snap').checked)applySnap(l,tr,p.k);
+    moveMate(l,tr.x-bx,tr.y-by);
   }else{
     const dist=Math.hypot(p.x-tr.x,p.y-tr.y);
     const f=Math.max(.02,dist/drag.d0);
@@ -335,10 +343,12 @@ document.addEventListener('keydown',e=>{
   if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   const l=getSel();if(!l)return;
   const st=e.shiftKey?10:1,tr=l.t[cur.k];
+  const bx=tr.x,by=tr.y;
   if(e.key==='ArrowLeft')tr.x-=st;else if(e.key==='ArrowRight')tr.x+=st;
   else if(e.key==='ArrowUp')tr.y-=st;else if(e.key==='ArrowDown')tr.y+=st;
   else if(e.key==='Delete'||e.key==='Backspace'){removeLayer(l.id);e.preventDefault();return;}
   else return;
+  moveMate(l,tr.x-bx,tr.y-by);l._moved=true;
   e.preventDefault();render();syncProps();
 });
 
@@ -393,6 +403,11 @@ const LOGOS={
  nouka:[['日本語','logos/nouka_ja.png'],['英語','logos/nouka_en.png'],['韓国語','logos/nouka_ko.png']]
 };
 const logoSel=$('#logoSel');
+function logoOpts(id){
+  const a=LOGOS[id].slice();
+  if(!a.some(v=>v[0]==='繁体字')){const en=a.find(v=>v[0]==='英語');if(en)a.push(['繁体字',en[1],true]);}
+  return a;
+}
 Object.keys(LOGOS).forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=id;titleSel.appendChild(o);});
 function trimmed(img){
   const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
@@ -411,7 +426,7 @@ async function applyLogo(){
   const id=titleSel.value,idx=logoSel.value;
   const old=layers.find(x=>x.preset);
   if(!id||idx===''){if(old){layers=layers.filter(x=>x!==old);if(selId===old.id)selId=null;refresh();}return;}
-  const [lab,url]=LOGOS[id][+idx],req=++logoReq;
+  const [lab0,url,fb]=logoOpts(id)[+idx],lab=fb?'繁体字（英語ロゴ）':lab0,req=++logoReq;
   let img;try{img=await trimmed(await loadImg(url));}catch{toast('ロゴを読み込めませんでした: '+url);return;}
   if(req!==logoReq)return;
   const k=Math.min(1,256/Math.max(img.naturalWidth,img.naturalHeight));
@@ -432,7 +447,7 @@ function fillVariants(){
   varSel.innerHTML='';logoSel.innerHTML='';const id=titleSel.value;
   if(!id){$('#titleNote').textContent='';return;}
   const no=document.createElement('option');no.value='';no.textContent='なし';logoSel.appendChild(no);
-  LOGOS[id].forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v[0];logoSel.appendChild(o);});
+  logoOpts(id).forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v[2]?'繁体字 zh-TW（英語ロゴで代用）':v[0];logoSel.appendChild(o);});
   logoSel.value='0';
   COPY[id].v.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v[0]+(loadOv()[id]&&loadOv()[id][i]!=null?'（保存済み）':'');varSel.appendChild(o);});
   $('#titleNote').textContent=COPY[id].note?'注意: '+COPY[id].note:'';
@@ -453,7 +468,11 @@ varSel.onchange=()=>{
   const want=/日本|国内/.test(lab)?'日本語':/海外|英語/.test(lab)?'英語':null;
   if(want){const i=LOGOS[id].findIndex(v=>v[0]===want);if(i>=0){logoSel.value=String(i);applyLogo();}}
 };
-logoSel.onchange=applyLogo;
+logoSel.onchange=()=>{
+  applyLogo();
+  const id=titleSel.value,o=logoOpts(id)[+logoSel.value];
+  if(o&&o[0]==='繁体字'){const i=COPY[id].v.findIndex(v=>/海外|英語/.test(v[0]));if(i>=0&&+varSel.value!==i){varSel.value=String(i);applyCopy();}}
+};
 $('#saveCopy').onclick=()=>{
   const id=titleSel.value;if(!id){toast('タイトルを選択してください');return;}
   const l=layers.find(x=>x.copyright);if(!l){toast('コピーライトのレイヤーがありません');return;}
