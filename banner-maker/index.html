@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banner Maker - CTW Marketing Ai Tool</title>
+<link rel="stylesheet" href="../theme.css">
+<script src="../theme-toggle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;line-height:1.6}
+.wrap{max-width:1500px;margin:0 auto;padding:36px 24px 60px}
+h1{font-size:2rem;margin:0 0 6px}
+.lead{color:var(--muted);font-size:.85rem;margin:0 0 22px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+.panel{padding:18px;display:flex;flex-direction:column;gap:14px}
+.panel h2{font-size:.8rem;letter-spacing:.12em;color:var(--gold);margin:0;font-family:inherit;font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>label{font-size:.78rem;color:var(--muted);min-width:44px}
+.row input[type=number]{width:72px}
+.row input[type=range]{flex:1;min-width:100px;accent-color:var(--gold)}
+.neo-input{padding:7px 9px;font-size:.85rem;max-width:100%}
+textarea.neo-input{width:100%;resize:vertical;min-height:60px}
+select.neo-input{padding:7px 9px}
+.btn{padding:8px 12px;font-size:.8rem}
+.btn.sm{padding:5px 9px;font-size:.75rem}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+hr{border:0;border-top:1px solid var(--border);margin:2px 0;width:100%}
+.layers{display:flex;flex-direction:column;gap:5px}
+.layer{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--btn-bg);font-size:.82rem}
+.layer.sel{border-color:var(--gold);background:var(--hover-bg)}
+.layer .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.layer .ic{width:26px;height:26px;border-radius:3px;object-fit:contain;background:#fff;border:1px solid var(--border);flex:none;display:grid;place-items:center;font-size:.8rem;color:#333}
+.layer button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 4px}
+.layer button:hover{color:var(--gold)}
+.empty{color:var(--muted);font-size:.78rem;padding:8px 2px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:9px 16px;border:1px solid var(--border);background:var(--btn-bg);color:var(--text);border-radius:3px;cursor:pointer;font:inherit;font-size:.85rem;font-weight:600}
+.tab small{color:var(--muted);font-weight:400;margin-left:6px}
+.tab.on{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+.tab.on small{color:inherit;opacity:.75}
+.stage{padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:420px;border:1px solid var(--border);border-radius:5px;background:repeating-conic-gradient(var(--hover-bg) 0% 25%,var(--bg) 0% 50%) 0 0/20px 20px}
+.cv-wrap{position:relative;line-height:0;max-width:100%;box-shadow:0 8px 30px var(--shadow)}
+canvas{max-width:100%;height:auto;display:block;touch-action:none;cursor:default}
+.hint{font-size:.74rem;color:var(--muted);text-align:center;line-height:1.7}
+.info{font-size:.78rem;color:var(--muted)}
+.chk{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer}
+.chk input{accent-color:var(--gold)}
+.drop{outline:2px dashed var(--gold);outline-offset:-6px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);padding:9px 18px;border-radius:4px;font-size:.85rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:100001}
+#toast.show{opacity:1}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Banner Maker</h1>
+  <p class="lead">白背景にキャラクター・ロゴ・コピーライトを自由に配置して、1080×1080 / 1200×628 / 600×500 を一括で書き出せます。画像は端末内でのみ処理され、サーバーには送信されません。</p>
+
+  <div class="grid">
+    <!-- 左パネル -->
+    <div class="neo-box panel" style="transform:none">
+      <h2>00 タイトル</h2>
+      <div class="row"><label>タイトル</label><select id="title" class="neo-input" style="flex:1"><option value="">（未選択）</option></select></div>
+      <div class="row"><label>表記</label><select id="variant" class="neo-input" style="flex:1"></select></div>
+      <div class="row"><label>ロゴ</label><select id="logoSel" class="neo-input" style="flex:1"></select></div>
+      <div class="info" id="titleNote"></div>
+      <div class="btns">
+        <button class="neo-btn btn sm" id="saveCopy" title="この端末のブラウザに保存されます">編集内容をデフォルトに保存</button>
+        <button class="neo-btn btn sm" id="resetCopy">元の表記に戻す</button>
+      </div>
+      <div class="info">選ぶとロゴとコピーライトが自動で入ります（ロゴ入りのタイトルのみ。コピーライトはW「著作権」ページの短縮形）。</div>
+      <hr>
+      <h2>01 素材を追加</h2>
+      <div class="btns">
+        <button class="neo-btn btn" data-add="character">＋ キャラクター</button>
+        <button class="neo-btn btn" data-add="logo">＋ ロゴ</button>
+        <button class="neo-btn btn" data-add="image">＋ 画像</button>
+        <button class="neo-btn btn" id="addText">＋ テキスト</button>
+      </div>
+      <div class="info">画像はキャンバスへのドラッグ＆ドロップ、Ctrl/⌘+V の貼り付けでも追加できます（キャラクター扱い）。</div>
+      <input type="file" id="file" accept="image/*" multiple hidden>
+
+      <hr>
+      <h2>02 レイヤー</h2>
+      <div class="layers" id="layers"></div>
+
+      <hr>
+      <h2>03 選択中のレイヤー</h2>
+      <div id="props"><div class="empty">レイヤーを選択してください</div></div>
+
+      <hr>
+      <h2>04 背景・ガイド</h2>
+      <div class="row"><label>背景色</label><input type="color" id="bg" value="#ffffff"><label class="chk"><input type="checkbox" id="bgTrans">透明（PNGのみ）</label></div>
+      <div class="row"><label class="chk"><input type="checkbox" id="snap" checked>スナップ</label><label class="chk"><input type="checkbox" id="guides" checked>ガイド表示</label></div>
+      <div class="row"><label>余白</label><input type="range" id="margin" min="0" max="12" step="0.5" value="4"><span id="marginV" class="info">4%</span></div>
+    </div>
+
+    <!-- 右：キャンバス -->
+    <div>
+      <div class="tabs" id="tabs"></div>
+      <div class="stage" id="stage">
+        <div class="cv-wrap"><canvas id="cv"></canvas></div>
+        <div class="hint">ドラッグで移動／右下の■で拡大縮小／ホイールでも拡大縮小／矢印キーで1px移動（Shiftで10px）／Deleteで削除</div>
+      </div>
+
+      <div class="neo-box panel" style="margin-top:16px;transform:none">
+        <h2>05 配置の補助・書き出し</h2>
+        <div class="row">
+          <button class="neo-btn btn" id="copyAll">このサイズの配置を他サイズへコピー</button>
+          <span class="info">位置と大きさを比率で換算します（コピー後に各サイズで微調整）</span>
+        </div>
+        <hr>
+        <div class="row">
+          <label>ファイル名</label><input type="text" id="base" class="neo-input" value="banner" style="width:180px">
+          <label>形式</label>
+          <select id="fmt" class="neo-input"><option value="png">PNG</option><option value="jpeg">JPEG</option></select>
+          <label>品質</label><input type="range" id="q" min="60" max="100" value="92" style="max-width:120px"><span id="qV" class="info">92</span>
+        </div>
+        <div class="btns">
+          <button class="neo-btn primary btn" id="dlOne">表示中のサイズを保存</button>
+          <button class="neo-btn primary btn" id="dlAll">3サイズをZIPで保存</button>
+        </div>
+        <div class="info" id="exInfo"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const SIZES=[{k:'1080x1080',w:1080,h:1080,n:'正方形'},{k:'1200x628',w:1200,h:628,n:'横長'},{k:'600x500',w:600,h:500,n:'小型'}];
+const $=s=>document.querySelector(s);
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let cur=SIZES[0];
+let layers=[];     // {id,type,role,name,img,alpha,text,font,color,weight,align,vis,t:{key:{x,y,s}}}
+let selId=null,uid=1,addRole='character';
+let drag=null,snapLines=[];
+
+const getSel=()=>layers.find(l=>l.id===selId)||null;
+const marginPx=(sz)=>Math.round(Math.min(sz.w,sz.h)*($('#margin').value/100));
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800);};
+
+/* ---------- 計測 ---------- */
+function textLines(l){return (l.text||'').split('\n');}
+function setFont(c,l,size){c.font=`${l.weight} ${size}px ${l.font}`;}
+function dims(l,tr){
+  if(l.type==='image')return {w:l.img.naturalWidth*tr.s,h:l.img.naturalHeight*tr.s};
+  setFont(mctx,l,tr.s);
+  const lines=textLines(l);
+  const w=Math.max(1,...lines.map(s=>mctx.measureText(s||' ').width));
+  return {w,h:lines.length*tr.s*1.4};
+}
+const mctx=document.createElement('canvas').getContext('2d');
+
+/* ---------- 初期配置 ---------- */
+function defaultT(l,sz){
+  const m=marginPx(sz);
+  if(l.type==='text'){
+    const s=Math.max(9,Math.round(sz.w*0.017));
+    const tr={s,x:sz.w/2,y:0};
+    const d=dims(l,tr);tr.y=sz.h-m-d.h/2;return tr;
+  }
+  const iw=l.img.naturalWidth,ih=l.img.naturalHeight;
+  if(l.preset){
+    const s=Math.min(sz.w*0.42/iw,sz.h*0.34/ih);
+    return {s,x:m+iw*s/2,y:m+ih*s/2};
+  }
+  if(l.role==='logo'){
+    const s=Math.min(sz.w*0.26/iw,sz.h*0.2/ih);
+    return {s,x:m+iw*s/2,y:m+ih*s/2};
+  }
+  const k=l.role==='character'?0.9:0.4;
+  const s=Math.min(sz.w*k/iw,sz.h*k/ih);
+  return {s,x:sz.w/2,y:sz.h/2};
+}
+function initT(l){l.t={};SIZES.forEach(sz=>l.t[sz.k]=defaultT(l,sz));}
+
+/* ---------- 追加 ---------- */
+function addImage(file,role){
+  return new Promise(res=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      // 透明部分のヒットテスト用に縮小コピー
+      const k=Math.min(1,256/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+      const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,c.width,c.height);
+      const l={id:uid++,type:'image',role,name:file.name||'',img,alpha:{w:c.width,h:c.height,d:cx.getImageData(0,0,c.width,c.height).data},vis:true};
+      if(l.name==='image.png'||!l.name)l.name={character:'キャラクター',logo:'ロゴ',image:'画像'}[role];
+      initT(l);layers.push(l);selId=l.id;res(l);
+    };
+    img.onerror=()=>{toast('画像を読み込めませんでした: '+file.name);res(null);};
+    img.src=url;
+  });
+}
+function addText(){
+  const l={id:uid++,type:'text',role:'text',copyright:!layers.some(x=>x.copyright),name:'コピーライト',text:'© 権利者名 / G123',font:'"Yu Gothic",Meiryo,sans-serif',color:'#333333',weight:'400',align:'center',vis:true};
+  initT(l);layers.push(l);selId=l.id;refresh();
+}
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{addRole=b.dataset.add;$('#file').value='';$('#file').click();});
+$('#addText').onclick=addText;
+$('#file').onchange=async e=>{for(const f of e.target.files)await addImage(f,addRole);refresh();};
+
+// D&D / paste
+const stage=$('#stage');
+['dragenter','dragover'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();stage.classList.add('drop');}));
+['dragleave','drop'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();stage.classList.remove('drop');}));
+stage.addEventListener('drop',async e=>{for(const f of e.dataTransfer.files)if(f.type.startsWith('image/'))await addImage(f,'character');refresh();});
+document.addEventListener('paste',async e=>{
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+  for(const it of e.clipboardData.items)if(it.type.startsWith('image/')){await addImage(it.getAsFile(),'character');}
+  refresh();
+});
+
+/* ---------- 描画 ---------- */
+function drawLayer(c,l,tr){
+  if(l.type==='image'){
+    const w=l.img.naturalWidth*tr.s,h=l.img.naturalHeight*tr.s;
+    c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+    c.drawImage(l.img,tr.x-w/2,tr.y-h/2,w,h);
+  }else{
+    setFont(c,l,tr.s);c.fillStyle=l.color;c.textBaseline='middle';c.textAlign=l.align;
+    const lines=textLines(l),d=dims(l,tr);
+    const ax=l.align==='left'?tr.x-d.w/2:l.align==='right'?tr.x+d.w/2:tr.x;
+    lines.forEach((s,i)=>c.fillText(s,ax,tr.y-d.h/2+tr.s*1.4*(i+.5)));
+  }
+}
+function renderTo(c,sz,overlay){
+  c.clearRect(0,0,sz.w,sz.h);
+  if(!$('#bgTrans').checked||overlay==='forceBg'){c.fillStyle=$('#bg').value;c.fillRect(0,0,sz.w,sz.h);}
+  layers.forEach(l=>{if(l.vis)drawLayer(c,l,l.t[sz.k]);});
+}
+function render(){
+  cv.width=cur.w;cv.height=cur.h;
+  renderTo(ctx,cur,'view');
+  const k=cur.w/cv.getBoundingClientRect().width||1;
+  if($('#guides').checked){
+    const m=marginPx(cur);ctx.save();ctx.strokeStyle='rgba(0,170,255,.55)';ctx.lineWidth=k;ctx.setLineDash([6*k,5*k]);
+    ctx.strokeRect(m,m,cur.w-2*m,cur.h-2*m);ctx.restore();
+  }
+  const l=getSel();
+  if(l&&l.vis){
+    const tr=l.t[cur.k],d=dims(l,tr);
+    ctx.save();ctx.strokeStyle='#ff3d71';ctx.lineWidth=1.5*k;
+    ctx.strokeRect(tr.x-d.w/2,tr.y-d.h/2,d.w,d.h);
+    const hs=9*k;ctx.fillStyle='#ff3d71';ctx.fillRect(tr.x+d.w/2-hs/2,tr.y+d.h/2-hs/2,hs,hs);ctx.restore();
+  }
+  if(snapLines.length){
+    ctx.save();ctx.strokeStyle='#ff9f00';ctx.lineWidth=k;
+    snapLines.forEach(s=>{ctx.beginPath();if(s.axis==='x'){ctx.moveTo(s.v,0);ctx.lineTo(s.v,cur.h);}else{ctx.moveTo(0,s.v);ctx.lineTo(cur.w,s.v);}ctx.stroke();});
+    ctx.restore();
+  }
+}
+
+/* ---------- 当たり判定 ---------- */
+function toCanvas(e){
+  const r=cv.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*cur.w/r.width,y:(e.clientY-r.top)*cur.h/r.height,k:cur.w/r.width};
+}
+function hit(l,p){
+  const tr=l.t[cur.k],d=dims(l,tr);
+  const lx=p.x-(tr.x-d.w/2),ly=p.y-(tr.y-d.h/2);
+  if(lx<0||ly<0||lx>d.w||ly>d.h)return false;
+  if(l.type==='text')return true;
+  const a=l.alpha,ix=Math.min(a.w-1,Math.floor(lx/d.w*a.w)),iy=Math.min(a.h-1,Math.floor(ly/d.h*a.h));
+  return a.d[(iy*a.w+ix)*4+3]>16;
+}
+function onHandle(l,p){
+  const tr=l.t[cur.k],d=dims(l,tr),r=12*p.k;
+  return Math.abs(p.x-(tr.x+d.w/2))<r&&Math.abs(p.y-(tr.y+d.h/2))<r;
+}
+
+/* ---------- ポインタ操作 ---------- */
+cv.addEventListener('pointerdown',e=>{
+  const p=toCanvas(e),sel=getSel();
+  if(sel&&sel.vis&&onHandle(sel,p)){
+    const tr=sel.t[cur.k],d=dims(sel,tr);
+    drag={mode:'scale',id:sel.id,start:{...tr},d0:Math.hypot(d.w/2,d.h/2),sd:d};
+  }else{
+    let target=null;
+    for(let i=layers.length-1;i>=0;i--){const l=layers[i];if(l.vis&&hit(l,p)){target=l;break;}}
+    if(target){selId=target.id;const tr=target.t[cur.k];drag={mode:'move',id:target.id,ox:p.x-tr.x,oy:p.y-tr.y};}
+    else{selId=null;}
+    refresh();
+  }
+  if(drag)cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener('pointermove',e=>{
+  const p=toCanvas(e);
+  if(!drag){
+    const sel=getSel();let c='default';
+    if(sel&&sel.vis&&onHandle(sel,p))c='nwse-resize';
+    else for(let i=layers.length-1;i>=0;i--){if(layers[i].vis&&hit(layers[i],p)){c='move';break;}}
+    cv.style.cursor=c;return;
+  }
+  const l=layers.find(x=>x.id===drag.id);if(!l)return;
+  const tr=l.t[cur.k];
+  if(drag.mode==='move'){
+    tr.x=p.x-drag.ox;tr.y=p.y-drag.oy;
+    snapLines=[];
+    if($('#snap').checked)applySnap(l,tr,p.k);
+  }else{
+    const dist=Math.hypot(p.x-tr.x,p.y-tr.y);
+    const f=Math.max(.02,dist/drag.d0);
+    tr.s=drag.start.s*f;
+    if(l.type==='text')tr.s=Math.max(4,tr.s);
+  }
+  render();syncProps();
+});
+cv.addEventListener('pointerup',()=>{if(drag){const l=layers.find(x=>x.id===drag.id);if(l)l._moved=true;}drag=null;snapLines=[];render();});
+cv.addEventListener('wheel',e=>{
+  const l=getSel();if(!l)return;e.preventDefault();
+  const tr=l.t[cur.k];tr.s*=e.deltaY<0?1.03:1/1.03;if(l.type==='text')tr.s=Math.max(4,tr.s);
+  render();syncProps();
+},{passive:false});
+
+function applySnap(l,tr,k){
+  const th=7*k,d=dims(l,tr),m=marginPx(cur);
+  const xs=[{v:cur.w/2,off:0},{v:m,off:-d.w/2},{v:cur.w-m,off:d.w/2},{v:0,off:-d.w/2},{v:cur.w,off:d.w/2}];
+  const ys=[{v:cur.h/2,off:0},{v:m,off:-d.h/2},{v:cur.h-m,off:d.h/2},{v:0,off:-d.h/2},{v:cur.h,off:d.h/2}];
+  let bx=null,by=null;
+  xs.forEach(c=>{const diff=c.v-(tr.x+c.off);if(Math.abs(diff)<th&&(!bx||Math.abs(diff)<Math.abs(bx.diff)))bx={diff,v:c.v};});
+  ys.forEach(c=>{const diff=c.v-(tr.y+c.off);if(Math.abs(diff)<th&&(!by||Math.abs(diff)<Math.abs(by.diff)))by={diff,v:c.v};});
+  if(bx){tr.x+=bx.diff;snapLines.push({axis:'x',v:bx.v});}
+  if(by){tr.y+=by.diff;snapLines.push({axis:'y',v:by.v});}
+}
+
+document.addEventListener('keydown',e=>{
+  if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  const l=getSel();if(!l)return;
+  const st=e.shiftKey?10:1,tr=l.t[cur.k];
+  if(e.key==='ArrowLeft')tr.x-=st;else if(e.key==='ArrowRight')tr.x+=st;
+  else if(e.key==='ArrowUp')tr.y-=st;else if(e.key==='ArrowDown')tr.y+=st;
+  else if(e.key==='Delete'||e.key==='Backspace'){removeLayer(l.id);e.preventDefault();return;}
+  else return;
+  e.preventDefault();render();syncProps();
+});
+
+
+/* ---------- タイトル別コピーライト（W「著作権」ページより。基本は短縮形） ---------- */
+const CIRC='\u0302';
+const COPY={
+ ikki:{v:[['短縮','© Y･S/IA']]},
+ kabaneri:{v:[['国内','©カバネリ製作委員会'],['海外','©Kabaneri Committee']],note:'書体は可読性の高いゴシック。なるべく正体・スミ100%（または白抜き）で、BGに溶け込ませない。'},
+ isekaimaou:{v:[['短縮','©YK/HDUP']]},
+ highschool:{v:[['短縮（学園黙示録）','©II,MZ/K/HSDDHP'],['短縮（モン娘）','©O/T']],note:'フル表記の場合、スラッシュは全角。'},
+ arifure:{v:[['短縮','©R,O/A'],['このすばコラボ','©N,K/K/K4P']]},
+ dragon:{v:[['短縮','©C/F']]},
+ shinchan:{v:[['通常短縮','©Ｕ／Ｆ・Ｓ・Ａ・Ａ'],['映画2026 短縮','©U／F・S・A・A 2026'],['通常＋映画 併記（上下）','©Ｕ／Ｆ・Ｓ・Ａ・Ａ\n©U／F・S・A・A 2026']],note:'文字間を詰める設定はOFF。映画と通常を併記する場合、上下なら通常が上・映画が下、左右なら通常が左・映画が右。'},
+ slime:{v:[['国内短縮','©KM･SBCr/SLP2'],['海外短縮','©KM-SBCr/SLP2']]},
+ ansatsu:{v:[['短縮','©M,O/AP'],['異世界魔王コラボ 省略形','©YK/HDΩP']]},
+ tenken:{v:[['短縮','©Y,L/M/RS']],note:'「・」や「／」は全角に。フォントサイズに注意。'},
+ binan:{v:[['短縮','©KU/KPA'],['正規 国内','©馬谷くらり／黒玉湯振興会'],['正規 海外','©KURARI UMATANI/KUROTAMAYU promotion association']],note:'基本は正規表記。短縮は、スペースが足りない場合のみやむを得ず使用。'},
+ maoretry:{v:[['短縮','©KK,AM/F/DRC']]},
+ hotd:{v:[['日本短縮','©SDS/K/H.O.T.D.P'],['海外短縮','©SDS/F/H.O.T.D.P']]},
+ ossan:{v:[['短縮','©KK,HJ/2024 ONAP']]},
+ kusuriya:{v:[['短縮','©H,II/ADP']],note:'フリー背景使用時は必ずぼかす。'},
+ yamato:{v:[['短縮','©NISHIZAKI/VE/SBZ2199PC']],note:'W上は「等」付きの記載。要確認。'},
+ tsukimichi:{v:[['短縮','©A・A/T'],['暗殺姫コラボ 短縮','©N･Y.S (AS) /SHP']]},
+ kakegurui:{v:[['短縮（1期・2期併記）','©HK,TN/SQEX,KP\n©HK,TN/SQEX,K2']],note:'権利表記はできるだけ正式名称を使い、1期2期を併記する。'},
+ newgate:{v:[['短縮','©K・A/G']]},
+ queensblade:{v:[['クイーンズブレイド','©HobbyJAPAN'],['学園黙示録コラボ 短縮','©SDS/K/H.O.T.D.P']]},
+ ginei:{v:[['短縮','©ＴＴＴＷＳ ©Ｋ'],['一騎当千コラボ 短縮','©Y·S/I']]},
+ guruguru:{v:[['短縮','©HE/SQEX,GRNP'],['イカ娘 日本','©M.A(AS) / SP'],['イカ娘 海外','©M.A(AS)/SIP']]},
+ sutobura:{v:[['短縮','© G/K/P-SO']]},
+ blacklagoon:{v:[['短縮','Ⓒ2006, 2010 R, S/BLP']]},
+ peter:{v:[['短縮','ⒸH/F･PSE']]},
+ wixoss:{v:[['短縮','© ＴＯＭＹ ©LRIG/ProjectWDA']]},
+ isesuma:{v:[['短縮','©PF, HJ/IAWWMS2']]},
+ nouka:{v:[['短縮','©KN/FA2PC'],['正規 日本語','© 内藤 騎之介 ／「異世界のんびり農家２」製作委員会'],['正規 英語','©Kinosuke Naito/Farming Life in Another World 2 Production Committee']],note:'基本は正規表記。300x250など小さいサイズのみ短縮可。「２」は全角。'},
+ shakugan:{v:[['略称','©YT/NI/AMW/SSFC']],note:'フル表記の場合、スラッシュは全角。'},
+ reinna:{v:[['短縮','©MK/MG・PRPC']]},
+ skeleton:{v:[['短縮','©E,O/S2']]},
+ kumo:{v:[['短縮','©O,T/K/SISSWP'],['無職コラボ','©R/MF/MT2JRPC'],['このすばコラボ','©2024 N,K/K/K3P']]},
+ negima:{v:[['日本語','©赤松健／講談社'],['海外','©Ken Akamatsu / Kodansha Ltd.'],['フェアリーテイルコラボ','©M, K/F, T']],note:'日本語バナーは必ず日本語表記。フェアリーテイルコラボはM,K/F,Tをメインに。'},
+ ryoran:{v:[['国内','©すずきあきら・Niθ'+CIRC+'／ホビージャパン'],['海外','©SNH']],note:'画像内ではθの上にサーカムフレックス（θ̂）を乗せた正式表記にする。'},
+ doraemon:{v:[['日本語','©藤子プロ'],['海外','©Fujiko-Pro']],note:'日本語バナーは必ず日本語表記。'}
+};
+const OV_KEY='bm-copy-override';
+function loadOv(){try{return JSON.parse(localStorage.getItem(OV_KEY)||'{}');}catch{return {};}}
+function saveOv(o){try{localStorage.setItem(OV_KEY,JSON.stringify(o));return true;}catch{return false;}}
+function copyText(id,i){const o=loadOv();return (o[id]&&o[id][i]!=null)?o[id][i]:COPY[id].v[i][1];}
+const titleSel=$('#title'),varSel=$('#variant');
+const LOGOS={
+ hotd:[['日本語','logos/hotd_ja.png'],['英語','logos/hotd_en.png']],
+ ryoran:[['日本語','logos/ryoran_ja.png'],['英語','logos/ryoran_en.png'],['韓国語','logos/ryoran_ko.png']],
+ nouka:[['日本語','logos/nouka_ja.png'],['英語','logos/nouka_en.png'],['韓国語','logos/nouka_ko.png']]
+};
+const logoSel=$('#logoSel');
+Object.keys(LOGOS).forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=id;titleSel.appendChild(o);});
+function trimmed(img){
+  const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0);
+  const d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=-1,y1=-1;
+  for(let y=0;y<c.height;y++)for(let xx=0;xx<c.width;xx++){const i=(y*c.width+xx)*4;
+    if(d[i+3]>8&&!(d[i]>=250&&d[i+1]>=250&&d[i+2]>=250)){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(y<y0)y0=y;if(y>y1)y1=y;}}
+  if(x1<0)return Promise.resolve(img);
+  const w=x1-x0+1,h=y1-y0+1,o=document.createElement('canvas');o.width=w;o.height=h;
+  o.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);
+  return new Promise(r=>o.toBlob(b=>{const im=new Image();im.onload=()=>r(im);im.src=URL.createObjectURL(b);},'image/png'));
+}
+function loadImg(url){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=url;});}
+let logoReq=0;
+async function applyLogo(){
+  const id=titleSel.value,idx=logoSel.value;
+  const old=layers.find(x=>x.preset);
+  if(!id||idx===''){if(old){layers=layers.filter(x=>x!==old);if(selId===old.id)selId=null;refresh();}return;}
+  const [lab,url]=LOGOS[id][+idx],req=++logoReq;
+  let img;try{img=await trimmed(await loadImg(url));}catch{toast('ロゴを読み込めませんでした: '+url);return;}
+  if(req!==logoReq)return;
+  const k=Math.min(1,256/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+  const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,c.width,c.height);
+  const alpha={w:c.width,h:c.height,d:cx.getImageData(0,0,c.width,c.height).data};
+  const name=`ロゴ（${id} ${lab}）`;
+  if(old){
+    const ow={};SIZES.forEach(sz=>ow[sz.k]=old.img.naturalWidth*old.t[sz.k].s);
+    old.img=img;old.alpha=alpha;old.name=name;
+    if(old._moved)SIZES.forEach(sz=>{old.t[sz.k].s=ow[sz.k]/img.naturalWidth;});else initT(old);
+  }else{
+    const l={id:uid++,type:'image',role:'logo',preset:true,name,img,alpha,vis:true};initT(l);layers.push(l);
+  }
+  refresh();
+}
+function fillVariants(){
+  varSel.innerHTML='';logoSel.innerHTML='';const id=titleSel.value;
+  if(!id){$('#titleNote').textContent='';return;}
+  const no=document.createElement('option');no.value='';no.textContent='なし';logoSel.appendChild(no);
+  LOGOS[id].forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v[0];logoSel.appendChild(o);});
+  logoSel.value='0';
+  COPY[id].v.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v[0]+(loadOv()[id]&&loadOv()[id][i]!=null?'（保存済み）':'');varSel.appendChild(o);});
+  $('#titleNote').textContent=COPY[id].note?'注意: '+COPY[id].note:'';
+}
+function applyCopy(){
+  const id=titleSel.value;if(!id)return;
+  const text=copyText(id,+varSel.value||0);
+  let l=layers.find(x=>x.copyright);
+  if(!l){addText();l=layers[layers.length-1];l.copyright=true;}
+  l.text=text;l.name='コピーライト';selId=l.id;
+  SIZES.forEach(sz=>{const tr=l.t[sz.k],d=dims(l,tr);const m=marginPx(sz);if(!l._moved)tr.y=sz.h-m-d.h/2;});
+  refresh();
+}
+titleSel.onchange=()=>{fillVariants();applyCopy();applyLogo();};
+varSel.onchange=()=>{
+  applyCopy();
+  const id=titleSel.value,lab=COPY[id].v[+varSel.value||0][0];
+  const want=/日本|国内/.test(lab)?'日本語':/海外|英語/.test(lab)?'英語':null;
+  if(want){const i=LOGOS[id].findIndex(v=>v[0]===want);if(i>=0){logoSel.value=String(i);applyLogo();}}
+};
+logoSel.onchange=applyLogo;
+$('#saveCopy').onclick=()=>{
+  const id=titleSel.value;if(!id){toast('タイトルを選択してください');return;}
+  const l=layers.find(x=>x.copyright);if(!l){toast('コピーライトのレイヤーがありません');return;}
+  const i=+varSel.value||0,o=loadOv();(o[id]=o[id]||{})[i]=l.text;
+  if(saveOv(o)){const keep=varSel.value;fillVariants();varSel.value=keep;toast('デフォルトに保存しました（この端末のブラウザ内）');}else toast('保存できませんでした');
+};
+$('#resetCopy').onclick=()=>{
+  const id=titleSel.value;if(!id)return;
+  const o=loadOv(),i=+varSel.value||0;if(o[id]){delete o[id][i];saveOv(o);}
+  const keep=varSel.value;fillVariants();varSel.value=keep;applyCopy();
+};
+
+/* ---------- レイヤーUI ---------- */
+function removeLayer(id){layers=layers.filter(l=>l.id!==id);if(selId===id)selId=null;refresh();}
+function moveLayer(id,dir){
+  const i=layers.findIndex(l=>l.id===id),j=i+dir;
+  if(j<0||j>=layers.length)return;
+  [layers[i],layers[j]]=[layers[j],layers[i]];refresh();
+}
+function renderLayers(){
+  const box=$('#layers');box.innerHTML='';
+  if(!layers.length){box.innerHTML='<div class="empty">素材を追加してください</div>';return;}
+  [...layers].reverse().forEach(l=>{
+    const d=document.createElement('div');d.className='layer'+(l.id===selId?' sel':'');
+    const ic=l.type==='image'?`<img class="ic" src="${l.img.src}" alt="">`:`<span class="ic">T</span>`;
+    d.innerHTML=`${ic}<span class="nm"></span><button data-a="vis" title="表示切替">${l.vis?'👁':'—'}</button><button data-a="up" title="前面へ">▲</button><button data-a="dn" title="背面へ">▼</button><button data-a="del" title="削除">✕</button>`;
+    d.querySelector('.nm').textContent=l.name;
+    d.onclick=e=>{
+      const a=e.target.dataset&&e.target.dataset.a;
+      if(a==='vis')l.vis=!l.vis;else if(a==='up'){moveLayer(l.id,1);return;}else if(a==='dn'){moveLayer(l.id,-1);return;}else if(a==='del'){removeLayer(l.id);return;}
+      selId=l.id;refresh();
+    };
+    box.appendChild(d);
+  });
+}
+
+/* ---------- プロパティ ---------- */
+function renderProps(){
+  const box=$('#props'),l=getSel();
+  if(!l){box.innerHTML='<div class="empty">レイヤーを選択してください</div>';return;}
+  const isT=l.type==='text';
+  let h=`<div class="row"><label>名前</label><input type="text" id="pName" class="neo-input" style="flex:1" value=""></div>`;
+  if(isT){
+    h+=`<textarea id="pText" class="neo-input"></textarea>
+    <div class="row"><label>フォント</label><select id="pFont" class="neo-input" style="flex:1">
+      <option value='"Yu Gothic",Meiryo,sans-serif'>游ゴシック / メイリオ</option>
+      <option value='"Hiragino Sans","Noto Sans JP",sans-serif'>ヒラギノ角ゴ / Noto Sans JP</option>
+      <option value='"Yu Mincho","Hiragino Mincho ProN",serif'>游明朝</option>
+      <option value='Arial,Helvetica,sans-serif'>Arial</option></select></div>
+    <div class="row"><label>色</label><input type="color" id="pColor"><label>太さ</label><select id="pWeight" class="neo-input"><option value="400">標準</option><option value="700">太字</option></select>
+    <label>揃え</label><select id="pAlign" class="neo-input"><option value="left">左</option><option value="center">中央</option><option value="right">右</option></select></div>`;
+  }
+  h+=`<div class="row"><label>${isT?'文字サイズ':'拡大率%'}</label><input type="range" id="pScale" min="${isT?4:2}" max="${isT?200:300}" step="${isT?1:0.5}"><input type="number" id="pScaleN" class="neo-input" step="${isT?1:0.5}"></div>
+  <div class="row"><label>X</label><input type="number" id="pX" class="neo-input" step="1"><label>Y</label><input type="number" id="pY" class="neo-input" step="1"><span class="info">中心座標(px)</span></div>
+  <div class="row"><label>整列</label><div class="btns">
+    <button class="neo-btn btn sm" data-al="l">左</button><button class="neo-btn btn sm" data-al="c">左右中央</button><button class="neo-btn btn sm" data-al="r">右</button>
+    <button class="neo-btn btn sm" data-al="t">上</button><button class="neo-btn btn sm" data-al="m">上下中央</button><button class="neo-btn btn sm" data-al="b">下</button></div></div>
+  <div class="row"><button class="neo-btn btn sm" id="pFit">${isT?'初期位置に戻す':'このサイズの初期配置に戻す'}</button></div>`;
+  box.innerHTML=h;
+  $('#pName').value=l.name;
+  $('#pName').oninput=e=>{l.name=e.target.value;renderLayers();};
+  if(isT){
+    $('#pText').value=l.text;$('#pText').oninput=e=>{l.text=e.target.value;render();};
+    $('#pFont').value=l.font;$('#pFont').onchange=e=>{l.font=e.target.value;render();};
+    $('#pColor').value=l.color;$('#pColor').oninput=e=>{l.color=e.target.value;render();};
+    $('#pWeight').value=l.weight;$('#pWeight').onchange=e=>{l.weight=e.target.value;render();};
+    $('#pAlign').value=l.align;$('#pAlign').onchange=e=>{l.align=e.target.value;render();};
+  }
+  // 画像は「元画像に対する%」。1.0 = 等倍
+  const toDisp=s=>isT?s:s*100, fromDisp=v=>isT?v:v/100;
+  $('#pScale').oninput=e=>{l.t[cur.k].s=Math.max(isT?4:.0005,fromDisp(+e.target.value));render();syncProps(true);};
+  $('#pScaleN').onchange=e=>{l.t[cur.k].s=Math.max(isT?4:.0005,fromDisp(+e.target.value));render();syncProps();};
+  $('#pX').onchange=e=>{l.t[cur.k].x=+e.target.value;render();};
+  $('#pY').onchange=e=>{l.t[cur.k].y=+e.target.value;render();};
+  box.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{
+    const tr=l.t[cur.k],d=dims(l,tr),m=marginPx(cur),a=b.dataset.al;
+    if(a==='l')tr.x=m+d.w/2;else if(a==='r')tr.x=cur.w-m-d.w/2;else if(a==='c')tr.x=cur.w/2;
+    else if(a==='t')tr.y=m+d.h/2;else if(a==='b')tr.y=cur.h-m-d.h/2;else if(a==='m')tr.y=cur.h/2;
+    render();syncProps();
+  });
+  $('#pFit').onclick=()=>{l.t[cur.k]=defaultT(l,cur);render();syncProps();};
+  syncProps();
+}
+function syncProps(skipRange){
+  const l=getSel();if(!l||!$('#pX'))return;
+  const tr=l.t[cur.k],isT=l.type==='text',v=isT?tr.s:tr.s*100;
+  if(!skipRange)$('#pScale').value=v;
+  $('#pScaleN').value=+v.toFixed(1);
+  $('#pX').value=Math.round(tr.x);$('#pY').value=Math.round(tr.y);
+  updateInfo();
+}
+
+/* ---------- タブ ---------- */
+function renderTabs(){
+  const t=$('#tabs');t.innerHTML='';
+  SIZES.forEach(sz=>{
+    const b=document.createElement('button');b.className='tab'+(sz===cur?' on':'');
+    b.innerHTML=`${sz.w}×${sz.h}<small>${sz.n}</small>`;
+    b.onclick=()=>{cur=sz;snapLines=[];refresh();};
+    t.appendChild(b);
+  });
+}
+function updateInfo(){$('#exInfo').textContent=`表示中: ${cur.w}×${cur.h}px ／ レイヤー ${layers.length} 枚`;}
+function refresh(){renderTabs();renderLayers();renderProps();render();updateInfo();}
+
+/* ---------- 他サイズへコピー ---------- */
+$('#copyAll').onclick=()=>{
+  if(!layers.length)return;
+  if(!confirm(`${cur.w}×${cur.h} の配置を、他の2サイズへ比率換算してコピーします。\n他サイズの現在の配置は上書きされます。よろしいですか？`))return;
+  layers.forEach(l=>{
+    const s0=l.t[cur.k];
+    SIZES.forEach(sz=>{
+      if(sz===cur)return;
+      const sx=sz.w/cur.w,sy=sz.h/cur.h;
+      l.t[sz.k]={x:s0.x*sx,y:s0.y*sy,s:s0.s*Math.min(sx,sy)};
+    });
+  });
+  toast('他サイズへコピーしました');render();
+};
+
+/* ---------- 書き出し ---------- */
+$('#bg').oninput=render;
+$('#bgTrans').onchange=render;
+$('#guides').onchange=render;
+$('#margin').oninput=e=>{$('#marginV').textContent=e.target.value+'%';render();};
+$('#q').oninput=e=>{$('#qV').textContent=e.target.value;};
+$('#fmt').onchange=()=>{if($('#fmt').value==='jpeg'&&$('#bgTrans').checked)toast('JPEGは透明に非対応のため、背景色で塗りつぶします');};
+
+function exportBlob(sz){
+  const c=document.createElement('canvas');c.width=sz.w;c.height=sz.h;
+  const x=c.getContext('2d');
+  const fmt=$('#fmt').value;
+  renderTo(x,sz,fmt==='jpeg'?'forceBg':'export');
+  return new Promise(r=>c.toBlob(r,'image/'+fmt,fmt==='jpeg'?$('#q').value/100:undefined));
+}
+const ext=()=>$('#fmt').value==='jpeg'?'jpg':'png';
+const baseName=()=>($('#base').value.trim()||'banner').replace(/[\\/:*?"<>|]/g,'_');
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+$('#dlOne').onclick=async()=>{
+  if(!layers.length){toast('素材を追加してください');return;}
+  const b=await exportBlob(cur);save(b,`${baseName()}_${cur.k}.${ext()}`);
+  toast(`${cur.k} を保存しました（${Math.round(b.size/1024)}KB）`);
+};
+$('#dlAll').onclick=async()=>{
+  if(!layers.length){toast('素材を追加してください');return;}
+  if(typeof JSZip==='undefined'){toast('ZIPライブラリを読み込めませんでした。個別保存をご利用ください');return;}
+  const z=new JSZip();const sizes=[];
+  for(const sz of SIZES){const b=await exportBlob(sz);z.file(`${baseName()}_${sz.k}.${ext()}`,b);sizes.push(`${sz.k}:${Math.round(b.size/1024)}KB`);}
+  const zb=await z.generateAsync({type:'blob'});save(zb,`${baseName()}.zip`);
+  toast('ZIPを保存しました（'+sizes.join(' / ')+'）');
+};
+
+window.addEventListener('resize',render);
+refresh();
+})();
+</script>
+<script src="../sidebar.js"></script>
+</body>
+</html>
