@@ -166,15 +166,21 @@ const mctx=document.createElement('canvas').getContext('2d');
 /* ---------- 初期配置 ---------- */
 function defaultT(l,sz){
   const m=marginPx(sz);
+  const mn=Math.min(sz.w,sz.h);
   if(l.type==='text'){
+    if(l.copyright){ // 既定：右下・右揃え（画面上の基準配置）
+      const s=Math.max(9,Math.round(sz.w*0.0185));
+      const tr={s,x:0,y:0},d=dims(l,tr);
+      tr.x=sz.w-mn*0.029-d.w/2;tr.y=sz.h-mn*0.016-d.h/2;return tr;
+    }
     const s=Math.max(9,Math.round(sz.w*0.017));
     const tr={s,x:sz.w/2,y:0};
     const d=dims(l,tr);tr.y=sz.h-m-d.h/2;return tr;
   }
   const iw=l.img.naturalWidth,ih=l.img.naturalHeight;
-  if(l.preset){
-    const s=Math.min(sz.w*0.42/iw,sz.h*0.34/ih);
-    return {s,x:m+iw*s/2,y:m+ih*s/2};
+  if(l.preset){ // 既定：左上寄せ（画面上の基準配置）
+    const s=Math.min(sz.w*0.222/iw,sz.h*0.2/ih);
+    return {s,x:mn*0.015+iw*s/2,y:mn*0.005+ih*s/2};
   }
   if(l.role==='logo'){
     const s=Math.min(sz.w*0.26/iw,sz.h*0.2/ih);
@@ -205,6 +211,7 @@ function addImage(file,role){
 }
 function addText(){
   const l={id:uid++,type:'text',role:'text',copyright:!layers.some(x=>x.copyright),name:'コピーライト',text:'© 権利者名 / G123',font:'"Yu Gothic",Meiryo,sans-serif',color:'#333333',weight:'400',align:'center',strokeColor:'#ffffff',strokeW:0,vis:true};
+  if(l.copyright){l.align='right';l.strokeW=15;l.strokeColor='#ffffff';}
   initT(l);layers.push(l);selId=l.id;refresh();
 }
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{addRole=b.dataset.add;$('#file').value='';$('#file').click();});
@@ -458,7 +465,7 @@ function applyCopy(){
   let l=layers.find(x=>x.copyright);
   if(!l){addText();l=layers[layers.length-1];l.copyright=true;}
   l.text=text;l.name='コピーライト';selId=l.id;
-  SIZES.forEach(sz=>{const tr=l.t[sz.k],d=dims(l,tr);const m=marginPx(sz);if(!l._moved)tr.y=sz.h-m-d.h/2;});
+  if(!l._moved)SIZES.forEach(sz=>{l.t[sz.k]=defaultT(l,sz);});
   refresh();
 }
 titleSel.onchange=()=>{fillVariants();applyCopy();applyLogo();};
